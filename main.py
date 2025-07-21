@@ -76,21 +76,25 @@ def load_css():
     }
     
     .user-message {
-        background: #007bff;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 15px 15px 5px 15px;
+        background: linear-gradient(135deg, #E6E6FA, #DDA0DD);
+        color: #4A154B;
+        padding: 0.8rem 1.2rem;
+        border-radius: 18px 18px 5px 18px;
         margin: 0.5rem 0;
         margin-left: 20%;
+        box-shadow: 0 2px 8px rgba(221, 160, 221, 0.3);
+        border: 1px solid rgba(221, 160, 221, 0.4);
     }
     
     .coach-message {
-        background: #28a745;
+        background: linear-gradient(135deg, #4A154B, #6A1B9A);
         color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 15px 15px 15px 5px;
+        padding: 0.8rem 1.2rem;
+        border-radius: 18px 18px 18px 5px;
         margin: 0.5rem 0;
         margin-right: 20%;
+        box-shadow: 0 2px 12px rgba(74, 21, 75, 0.4);
+        border: 1px solid rgba(106, 27, 154, 0.3);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -699,10 +703,12 @@ def main():
         
         # Text input
         st.markdown("### ✍️ Type Your Message")
+        
         user_input = st.text_area(
             "What would you like to discuss about your path to success?",
             height=100,
-            placeholder="Ask about goal setting, financial planning, mindset, or any success-related topic..."
+            placeholder="Ask about goal setting, financial planning, mindset, or any success-related topic...",
+            key="message_input"
         )
         
         col_send, col_clear = st.columns([1, 1])
@@ -716,6 +722,10 @@ def main():
                         'content': user_input,
                         'timestamp': datetime.now()
                     })
+                    
+                    # Clear the text input by removing the key from session state
+                    if "message_input" in st.session_state:
+                        del st.session_state["message_input"]
                     
                     # Get coach response
                     with st.spinner("Coach is thinking..."):
@@ -737,6 +747,9 @@ def main():
             if st.button("Clear Chat"):
                 st.session_state.chat_history = []
                 st.session_state.is_speaking = False
+                # Also clear the text input
+                if "message_input" in st.session_state:
+                    del st.session_state["message_input"]
                 st.rerun()
         
         # Show latest coach response with TTS
