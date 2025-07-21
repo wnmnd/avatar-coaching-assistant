@@ -701,56 +701,51 @@ def main():
         # Chat interface
         chat_interface()
         
-        # Text input
+        # Text input with form for auto-clearing
         st.markdown("### ✍️ Type Your Message")
         
-        user_input = st.text_area(
-            "What would you like to discuss about your path to success?",
-            height=100,
-            placeholder="Ask about goal setting, financial planning, mindset, or any success-related topic...",
-            key="message_input"
-        )
-        
-        col_send, col_clear = st.columns([1, 1])
-        
-        with col_send:
-            if st.button("Send Message", type="primary"):
-                if user_input.strip():
-                    # Add user message to history
-                    st.session_state.chat_history.append({
-                        'role': 'user',
-                        'content': user_input,
-                        'timestamp': datetime.now()
-                    })
-                    
-                    # Clear the text input by removing the key from session state
-                    if "message_input" in st.session_state:
-                        del st.session_state["message_input"]
-                    
-                    # Get coach response
-                    with st.spinner("Coach is thinking..."):
-                        coach_response = get_coach_response(user_input, st.session_state.chat_history)
-                    
-                    # Add coach response to history
-                    st.session_state.chat_history.append({
-                        'role': 'coach',
-                        'content': coach_response,
-                        'timestamp': datetime.now()
-                    })
-                    
-                    # Set speaking state
-                    st.session_state.is_speaking = True
-                    
-                    st.rerun()
-        
-        with col_clear:
-            if st.button("Clear Chat"):
-                st.session_state.chat_history = []
-                st.session_state.is_speaking = False
-                # Also clear the text input
-                if "message_input" in st.session_state:
-                    del st.session_state["message_input"]
+        with st.form("message_form", clear_on_submit=True):
+            user_input = st.text_area(
+                "What would you like to discuss about your path to success?",
+                height=100,
+                placeholder="Ask about goal setting, financial planning, mindset, or any success-related topic...",
+                key="user_message"
+            )
+            
+            col_send, col_clear = st.columns([1, 1])
+            
+            with col_send:
+                submitted = st.form_submit_button("Send Message", type="primary")
+                
+            if submitted and user_input.strip():
+                # Add user message to history
+                st.session_state.chat_history.append({
+                    'role': 'user',
+                    'content': user_input,
+                    'timestamp': datetime.now()
+                })
+                
+                # Get coach response
+                with st.spinner("Coach is thinking..."):
+                    coach_response = get_coach_response(user_input, st.session_state.chat_history)
+                
+                # Add coach response to history
+                st.session_state.chat_history.append({
+                    'role': 'coach',
+                    'content': coach_response,
+                    'timestamp': datetime.now()
+                })
+                
+                # Set speaking state
+                st.session_state.is_speaking = True
+                
                 st.rerun()
+        
+        # Clear chat button (outside the form)
+        if st.button("Clear Chat", key="clear_chat_btn"):
+            st.session_state.chat_history = []
+            st.session_state.is_speaking = False
+            st.rerun()
         
         # Show latest coach response with TTS
         if st.session_state.chat_history:
