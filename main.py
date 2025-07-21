@@ -522,7 +522,7 @@ def add_empathy_to_text(text, voice_type):
 # User profile sidebar
 def user_profile_sidebar():
     with st.sidebar:
-        st.header("👤 Personalize Your Coach")
+        st.header("Personalize Your Coach")
         
         # Basic Profile
         st.subheader("Basic Information")
@@ -539,7 +539,7 @@ def user_profile_sidebar():
         )
         
         # Avatar Customization
-        st.subheader("👥 Choose Your Coach Avatar")
+        st.subheader("Choose Your Coach Avatar")
         avatar_options = {
             "👩‍💼": "Sarah - Professional Coach",
             "👨‍💼": "Marcus - Business Mentor", 
@@ -564,7 +564,7 @@ def user_profile_sidebar():
         )
         
         # Voice Customization
-        st.subheader("🎤 Voice & Personality")
+        st.subheader("Voice & Personality")
         
         voice_type = st.selectbox(
             "Coach Personality",
@@ -599,7 +599,7 @@ def user_profile_sidebar():
         )
         
         # Focus Areas
-        st.subheader("🎯 Focus Areas")
+        st.subheader("Focus Areas")
         focus_areas = st.multiselect(
             "What areas do you want to focus on?",
             [
@@ -618,7 +618,7 @@ def user_profile_sidebar():
         )
         
         # Save Profile
-        if st.button("💾 Save Profile", type="primary"):
+        if st.button("Save Profile", type="primary"):
             st.session_state.user_profile = {
                 'name': name,
                 'goals': goals,
@@ -669,7 +669,7 @@ def main():
     # Header
     st.markdown("""
     <div class="main-header">
-        <h1>🎯 Avatar Success Coach</h1>
+        <h1>Avatar Success Coach</h1>
         <p>Your AI-powered wealth and success mentor</p>
     </div>
     """, unsafe_allow_html=True)
