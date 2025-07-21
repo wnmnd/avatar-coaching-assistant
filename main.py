@@ -238,15 +238,86 @@ def load_css():
         font-weight: bold !important;
     }
     
-    /* Slider labels - restore original color */
-    .stSlider > label {
-        color: inherit !important;
+    /* Slider labels - restore original color - MORE SPECIFIC */
+    .stSlider > label,
+    .stSlider label,
+    .stSlider > div > label,
+    div[data-testid="stSlider"] label,
+    .stSlider label[data-testid="stWidgetLabel"],
+    .css-1d391kg .stSlider label {
+        color: rgba(250, 250, 250, 0.6) !important;
         font-weight: 600 !important;
     }
     
-    /* Slider label text - use default theme color */
-    .stSlider label[data-testid="stWidgetLabel"] {
-        color: var(--text-color) !important;
+    /* Override any purple text in sliders */
+    .stSlider label[style*="color: #4A154B"],
+    .stSlider label[style*="color: #8A2BE2"] {
+        color: rgba(250, 250, 250, 0.6) !important;
+    }
+    
+    /* Ensure all sidebar text is consistent except buttons */
+    .css-1d391kg p,
+    .css-1d391kg label,
+    .css-1d391kg span,
+    .css-1d391kg div[data-testid="stMarkdownContainer"] {
+        color: rgba(250, 250, 250, 0.6) !important;
+    }
+    
+    /* Exception - keep slider VALUES purple but labels normal */
+    .stSlider div[class*="stNumberInput"] {
+        color: #8A2BE2 !important;
+    }
+    
+    /* Specifically target "Speaking Speed" and "Voice Pitch" labels */
+    .stSlider:has(+ *:contains("Speaking Speed")) label,
+    .stSlider:has(+ *:contains("Voice Pitch")) label,
+    label:contains("Speaking Speed"),
+    label:contains("Voice Pitch") {
+        color: rgba(250, 250, 250, 0.6) !important;
+    }
+    
+    /* Ensure section headers remain default color */
+    .css-1d391kg h1,
+    .css-1d391kg h2, 
+    .css-1d391kg h3,
+    .css-1d391kg h4 {
+        color: rgba(250, 250, 250, 1) !important;
+    }
+    
+    /* Keep only interactive elements purple */
+    .stButton,
+    .stFormSubmitButton,
+    .stCheckbox input:checked {
+        /* Purple styling already defined above */
+    }
+    
+    /* Nuclear option - force all non-button text in sidebar to default color */
+    .css-1d391kg *:not(button):not(.stButton):not(.stFormSubmitButton) {
+        color: rgba(250, 250, 250, 0.6) !important;
+    }
+    
+    /* Make sure headings are brighter */
+    .css-1d391kg h1,
+    .css-1d391kg h2,
+    .css-1d391kg h3 {
+        color: rgba(250, 250, 250, 1) !important;
+    }
+    
+    /* Exception for slider numeric values - keep these purple for emphasis */
+    .stSlider .st-emotion-cache-1inwz65,
+    .stSlider div[data-testid="stMarkdownContainer"]:has-text("0.80"),
+    .stSlider div[data-testid="stMarkdownContainer"]:has-text("1.00") {
+        color: #8A2BE2 !important;
+        font-weight: bold !important;
+    }
+    
+    /* Override any remaining purple text that isn't a button */
+    .css-1d391kg div:not(.stButton):not(.stFormSubmitButton) {
+        color: rgba(250, 250, 250, 0.6) !important;
+    }
+    
+    .css-1d391kg label:not(.stButton label):not(.stFormSubmitButton label) {
+        color: rgba(250, 250, 250, 0.6) !important;
     }
     
     /* Alternative slider selectors for more specificity */
@@ -996,7 +1067,7 @@ def user_profile_sidebar():
         )
         
         # Save Profile
-        if st.button("💾 Save Profile", type="primary", key="save_profile_btn"):
+        if st.button("Save Profile", type="primary", key="save_profile_btn"):
             st.session_state.user_profile = {
                 'name': name,
                 'goals': goals,
