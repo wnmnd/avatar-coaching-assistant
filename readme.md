@@ -40,6 +40,6 @@ The app uses Google's Gemini AI with specialized prompts focused on:
 
 Built with ❤️ for helping people achieve success and build wealth through AI-powered coaching.
 
-**Live Demo**: [Deploy to see your app here]
+**Live Demo**: [Deploy to see your app here](https://avatar-coaching-assistant.streamlit.app/)
 
 **Questions?** Open an issue or reach out to the contributors!
