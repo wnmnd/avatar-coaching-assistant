@@ -114,13 +114,39 @@ def setup_gemini():
     
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro')
-        # Test the API connection
-        test_response = model.generate_content("Say 'API Connected' if you can respond.")
-        return model
+        
+        # Try current model names in order of preference
+        model_names = [
+            'gemini-2.0-flash',      # Latest stable model (recommended)
+            'gemini-1.5-flash',      # Fallback if 2.0 not available
+            'gemini-1.5-pro'         # Final fallback
+        ]
+        
+        model = None
+        working_model_name = None
+        
+        for model_name in model_names:
+            try:
+                model = genai.GenerativeModel(model_name)
+                # Test the model with a simple request
+                test_response = model.generate_content("Say 'API Connected successfully!'")
+                if test_response and test_response.text:
+                    working_model_name = model_name
+                    st.success(f"✅ Using Gemini model: {model_name}")
+                    break
+            except Exception as model_error:
+                continue
+        
+        if not model:
+            st.error("❌ Could not connect to any Gemini model")
+            st.error("Please check your API key and try again")
+            st.stop()
+            
+        return model, working_model_name
+        
     except Exception as e:
         st.error(f"❌ Gemini API Error: {str(e)}")
-        st.info("Please check your API key and internet connection")
+        st.info("Possible solutions:\n1. Check your API key\n2. Verify internet connection\n3. Try a different model")
         st.stop()
 
 # Load coaching knowledge base
@@ -161,7 +187,7 @@ def load_coaching_knowledge():
 # Generate coach response
 def get_coach_response(user_input, chat_history):
     try:
-        model = setup_gemini()
+        model, model_name = setup_gemini()
         
         # Get user profile for personalization
         profile = st.session_state.user_profile
@@ -189,12 +215,14 @@ def get_coach_response(user_input, chat_history):
         
         Respond as a {voice_type} success coach to {name}. Keep your response under 100 words, be helpful and encouraging, and ask a follow-up question."""
         
-        # Add safety wrapper
+        # Generate response with safety settings
         response = model.generate_content(
             prompt,
             generation_config={
                 'temperature': 0.7,
                 'max_output_tokens': 200,
+                'top_p': 0.9,
+                'top_k': 40
             }
         )
         
@@ -222,6 +250,7 @@ def get_coach_response(user_input, chat_history):
             'wise': f"{name}, sometimes we need patience. Please share your thoughts with me once more."
         }
         
+        name = st.session_state.user_profile.get('name', 'there')
         voice_type = st.session_state.user_profile.get('voice_type', 'caring')
         return fallback_responses.get(voice_type, f"I'm here to help you, {name}. Please tell me what you're thinking about.")
 
@@ -730,12 +759,12 @@ def main():
             # API Test Button
             if st.button("🧪 Test Gemini API"):
                 try:
-                    model = setup_gemini()
-                    test_response = model.generate_content("Say 'Hello! API is working.' in a friendly way.")
-                    st.success(f"✅ API Working: {test_response.text}")
+                    model, model_name = setup_gemini()
+                    test_response = model.generate_content("Say 'Hello! API is working perfectly!' in a friendly way.")
+                    st.success(f"✅ API Working with {model_name}: {test_response.text}")
                 except Exception as e:
                     st.error(f"❌ API Error: {str(e)}")
-                    st.info("Possible solutions:\n1. Check your API key\n2. Verify internet connection\n3. Check API quota limits")
+                    st.info("Possible solutions:\n1. Check your API key\n2. Verify internet connection\n3. Check API quota limits\n4. Try updating your API key")
 
 # CRM tracking (simple file-based)
 def log_conversation():
