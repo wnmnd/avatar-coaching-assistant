@@ -216,6 +216,126 @@ def load_css():
         background: linear-gradient(90deg, #DDA0DD, #9370DB) !important;
     }
     
+    .stSlider > div > div > div > div > div {
+        background: #8A2BE2 !important;
+    }
+    
+    /* Slider track */
+    .stSlider > div > div > div {
+        background: rgba(221, 160, 221, 0.3) !important;
+    }
+    
+    /* Slider thumb */
+    .stSlider > div > div > div > div > div > div {
+        background: #9370DB !important;
+        border: 2px solid #8A2BE2 !important;
+        box-shadow: 0 2px 8px rgba(138, 43, 226, 0.4) !important;
+    }
+    
+    /* Slider value display */
+    .stSlider > div > div > div > div > div > div > div {
+        color: #8A2BE2 !important;
+        font-weight: bold !important;
+    }
+    
+    /* Slider labels */
+    .stSlider > label {
+        color: #4A154B !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Alternative slider selectors for more specificity */
+    [data-baseweb="slider"] > div > div {
+        background: rgba(221, 160, 221, 0.3) !important;
+    }
+    
+    [data-baseweb="slider"] > div > div > div {
+        background: #9370DB !important;
+    }
+    
+    [data-baseweb="slider"] [role="slider"] {
+        background: #8A2BE2 !important;
+        border: 2px solid #6A1B9A !important;
+        box-shadow: 0 2px 10px rgba(138, 43, 226, 0.5) !important;
+    }
+    
+    [data-baseweb="slider"] [role="slider"]:hover {
+        background: #9932CC !important;
+        transform: scale(1.1) !important;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.6) !important;
+    }
+    
+    /* Slider value numbers */
+    .stSlider .st-emotion-cache-1inwz65 {
+        color: #8A2BE2 !important;
+        font-weight: bold !important;
+    }
+    
+    /* Additional slider styling for all states */
+    div[data-testid="stSlider"] > div > div > div > div {
+        background: #9370DB !important;
+    }
+    
+    div[data-testid="stSlider"] > div > div > div {
+        background: rgba(147, 112, 219, 0.2) !important;
+    }
+    
+    /* Force purple theme on any remaining red elements in sliders */
+    .stSlider div[style*="rgb(255, 75, 75)"] {
+        background: #9370DB !important;
+    }
+    
+    .stSlider div[style*="rgb(255, 43, 43)"] {
+        background: #8A2BE2 !important;
+    }
+    
+    /* Target specific slider components */
+    .stSlider [class*="StyledThumb"] {
+        background-color: #8A2BE2 !important;
+        border-color: #6A1B9A !important;
+    }
+    
+    .stSlider [class*="StyledTrack"] {
+        background-color: #9370DB !important;
+    }
+    
+    .stSlider [class*="StyledTrackFill"] {
+        background-color: rgba(147, 112, 219, 0.3) !important;
+    }
+    
+    /* Override any remaining red colors globally in sidebar */
+    .css-1d391kg div[style*="rgb(255"], 
+    .css-1d391kg div[style*="rgb(255, 75, 75)"],
+    .css-1d391kg div[style*="#ff4b4b"],
+    .css-1d391kg div[style*="red"] {
+        background: #9370DB !important;
+    }
+    
+    /* Streamlit slider thumb override */
+    .stSlider button[role="slider"] {
+        background: #8A2BE2 !important;
+        border: 3px solid #6A1B9A !important;
+        box-shadow: 0 2px 10px rgba(138, 43, 226, 0.5) !important;
+    }
+    
+    /* Slider track active portion */
+    .stSlider div[class*="baseweb"] div[class*="Track"] {
+        background: rgba(147, 112, 219, 0.3) !important;
+    }
+    
+    .stSlider div[class*="baseweb"] div[class*="Fill"] {
+        background: linear-gradient(90deg, #DDA0DD, #9370DB) !important;
+    }
+    
+    /* Force purple on inline styles - nuclear option */
+    .stSlider * {
+        color: inherit !important;
+    }
+    
+    .stSlider div[style*="background-color: rgb(255"] {
+        background: #9370DB !important;
+    }
+    
     /* Checkbox Purple Theme */
     .stCheckbox > label > div {
         background-color: #9370DB !important;
