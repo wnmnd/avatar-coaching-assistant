@@ -14,8 +14,12 @@ class Config:
     VERSION = "1.0.0"
     
     # AI Model settings
-    GEMINI_MODEL = "gemini-pro"
-    MAX_TOKENS = 150
+    GEMINI_MODELS = [
+        "gemini-2.0-flash",      # Latest stable model (recommended)  
+        "gemini-1.5-flash",      # Fallback option
+        "gemini-1.5-pro"         # Final fallback
+    ]
+    MAX_TOKENS = 200
     TEMPERATURE = 0.7
     
     # Speech settings
