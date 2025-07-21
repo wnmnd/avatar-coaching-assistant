@@ -107,11 +107,21 @@ def init_session_state():
 # Configure Gemini AI
 def setup_gemini():
     api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        st.error("Please set your Gemini API key in secrets.toml or environment variable")
+    if not api_key or api_key == "your_gemini_api_key_here":
+        st.error("❌ Please set your Gemini API key in .streamlit/secrets.toml")
+        st.info("Get your free API key from: https://makersuite.google.com/app/apikey")
         st.stop()
-    genai.configure(api_key=api_key)
-    return genai.GenerativeModel('gemini-pro')
+    
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-pro')
+        # Test the API connection
+        test_response = model.generate_content("Say 'API Connected' if you can respond.")
+        return model
+    except Exception as e:
+        st.error(f"❌ Gemini API Error: {str(e)}")
+        st.info("Please check your API key and internet connection")
+        st.stop()
 
 # Load coaching knowledge base
 def load_coaching_knowledge():
@@ -150,95 +160,70 @@ def load_coaching_knowledge():
 
 # Generate coach response
 def get_coach_response(user_input, chat_history):
-    model = setup_gemini()
-    
-    # Get user profile for personalization
-    profile = st.session_state.user_profile
-    name = profile.get('name', 'there')
-    experience = profile.get('experience', 'Beginner')
-    voice_type = profile.get('voice_type', 'caring')
-    goals = profile.get('goals', '')
-    focus_areas = profile.get('focus_areas', [])
-    
-    # Build empathetic context
-    personality_context = {
-        'caring': "You are a warm, nurturing coach who shows genuine care and understanding. Use encouraging language, acknowledge emotions, and provide gentle guidance. Show empathy and make the user feel heard and supported.",
-        'professional': "You are a direct, efficient professional coach who provides clear, actionable advice. Be respectful but focused on results and practical solutions. Maintain a business-like but supportive tone.",
-        'energetic': "You are an enthusiastic, motivational coach who brings high energy and excitement. Use dynamic language, celebrate wins, and inspire action with passion and positivity.",
-        'wise': "You are a thoughtful, experienced mentor who shares wisdom with patience and depth. Provide insights based on experience, ask thoughtful questions, and guide with gentle wisdom."
-    }
-    
-    # Build context with personality and user info
-    context = f"""
-    {load_coaching_knowledge()}
-    
-    COACHING PERSONALITY: {personality_context[voice_type]}
-    
-    CLIENT PROFILE:
-    - Name: {name}
-    - Experience Level: {experience}  
-    - Goals: {goals}
-    - Focus Areas: {', '.join(focus_areas) if focus_areas else 'General success coaching'}
-    
-    CONVERSATION STYLE GUIDELINES:
-    - Always address them by name when appropriate
-    - Reference their specific goals and focus areas
-    - Adjust complexity based on their experience level
-    - Use the {voice_type} personality consistently
-    - Show genuine interest in their progress
-    - Ask follow-up questions that show you're listening
-    - Provide specific, actionable advice
-    - Be encouraging and supportive
-    - Keep responses conversational and warm
-    
-    RECENT CONVERSATION:
-    """
-    
-    # Add recent chat history for context
-    for msg in chat_history[-4:]:  # Last 4 messages for context
-        role_display = "You (Coach)" if msg['role'] == 'coach' else f"{name} (Client)"
-        context += f"{role_display}: {msg['content']}\n"
-    
-    # Create personalized prompt
-    prompt = f"""
-    {context}
-    
-    {name} just said: "{user_input}"
-    
-    As their {voice_type} success coach, provide a response that:
-    1. Acknowledges what they shared with empathy and understanding
-    2. Relates to their specific goals and experience level  
-    3. Provides valuable, actionable advice appropriate for their situation
-    4. Includes a thoughtful follow-up question to deepen the conversation
-    5. Shows you genuinely care about their success
-    6. Uses natural, conversational language with appropriate emotional tone
-    7. Keeps the response between 100-150 words for better engagement
-    
-    Remember: You're not just providing information, you're building a supportive coaching relationship.
-    """
-    
     try:
-        response = model.generate_content(prompt)
-        coach_response = response.text
+        model = setup_gemini()
         
-        # Add personalized touches based on context
-        if any(word in user_input.lower() for word in ['worried', 'scared', 'anxious', 'frustrated']):
-            coach_response = f"I can hear the concern in your words, {name}. " + coach_response
-        elif any(word in user_input.lower() for word in ['excited', 'happy', 'great', 'amazing']):
-            coach_response = f"I love your enthusiasm, {name}! " + coach_response
-        elif any(word in user_input.lower() for word in ['stuck', 'confused', 'lost']):
-            coach_response = f"It's completely normal to feel that way, {name}. " + coach_response
+        # Get user profile for personalization
+        profile = st.session_state.user_profile
+        name = profile.get('name', 'there')
+        experience = profile.get('experience', 'Beginner')
+        voice_type = profile.get('voice_type', 'caring')
+        goals = profile.get('goals', 'general success')
         
-        return coach_response
+        # Simplified prompt to avoid API issues
+        context = f"""You are a {voice_type} success and wealth coach. 
         
+        Client: {name} (Experience: {experience}, Goals: {goals})
+        
+        Recent conversation:"""
+        
+        # Add last 2 messages only to keep it simple
+        for msg in chat_history[-2:]:
+            role_name = "Coach" if msg['role'] == 'coach' else name
+            context += f"\n{role_name}: {msg['content']}"
+        
+        context += f"\n{name}: {user_input}"
+        
+        # Simple, direct prompt
+        prompt = f"""{context}
+        
+        Respond as a {voice_type} success coach to {name}. Keep your response under 100 words, be helpful and encouraging, and ask a follow-up question."""
+        
+        # Add safety wrapper
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                'temperature': 0.7,
+                'max_output_tokens': 200,
+            }
+        )
+        
+        if response and response.text:
+            coach_response = response.text.strip()
+            
+            # Add emotional context based on user input
+            if any(word in user_input.lower() for word in ['sad', 'worried', 'down', 'upset']):
+                coach_response = f"I understand you're feeling down, {name}. " + coach_response
+            elif any(word in user_input.lower() for word in ['happy', 'excited', 'great']):
+                coach_response = f"I love your positive energy, {name}! " + coach_response
+            
+            return coach_response
+        else:
+            return f"I'm here to help you, {name}. Could you tell me more about what's on your mind?"
+            
     except Exception as e:
-        error_responses = {
-            'caring': f"I'm so sorry, {name}. I'm having a moment of technical difficulty, but I'm still here for you. Could you please share that with me again?",
-            'professional': f"I apologize, {name}. There's a technical issue on my end. Please try your question again and I'll provide you with the guidance you need.",
-            'energetic': f"Oops! Something went a bit haywire, {name}! But don't worry - I'm still super excited to help you succeed. Try that again for me!",
-            'wise': f"Patience, {name}. Sometimes even technology needs a moment to reflect. Please share your thoughts with me once more."
+        print(f"API Error: {str(e)}")  # For debugging
+        
+        # Friendly fallback responses
+        fallback_responses = {
+            'caring': f"I'm here for you, {name}. I may have missed what you said - could you share your thoughts with me again?",
+            'professional': f"{name}, I want to ensure I give you the best guidance. Could you please repeat your question?",
+            'energetic': f"Hey {name}! I'm still super excited to help you succeed. What's on your mind?",
+            'wise': f"{name}, sometimes we need patience. Please share your thoughts with me once more."
         }
-        return error_responses.get(voice_type, f"I apologize for the technical difficulty, {name}. Please try again.")
+        
+        voice_type = st.session_state.user_profile.get('voice_type', 'caring')
+        return fallback_responses.get(voice_type, f"I'm here to help you, {name}. Please tell me what you're thinking about.")
 
 # Speech recognition component
 def speech_to_text_component():
@@ -443,7 +428,7 @@ def text_to_speech_component(text):
 
 # Avatar component
 def avatar_component(is_speaking=False):
-    avatar_emoji = st.session_state.user_profile.get('avatar', '🎯')
+    avatar_emoji = st.session_state.user_profile.get('avatar', '👩‍💼')
     avatar_class = "avatar speaking" if is_speaking else "avatar"
     
     avatar_html = f"""
@@ -521,23 +506,23 @@ def user_profile_sidebar():
         )
         
         # Avatar Customization
-        st.subheader("🎭 Choose Your Coach Avatar")
+        st.subheader("👥 Choose Your Coach Avatar")
         avatar_options = {
-            "🎯": "Success Target (Default)",
-            "👩‍💼": "Professional Woman", 
-            "👨‍💼": "Professional Man",
-            "🧠": "Mindset Expert",
-            "💎": "Wealth Builder",
-            "🚀": "Growth Accelerator",
-            "🌟": "Success Star",
-            "🏆": "Achievement Champion",
-            "💡": "Innovation Guide",
-            "🔥": "Motivational Fire",
-            "🌱": "Growth Mentor",
-            "⚡": "Energy Booster"
+            "👩‍💼": "Sarah - Professional Coach",
+            "👨‍💼": "Marcus - Business Mentor", 
+            "👩‍🎓": "Dr. Emily - Academic Expert",
+            "👨‍🔬": "Prof. David - Research Specialist",
+            "👩‍⚕️": "Dr. Lisa - Wellness Coach",
+            "👨‍🏫": "Coach Michael - Motivational Speaker",
+            "👩‍💻": "Alex - Tech Entrepreneur",
+            "👨‍🎨": "Creative Director James",
+            "👩‍🔧": "Engineer Maya - Problem Solver",
+            "👨‍🚀": "Captain Steve - Visionary Leader",
+            "👩‍🌾": "Sustainable Success - Emma",
+            "👨‍⚖️": "Strategic Advisor - Robert"
         }
         
-        current_avatar = st.session_state.user_profile.get('avatar', '🎯')
+        current_avatar = st.session_state.user_profile.get('avatar', '👩‍💼')
         avatar_choice = st.selectbox(
             "Select Avatar",
             options=list(avatar_options.keys()),
@@ -631,7 +616,7 @@ def get_personalized_greeting():
     """Generate a personalized greeting when user first arrives or changes profile"""
     profile = st.session_state.user_profile
     name = profile.get('name', 'there')
-    avatar = profile.get('avatar', '🎯') 
+    avatar = profile.get('avatar', '👩‍💼') 
     voice_type = profile.get('voice_type', 'caring')
     
     greetings = {
@@ -732,6 +717,25 @@ def main():
                 st.markdown("### 🔊 Latest Response")
                 st.info(latest_message['content'])
                 text_to_speech_component(latest_message['content'])
+        
+        # Debug section (can be removed in production)
+        with st.expander("🔍 Debug Info", expanded=False):
+            st.json({
+                'api_key_set': bool(st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")),
+                'chat_history_length': len(st.session_state.chat_history),
+                'user_profile': st.session_state.user_profile,
+                'is_speaking': st.session_state.is_speaking
+            })
+            
+            # API Test Button
+            if st.button("🧪 Test Gemini API"):
+                try:
+                    model = setup_gemini()
+                    test_response = model.generate_content("Say 'Hello! API is working.' in a friendly way.")
+                    st.success(f"✅ API Working: {test_response.text}")
+                except Exception as e:
+                    st.error(f"❌ API Error: {str(e)}")
+                    st.info("Possible solutions:\n1. Check your API key\n2. Verify internet connection\n3. Check API quota limits")
 
 # CRM tracking (simple file-based)
 def log_conversation():
