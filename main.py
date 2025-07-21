@@ -20,12 +20,13 @@ def load_css():
     st.markdown("""
     <style>
     .main-header {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(90deg, #8A2BE2 0%, #4A154B 100%);
         padding: 1rem;
         border-radius: 10px;
         text-align: center;
         color: white;
         margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(74, 21, 75, 0.3);
     }
     
     .avatar-container {
@@ -33,38 +34,58 @@ def load_css():
         justify-content: center;
         align-items: center;
         padding: 2rem;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: linear-gradient(135deg, #F8F4FF 0%, #E6E6FA 100%);
         border-radius: 20px;
         margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
     }
     
     .avatar {
         width: 150px;
         height: 150px;
         border-radius: 50%;
-        border: 5px solid #667eea;
+        border: 5px solid #8A2BE2;
         animation: pulse 2s infinite;
-        background: linear-gradient(45deg, #667eea, #764ba2);
+        background: linear-gradient(45deg, #DDA0DD, #9370DB);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 3rem;
         color: white;
+        text-shadow: 2px 2px 4px rgba(74, 21, 75, 0.3);
+        box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
     }
     
     @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
+        0% { 
+            transform: scale(1); 
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+        }
+        50% { 
+            transform: scale(1.05); 
+            box-shadow: 0 12px 35px rgba(138, 43, 226, 0.6);
+        }
+        100% { 
+            transform: scale(1); 
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+        }
     }
     
     .speaking {
         animation: bounce 0.5s infinite alternate;
+        border-color: #DA70D6 !important;
+        background: linear-gradient(45deg, #DA70D6, #BA55D3) !important;
     }
     
     @keyframes bounce {
-        0% { transform: scale(1); }
-        100% { transform: scale(1.1); }
+        0% { 
+            transform: scale(1);
+            box-shadow: 0 8px 25px rgba(218, 112, 214, 0.5);
+        }
+        100% { 
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(218, 112, 214, 0.7);
+        }
     }
     
     .chat-container {
@@ -73,6 +94,178 @@ def load_css():
         padding: 1rem;
         background: #f8f9fa;
         border-radius: 10px;
+    }
+    
+    /* Custom Purple Button Styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #8A2BE2, #9932CC) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 0.5rem 1.5rem !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3) !important;
+        border: 1px solid rgba(153, 50, 204, 0.4) !important;
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #9932CC, #8B008B) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4) !important;
+    }
+    
+    .stButton > button:active {
+        transform: translateY(0px) !important;
+        box-shadow: 0 2px 10px rgba(138, 43, 226, 0.4) !important;
+    }
+    
+    /* Primary Button (Send Message) - Darker Purple */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #4A154B, #6A1B9A) !important;
+        box-shadow: 0 4px 15px rgba(74, 21, 75, 0.4) !important;
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #6A1B9A, #8B008B) !important;
+        box-shadow: 0 6px 20px rgba(74, 21, 75, 0.5) !important;
+    }
+    
+    /* Form Submit Button Styling */
+    .stFormSubmitButton > button {
+        background: linear-gradient(135deg, #4A154B, #6A1B9A) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 0.6rem 2rem !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 15px rgba(74, 21, 75, 0.4) !important;
+        width: 100% !important;
+    }
+    
+    .stFormSubmitButton > button:hover {
+        background: linear-gradient(135deg, #6A1B9A, #8B008B) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(74, 21, 75, 0.5) !important;
+    }
+    
+    /* Clear Chat Button - Lighter Purple - Fix selector */
+    button[data-baseweb="button"]:has-text("Clear Chat") {
+        background: linear-gradient(135deg, #DDA0DD, #DA70D6) !important;
+        color: #4A154B !important;
+        box-shadow: 0 4px 15px rgba(221, 160, 221, 0.4) !important;
+    }
+    
+    /* Alternative selector for Clear Chat button */
+    .stButton:nth-of-type(2) > button {
+        background: linear-gradient(135deg, #DDA0DD, #DA70D6) !important;
+        color: #4A154B !important;
+        box-shadow: 0 4px 15px rgba(221, 160, 221, 0.4) !important;
+    }
+    
+    .stButton:nth-of-type(2) > button:hover {
+        background: linear-gradient(135deg, #DA70D6, #BA55D3) !important;
+        color: white !important;
+        box-shadow: 0 6px 20px rgba(221, 160, 221, 0.5) !important;
+    }
+    
+    /* Sidebar Buttons */
+    .css-1d391kg .stButton > button {
+        background: linear-gradient(135deg, #B19CD9, #9370DB) !important;
+        color: white !important;
+        border-radius: 20px !important;
+        font-size: 14px !important;
+    }
+    
+    .css-1d391kg .stButton > button:hover {
+        background: linear-gradient(135deg, #9370DB, #8A2BE2) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    /* Form Elements Purple Theme */
+    .stSelectbox > div > div > select {
+        border-color: #9370DB !important;
+        border-radius: 10px !important;
+    }
+    
+    .stTextInput > div > div > input {
+        border-color: #9370DB !important;
+        border-radius: 10px !important;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: #8A2BE2 !important;
+        box-shadow: 0 0 10px rgba(138, 43, 226, 0.3) !important;
+    }
+    
+    .stTextArea > div > div > textarea {
+        border-color: #9370DB !important;
+        border-radius: 10px !important;
+        border-width: 2px !important;
+    }
+    
+    .stTextArea > div > div > textarea:focus {
+        border-color: #8A2BE2 !important;
+        box-shadow: 0 0 15px rgba(138, 43, 226, 0.3) !important;
+    }
+    
+    /* Slider Purple Theme */
+    .stSlider > div > div > div > div {
+        background: linear-gradient(90deg, #DDA0DD, #9370DB) !important;
+    }
+    
+    /* Checkbox Purple Theme */
+    .stCheckbox > label > div {
+        background-color: #9370DB !important;
+    }
+    
+    /* Multiselect Purple Theme */
+    .stMultiSelect > div > div > div {
+        border-color: #9370DB !important;
+        border-radius: 10px !important;
+    }
+    
+    /* API Test Button - Special styling */
+    button[data-testid="test_api_btn"] {
+        background: linear-gradient(135deg, #663399, #7B68EE) !important;
+        color: white !important;
+        border-radius: 15px !important;
+        font-size: 12px !important;
+    }
+    
+    /* Expander Header Purple Theme */
+    .streamlit-expanderHeader {
+        background: linear-gradient(135deg, #F0E6FF, #E6E6FA) !important;
+        color: #4A154B !important;
+    }
+    
+    /* Success/Error Messages with Purple Accent */
+    .stSuccess {
+        border-left: 5px solid #8A2BE2 !important;
+    }
+    
+    .stError {
+        border-left: 5px solid #9370DB !important;
+    }
+    
+    .stInfo {
+        border-left: 5px solid #DDA0DD !important;
+    }
+    
+    /* Loading Spinner Purple Theme */
+    .stSpinner > div {
+        border-color: #8A2BE2 !important;
+    }
+    
+    /* Radio Button Purple Theme */
+    .stRadio > div {
+        color: #4A154B !important;
+    }
+    
+    .stRadio input:checked ~ label {
+        color: #8A2BE2 !important;
     }
     
     .user-message {
@@ -440,7 +633,7 @@ def text_to_speech_component(text):
         
         <div style="text-align: center; margin: 10px 0;">
             <button id="speakButton" onclick="speakText()" style="
-                background: linear-gradient(45deg, #28a745, #20c997);
+                background: linear-gradient(45deg, #9370DB, #8A2BE2);
                 color: white;
                 border: none;
                 padding: 10px 20px;
@@ -449,9 +642,17 @@ def text_to_speech_component(text):
                 font-size: 16px;
                 font-weight: bold;
                 transition: all 0.3s;
-                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(40, 167, 69, 0.4)'" 
-               onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(40, 167, 69, 0.3)'">
+                box-shadow: 0 4px 15px rgba(147, 112, 219, 0.4);
+                border: 1px solid rgba(138, 43, 226, 0.3);
+            " onmouseover="
+                this.style.background='linear-gradient(45deg, #8A2BE2, #7B68EE)'; 
+                this.style.transform='translateY(-2px)'; 
+                this.style.boxShadow='0 6px 20px rgba(147, 112, 219, 0.5)'
+            " onmouseout="
+                this.style.background='linear-gradient(45deg, #9370DB, #8A2BE2)'; 
+                this.style.transform='translateY(0px)'; 
+                this.style.boxShadow='0 4px 15px rgba(147, 112, 219, 0.4)'
+            ">
                 🔊 Play Response
             </button>
         </div>
@@ -618,7 +819,7 @@ def user_profile_sidebar():
         )
         
         # Save Profile
-        if st.button("Save Profile", type="primary"):
+        if st.button("Save Profile", type="primary", key="save_profile_btn"):
             st.session_state.user_profile = {
                 'name': name,
                 'goals': goals,
@@ -765,7 +966,7 @@ def main():
             })
             
             # API Test Button
-            if st.button("🧪 Test Gemini API"):
+            if st.button("🧪 Test Gemini API", key="test_api_btn"):
                 try:
                     model, model_name = setup_gemini()
                     test_response = model.generate_content("Say 'Hello! API is working perfectly!' in a friendly way.")
