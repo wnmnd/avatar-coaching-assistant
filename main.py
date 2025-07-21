@@ -211,7 +211,7 @@ def load_css():
         box-shadow: 0 0 15px rgba(138, 43, 226, 0.3) !important;
     }
     
-    /* Slider Purple Theme */
+    /* Slider Purple Theme - Clean and Optimized */
     .stSlider > div > div > div > div {
         background: linear-gradient(90deg, #DDA0DD, #9370DB) !important;
     }
@@ -225,42 +225,34 @@ def load_css():
         background: rgba(221, 160, 221, 0.3) !important;
     }
     
-    /* Slider thumb */
-    .stSlider > div > div > div > div > div > div {
-        background: #9370DB !important;
-        border: 2px solid #8A2BE2 !important;
-        box-shadow: 0 2px 8px rgba(138, 43, 226, 0.4) !important;
-    }
-    
-    /* Slider value display */
-    .stSlider > div > div > div > div > div > div > div {
-        color: #8A2BE2 !important;
-        font-weight: bold !important;
-    }
-    
-    /* Slider labels - restore original color - MORE SPECIFIC */
+    /* Slider labels - FORCE back to original theme colors */
     .stSlider > label,
     .stSlider label,
     .stSlider > div > label,
     div[data-testid="stSlider"] label,
     .stSlider label[data-testid="stWidgetLabel"],
     .css-1d391kg .stSlider label {
-        color: rgba(250, 250, 250, 0.6) !important;
+        color: inherit !important;
+        color: var(--text-color) !important;
         font-weight: 600 !important;
     }
     
-    /* Override any purple text in sliders */
-    .stSlider label[style*="color: #4A154B"],
-    .stSlider label[style*="color: #8A2BE2"] {
-        color: rgba(250, 250, 250, 0.6) !important;
+    /* Specific override for Speaking Speed and Voice Pitch labels */
+    .stSlider label:contains("Speaking Speed"),
+    .stSlider label:contains("Voice Pitch") {
+        color: rgba(250, 250, 250, 1) !important;
     }
     
-    /* Ensure all sidebar text is consistent except buttons */
-    .css-1d391kg p,
-    .css-1d391kg label,
-    .css-1d391kg span,
-    .css-1d391kg div[data-testid="stMarkdownContainer"] {
-        color: rgba(250, 250, 250, 0.6) !important;
+    /* Remove any purple coloring from slider labels */
+    .stSlider label[style*="color: #4A154B"],
+    .stSlider label[style*="color: #8A2BE2"],
+    .stSlider label[style*="color: purple"] {
+        color: rgba(250, 250, 250, 1) !important;
+    }
+    
+    /* Ensure slider labels use default theme styling */
+    .css-1d391kg .stSlider > label {
+        color: unset !important;
     }
     
     /* Exception - keep slider VALUES purple but labels normal */
@@ -398,11 +390,76 @@ def load_css():
         background: #9370DB !important;
     }
     
-    /* Streamlit slider thumb override */
+    /* Smooth slider interaction and better UX */
     .stSlider button[role="slider"] {
         background: #8A2BE2 !important;
         border: 3px solid #6A1B9A !important;
         box-shadow: 0 2px 10px rgba(138, 43, 226, 0.5) !important;
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 50% !important;
+        transition: all 0.2s ease !important;
+        cursor: grab !important;
+    }
+    
+    /* Slider thumb hover - easier to grab */
+    .stSlider button[role="slider"]:hover {
+        background: #9932CC !important;
+        transform: scale(1.2) !important;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.6) !important;
+        cursor: grab !important;
+    }
+    
+    /* Slider thumb active/dragging state */
+    .stSlider button[role="slider"]:active {
+        background: #9932CC !important;
+        transform: scale(1.3) !important;
+        box-shadow: 0 6px 20px rgba(138, 43, 226, 0.8) !important;
+        cursor: grabbing !important;
+        transition: all 0.1s ease !important;
+    }
+    
+    /* Slider track - make it easier to click */
+    .stSlider div[class*="baseweb"] div[class*="Track"] {
+        background: rgba(147, 112, 219, 0.3) !important;
+        height: 6px !important;
+        border-radius: 3px !important;
+        cursor: pointer !important;
+    }
+    
+    /* Slider track fill - smooth visual feedback */
+    .stSlider div[class*="baseweb"] div[class*="Fill"] {
+        background: linear-gradient(90deg, #DDA0DD, #9370DB) !important;
+        height: 6px !important;
+        border-radius: 3px !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    /* Slider container - ensure proper padding for easy interaction */
+    .stSlider > div {
+        padding: 10px 0 !important;
+    }
+    
+    /* Better touch/click targets */
+    [data-baseweb="slider"] {
+        padding: 15px 0 !important;
+        cursor: pointer !important;
+    }
+    
+    [data-baseweb="slider"] [role="slider"] {
+        width: 20px !important;
+        height: 20px !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    [data-baseweb="slider"] [role="slider"]:hover {
+        transform: scale(1.2) !important;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    [data-baseweb="slider"] [role="slider"]:active {
+        transform: scale(1.3) !important;
+        transition: all 0.1s ease !important;
     }
     
     /* Slider track active portion */
