@@ -3,6 +3,7 @@ import google.generativeai as genai
 import json
 import time
 import base64
+import re
 from datetime import datetime
 import os
 
@@ -151,31 +152,93 @@ def load_coaching_knowledge():
 def get_coach_response(user_input, chat_history):
     model = setup_gemini()
     
-    # Build context from chat history
-    context = load_coaching_knowledge()
-    context += "\n\nCONVERSATION HISTORY:\n"
-    for msg in chat_history[-5:]:  # Last 5 messages for context
-        context += f"{msg['role']}: {msg['content']}\n"
+    # Get user profile for personalization
+    profile = st.session_state.user_profile
+    name = profile.get('name', 'there')
+    experience = profile.get('experience', 'Beginner')
+    voice_type = profile.get('voice_type', 'caring')
+    goals = profile.get('goals', '')
+    focus_areas = profile.get('focus_areas', [])
     
+    # Build empathetic context
+    personality_context = {
+        'caring': "You are a warm, nurturing coach who shows genuine care and understanding. Use encouraging language, acknowledge emotions, and provide gentle guidance. Show empathy and make the user feel heard and supported.",
+        'professional': "You are a direct, efficient professional coach who provides clear, actionable advice. Be respectful but focused on results and practical solutions. Maintain a business-like but supportive tone.",
+        'energetic': "You are an enthusiastic, motivational coach who brings high energy and excitement. Use dynamic language, celebrate wins, and inspire action with passion and positivity.",
+        'wise': "You are a thoughtful, experienced mentor who shares wisdom with patience and depth. Provide insights based on experience, ask thoughtful questions, and guide with gentle wisdom."
+    }
+    
+    # Build context with personality and user info
+    context = f"""
+    {load_coaching_knowledge()}
+    
+    COACHING PERSONALITY: {personality_context[voice_type]}
+    
+    CLIENT PROFILE:
+    - Name: {name}
+    - Experience Level: {experience}  
+    - Goals: {goals}
+    - Focus Areas: {', '.join(focus_areas) if focus_areas else 'General success coaching'}
+    
+    CONVERSATION STYLE GUIDELINES:
+    - Always address them by name when appropriate
+    - Reference their specific goals and focus areas
+    - Adjust complexity based on their experience level
+    - Use the {voice_type} personality consistently
+    - Show genuine interest in their progress
+    - Ask follow-up questions that show you're listening
+    - Provide specific, actionable advice
+    - Be encouraging and supportive
+    - Keep responses conversational and warm
+    
+    RECENT CONVERSATION:
+    """
+    
+    # Add recent chat history for context
+    for msg in chat_history[-4:]:  # Last 4 messages for context
+        role_display = "You (Coach)" if msg['role'] == 'coach' else f"{name} (Client)"
+        context += f"{role_display}: {msg['content']}\n"
+    
+    # Create personalized prompt
     prompt = f"""
     {context}
     
-    User's latest message: {user_input}
+    {name} just said: "{user_input}"
     
-    As a professional success coach, provide a helpful, engaging response that:
-    1. Acknowledges what the user said
-    2. Provides valuable insight or advice
-    3. Asks a follow-up question to keep the conversation going
+    As their {voice_type} success coach, provide a response that:
+    1. Acknowledges what they shared with empathy and understanding
+    2. Relates to their specific goals and experience level  
+    3. Provides valuable, actionable advice appropriate for their situation
+    4. Includes a thoughtful follow-up question to deepen the conversation
+    5. Shows you genuinely care about their success
+    6. Uses natural, conversational language with appropriate emotional tone
+    7. Keeps the response between 100-150 words for better engagement
     
-    Keep your response under 150 words and maintain a warm, professional tone.
+    Remember: You're not just providing information, you're building a supportive coaching relationship.
     """
     
     try:
         response = model.generate_content(prompt)
-        return response.text
+        coach_response = response.text
+        
+        # Add personalized touches based on context
+        if any(word in user_input.lower() for word in ['worried', 'scared', 'anxious', 'frustrated']):
+            coach_response = f"I can hear the concern in your words, {name}. " + coach_response
+        elif any(word in user_input.lower() for word in ['excited', 'happy', 'great', 'amazing']):
+            coach_response = f"I love your enthusiasm, {name}! " + coach_response
+        elif any(word in user_input.lower() for word in ['stuck', 'confused', 'lost']):
+            coach_response = f"It's completely normal to feel that way, {name}. " + coach_response
+        
+        return coach_response
+        
     except Exception as e:
-        st.error(f"Error generating response: {str(e)}")
-        return "I apologize, but I'm having trouble responding right now. Could you please try again?"
+        error_responses = {
+            'caring': f"I'm so sorry, {name}. I'm having a moment of technical difficulty, but I'm still here for you. Could you please share that with me again?",
+            'professional': f"I apologize, {name}. There's a technical issue on my end. Please try your question again and I'll provide you with the guidance you need.",
+            'energetic': f"Oops! Something went a bit haywire, {name}! But don't worry - I'm still super excited to help you succeed. Try that again for me!",
+            'wise': f"Patience, {name}. Sometimes even technology needs a moment to reflect. Please share your thoughts with me once more."
+        }
+        return error_responses.get(voice_type, f"I apologize for the technical difficulty, {name}. Please try again.")
 
 # Speech recognition component
 def speech_to_text_component():
@@ -226,64 +289,167 @@ def speech_to_text_component():
     
     st.components.v1.html(speech_js, height=150)
 
+def clean_text(text):
+    """Clean text for speech synthesis"""
+    # Remove markdown formatting
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # Bold
+    text = re.sub(r'\*(.*?)\*', r'\1', text)      # Italic  
+    text = re.sub(r'#{1,6}\s', '', text)          # Headers
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)  # Links
+    
+    # Clean up extra spaces and newlines
+    text = re.sub(r'\n+', ' ', text)
+    text = re.sub(r'\s+', ' ', text)
+    
+    # Escape quotes for JavaScript
+    text = text.replace('"', '\\"').replace("'", "\\'")
+    
+    # Remove excessive pauses for cleaner speech
+    text = re.sub(r'\.{3,}', '...', text)
+    
+    return text.strip()
+
 # Text-to-speech component
 def text_to_speech_component(text):
     if text:
-        # Simple text-to-speech using HTML5 Speech Synthesis API
+        # Get user's voice preferences
+        voice_speed = st.session_state.user_profile.get('voice_speed', 0.8)
+        voice_pitch = st.session_state.user_profile.get('voice_pitch', 1.0)
+        voice_type = st.session_state.user_profile.get('voice_type', 'caring')
+        
+        # Add emotional context to the text based on content
+        empathetic_text = add_empathy_to_text(text, voice_type)
+        clean_speech_text = clean_text(empathetic_text)
+        
         tts_js = f"""
         <script>
         function speakText() {{
             if ('speechSynthesis' in window) {{
-                var utterance = new SpeechSynthesisUtterance(`{text}`);
-                utterance.rate = 0.8;
-                utterance.pitch = 1;
-                utterance.volume = 1;
+                // Stop any currently playing speech
+                speechSynthesis.cancel();
                 
-                // Try to use a female voice for the coach
+                var utterance = new SpeechSynthesisUtterance(`{clean_speech_text}`);
+                utterance.rate = {voice_speed};
+                utterance.pitch = {voice_pitch};
+                utterance.volume = 1.0;
+                
+                // Load voices and select based on user preference
                 var voices = speechSynthesis.getVoices();
-                var femaleVoice = voices.find(voice => 
-                    voice.name.includes('Female') || 
-                    voice.name.includes('Samantha') ||
-                    voice.name.includes('Karen') ||
-                    voice.gender === 'female'
-                );
-                if (femaleVoice) {{
-                    utterance.voice = femaleVoice;
+                if (voices.length === 0) {{
+                    setTimeout(function() {{
+                        voices = speechSynthesis.getVoices();
+                        selectVoice();
+                    }}, 100);
+                }} else {{
+                    selectVoice();
                 }}
                 
-                speechSynthesis.speak(utterance);
+                function selectVoice() {{
+                    var voiceType = '{voice_type}';
+                    var selectedVoice = null;
+                    
+                    // Voice selection based on personality type
+                    if (voiceType === 'caring') {{
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en-') && 
+                            (voice.name.includes('Female') || voice.name.includes('Karen') || 
+                             voice.name.includes('Susan') || voice.name.includes('Victoria'))
+                        );
+                    }} else if (voiceType === 'professional') {{
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en-') && 
+                            (voice.name.includes('Samantha') || voice.name.includes('Alex') ||
+                             voice.name.includes('Daniel'))
+                        );
+                    }} else if (voiceType === 'energetic') {{
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en-') && 
+                            (voice.name.includes('Zira') || voice.name.includes('Catherine') ||
+                             voice.name.includes('Moira'))
+                        );
+                    }} else if (voiceType === 'wise') {{
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en-') && 
+                            (voice.name.includes('David') || voice.name.includes('Mark') ||
+                             voice.name.includes('Bruce'))
+                        );
+                    }}
+                    
+                    // Fallback to any good English voice
+                    if (!selectedVoice) {{
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en-') && voice.quality !== 'low'
+                        );
+                    }}
+                    
+                    if (selectedVoice) {{
+                        utterance.voice = selectedVoice;
+                    }}
+                    
+                    speechSynthesis.speak(utterance);
+                }}
                 
                 utterance.onstart = function() {{
-                    console.log('Speaking started');
+                    document.getElementById('speakButton').innerHTML = '🔇 Stop Speaking';
+                    document.getElementById('speakButton').onclick = function() {{ 
+                        speechSynthesis.cancel();
+                        document.getElementById('speakButton').innerHTML = '🔊 Play Response';
+                        document.getElementById('speakButton').onclick = speakText;
+                    }};
                 }};
                 
                 utterance.onend = function() {{
-                    console.log('Speaking ended');
+                    document.getElementById('speakButton').innerHTML = '🔊 Play Response';
+                    document.getElementById('speakButton').onclick = speakText;
                 }};
+                
+                utterance.onerror = function(event) {{
+                    console.error('Speech synthesis error:', event.error);
+                    document.getElementById('speakButton').innerHTML = '🔊 Play Response (Error)';
+                }};
+                
             }} else {{
-                alert('Text-to-speech not supported in this browser');
+                alert('Text-to-speech is not supported in this browser. Please try Chrome or Edge.');
             }}
         }}
         
-        // Auto-speak when loaded
-        window.onload = function() {{
-            setTimeout(speakText, 500);
+        // Auto-play if enabled
+        var autoPlay = {str(st.session_state.user_profile.get('auto_speak', True)).lower()};
+        if (autoPlay) {{
+            setTimeout(speakText, 800);
         }}
         </script>
         
-        <button onclick="speakText()">🔊 Play Response</button>
+        <div style="text-align: center; margin: 10px 0;">
+            <button id="speakButton" onclick="speakText()" style="
+                background: linear-gradient(45deg, #28a745, #20c997);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 25px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                transition: all 0.3s;
+                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(40, 167, 69, 0.4)'" 
+               onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(40, 167, 69, 0.3)'">
+                🔊 Play Response
+            </button>
+        </div>
         """
         
-        st.components.v1.html(tts_js, height=50)
+        st.components.v1.html(tts_js, height=80)
 
 # Avatar component
 def avatar_component(is_speaking=False):
+    avatar_emoji = st.session_state.user_profile.get('avatar', '🎯')
     avatar_class = "avatar speaking" if is_speaking else "avatar"
     
     avatar_html = f"""
     <div class="avatar-container">
         <div class="{avatar_class}">
-            🎯
+            {avatar_emoji}
         </div>
     </div>
     """
@@ -307,13 +473,45 @@ def chat_interface():
         
         st.markdown('</div>', unsafe_allow_html=True)
 
+# Add empathy to text based on voice type
+def add_empathy_to_text(text, voice_type):
+    """Add natural pauses and emotional context to make speech more empathetic"""
+    
+    # Add natural pauses for better flow
+    text = re.sub(r'([.!?])', r'\1... ', text)  # Pause after sentences
+    text = re.sub(r'([,;])', r'\1. ', text)     # Slight pause after commas
+    
+    # Add emotional context based on voice type
+    if voice_type == 'caring':
+        # Add warmth and encouragement
+        text = re.sub(r'\bgreat\b', 'absolutely wonderful', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bgood\b', 'really good', text, flags=re.IGNORECASE)
+        text = re.sub(r'\byes\b', 'yes, exactly', text, flags=re.IGNORECASE)
+        
+    elif voice_type == 'energetic':
+        # Add enthusiasm
+        text = re.sub(r'\bgreat\b', 'fantastic', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bgood\b', 'amazing', text, flags=re.IGNORECASE)
+        text = re.sub(r'!', '! That\'s exciting!', text)
+        
+    elif voice_type == 'wise':
+        # Add thoughtful pauses and wisdom
+        text = re.sub(r'\bremember\b', 'always remember', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bimportant\b', 'very important', text, flags=re.IGNORECASE)
+        
+    return text
+
 # User profile sidebar
 def user_profile_sidebar():
     with st.sidebar:
-        st.header("👤 Your Profile")
+        st.header("👤 Personalize Your Coach")
         
-        name = st.text_input("Name", value=st.session_state.user_profile.get('name', ''))
-        goals = st.text_area("Primary Goals", value=st.session_state.user_profile.get('goals', ''))
+        # Basic Profile
+        st.subheader("Basic Information")
+        name = st.text_input("Your Name", value=st.session_state.user_profile.get('name', ''))
+        goals = st.text_area("Primary Goals", value=st.session_state.user_profile.get('goals', ''), 
+                            help="What do you want to achieve in wealth and success?")
+        
         experience = st.selectbox(
             "Experience Level",
             ["Beginner", "Intermediate", "Advanced"],
@@ -322,29 +520,128 @@ def user_profile_sidebar():
             )
         )
         
+        # Avatar Customization
+        st.subheader("🎭 Choose Your Coach Avatar")
+        avatar_options = {
+            "🎯": "Success Target (Default)",
+            "👩‍💼": "Professional Woman", 
+            "👨‍💼": "Professional Man",
+            "🧠": "Mindset Expert",
+            "💎": "Wealth Builder",
+            "🚀": "Growth Accelerator",
+            "🌟": "Success Star",
+            "🏆": "Achievement Champion",
+            "💡": "Innovation Guide",
+            "🔥": "Motivational Fire",
+            "🌱": "Growth Mentor",
+            "⚡": "Energy Booster"
+        }
+        
+        current_avatar = st.session_state.user_profile.get('avatar', '🎯')
+        avatar_choice = st.selectbox(
+            "Select Avatar",
+            options=list(avatar_options.keys()),
+            format_func=lambda x: f"{x} {avatar_options[x]}",
+            index=list(avatar_options.keys()).index(current_avatar) if current_avatar in avatar_options else 0
+        )
+        
+        # Voice Customization
+        st.subheader("🎤 Voice & Personality")
+        
+        voice_type = st.selectbox(
+            "Coach Personality",
+            ["caring", "professional", "energetic", "wise"],
+            index=["caring", "professional", "energetic", "wise"].index(
+                st.session_state.user_profile.get('voice_type', 'caring')
+            ),
+            format_func=lambda x: {
+                'caring': '💝 Caring & Nurturing',
+                'professional': '💼 Professional & Direct', 
+                'energetic': '⚡ Energetic & Enthusiastic',
+                'wise': '🧙‍♂️ Wise & Thoughtful'
+            }[x]
+        )
+        
+        voice_speed = st.slider(
+            "Speaking Speed",
+            min_value=0.5, max_value=1.5, value=st.session_state.user_profile.get('voice_speed', 0.8),
+            step=0.1, help="Slower = More thoughtful, Faster = More energetic"
+        )
+        
+        voice_pitch = st.slider(
+            "Voice Pitch", 
+            min_value=0.5, max_value=2.0, value=st.session_state.user_profile.get('voice_pitch', 1.0),
+            step=0.1, help="Lower = More authoritative, Higher = More friendly"
+        )
+        
+        auto_speak = st.checkbox(
+            "Auto-play responses", 
+            value=st.session_state.user_profile.get('auto_speak', True),
+            help="Automatically speak coach responses"
+        )
+        
+        # Focus Areas
+        st.subheader("🎯 Focus Areas")
         focus_areas = st.multiselect(
-            "Focus Areas",
+            "What areas do you want to focus on?",
             [
-                "Financial Planning",
-                "Career Growth",
-                "Entrepreneurship",
-                "Investment Strategy",
-                "Time Management",
-                "Leadership Skills",
-                "Networking",
-                "Personal Development"
+                "💰 Financial Planning",
+                "📈 Career Growth", 
+                "🚀 Entrepreneurship",
+                "📊 Investment Strategy",
+                "⏰ Time Management",
+                "👑 Leadership Skills",
+                "🤝 Networking",
+                "🧠 Personal Development",
+                "💎 Wealth Mindset",
+                "🎯 Goal Achievement"
             ],
             default=st.session_state.user_profile.get('focus_areas', [])
         )
         
-        if st.button("Save Profile"):
+        # Save Profile
+        if st.button("💾 Save Profile", type="primary"):
             st.session_state.user_profile = {
                 'name': name,
                 'goals': goals,
                 'experience': experience,
+                'avatar': avatar_choice,
+                'voice_type': voice_type,
+                'voice_speed': voice_speed,
+                'voice_pitch': voice_pitch,
+                'auto_speak': auto_speak,
                 'focus_areas': focus_areas
             }
-            st.success("Profile saved!")
+            st.success("✅ Profile saved! Your coach is now personalized!")
+            st.rerun()
+        
+        # Preview Section
+        if st.session_state.user_profile:
+            st.subheader("👀 Preview")
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                st.markdown(f"<div style='font-size: 3rem; text-align: center;'>{avatar_choice}</div>", 
+                          unsafe_allow_html=True)
+            with col2:
+                st.write(f"**{voice_type.title()}** personality")
+                st.write(f"Speed: {voice_speed}x")
+                st.write(f"Pitch: {voice_pitch}x")
+
+def get_personalized_greeting():
+    """Generate a personalized greeting when user first arrives or changes profile"""
+    profile = st.session_state.user_profile
+    name = profile.get('name', 'there')
+    avatar = profile.get('avatar', '🎯') 
+    voice_type = profile.get('voice_type', 'caring')
+    
+    greetings = {
+        'caring': f"Hello {name}! {avatar} I'm so glad you're here. I'm your caring success coach, and I'm genuinely excited to support you on your journey to wealth and success. How are you feeling today?",
+        'professional': f"Good day, {name}! {avatar} I'm your professional success coach. I'm here to provide you with clear, actionable strategies for achieving your wealth and success goals. What would you like to focus on today?", 
+        'energetic': f"Hey there, {name}! {avatar} I'm absolutely thrilled to be your energetic success coach! Let's create some amazing momentum toward your dreams and goals. What's got you excited today?",
+        'wise': f"Welcome, {name}. {avatar} I'm honored to serve as your wise mentor on the path to success and prosperity. Through experience and insight, we'll navigate your journey together. What wisdom are you seeking today?"
+    }
+    
+    return greetings.get(voice_type, f"Hello {name}! {avatar} Welcome to your success coaching session. How can I help you today?")
 
 # Main app
 def main():
@@ -361,6 +658,16 @@ def main():
     
     # User profile sidebar
     user_profile_sidebar()
+    
+    # Show personalized greeting if profile exists but no chat history
+    if st.session_state.user_profile and not st.session_state.chat_history:
+        greeting = get_personalized_greeting()
+        st.session_state.chat_history.append({
+            'role': 'coach',
+            'content': greeting,
+            'timestamp': datetime.now()
+        })
+        st.session_state.is_speaking = True
     
     # Main content area
     col1, col2 = st.columns([1, 2])
