@@ -238,10 +238,15 @@ def load_css():
         font-weight: bold !important;
     }
     
-    /* Slider labels */
+    /* Slider labels - restore original color */
     .stSlider > label {
-        color: #4A154B !important;
+        color: inherit !important;
         font-weight: 600 !important;
+    }
+    
+    /* Slider label text - use default theme color */
+    .stSlider label[data-testid="stWidgetLabel"] {
+        color: var(--text-color) !important;
     }
     
     /* Alternative slider selectors for more specificity */
@@ -265,10 +270,21 @@ def load_css():
         box-shadow: 0 4px 15px rgba(138, 43, 226, 0.6) !important;
     }
     
-    /* Slider value numbers */
+    /* Slider value numbers - keep purple */
     .stSlider .st-emotion-cache-1inwz65 {
         color: #8A2BE2 !important;
         font-weight: bold !important;
+    }
+    
+    /* Slider value display box */
+    .stSlider div[data-testid="stMarkdownContainer"] {
+        color: #8A2BE2 !important;
+        font-weight: bold !important;
+    }
+    
+    /* Slider min/max labels - keep default color */
+    .stSlider div[class*="tickBar"] {
+        color: inherit !important;
     }
     
     /* Additional slider styling for all states */
@@ -339,6 +355,47 @@ def load_css():
     /* Checkbox Purple Theme */
     .stCheckbox > label > div {
         background-color: #9370DB !important;
+        border-color: #8A2BE2 !important;
+        border-width: 2px !important;
+    }
+    
+    .stCheckbox > label > div[data-checked="true"] {
+        background-color: #8A2BE2 !important;
+        border-color: #6A1B9A !important;
+    }
+    
+    .stCheckbox > label > div > svg {
+        color: white !important;
+    }
+    
+    /* Alternative checkbox selectors */
+    div[data-testid="stCheckbox"] > label > div {
+        background: #9370DB !important;
+        border: 2px solid #8A2BE2 !important;
+        border-radius: 4px !important;
+    }
+    
+    div[data-testid="stCheckbox"] > label > div[data-checked="true"] {
+        background: linear-gradient(135deg, #8A2BE2, #6A1B9A) !important;
+        border-color: #4A154B !important;
+    }
+    
+    /* Checkbox checkmark */
+    div[data-testid="stCheckbox"] svg {
+        color: white !important;
+        font-weight: bold !important;
+    }
+    
+    /* Checkbox hover effect */
+    .stCheckbox > label > div:hover {
+        background-color: #8A2BE2 !important;
+        border-color: #6A1B9A !important;
+        box-shadow: 0 2px 8px rgba(138, 43, 226, 0.3) !important;
+    }
+    
+    /* Checkbox label text */
+    .stCheckbox > label {
+        color: inherit !important;
     }
     
     /* Multiselect Purple Theme */
@@ -939,7 +996,7 @@ def user_profile_sidebar():
         )
         
         # Save Profile
-        if st.button("Save Profile", type="primary", key="save_profile_btn"):
+        if st.button("💾 Save Profile", type="primary", key="save_profile_btn"):
             st.session_state.user_profile = {
                 'name': name,
                 'goals': goals,
