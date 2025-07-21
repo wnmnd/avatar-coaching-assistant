@@ -203,8 +203,16 @@ def calculate_session_duration(chat_history: List[Dict]) -> str:
     else:
         return f"{minutes} minutes"
 
-def get_javascript_speech_component(text: str) -> str:
-    """Generate JavaScript component for text-to-speech"""
+def get_javascript_speech_component(text: str, voice_settings: Dict[str, Any] = None) -> str:
+    """Generate JavaScript component for text-to-speech with enhanced voice options"""
+    if not voice_settings:
+        voice_settings = {
+            'voice_speed': 0.8,
+            'voice_pitch': 1.0, 
+            'voice_type': 'caring',
+            'auto_speak': True
+        }
+    
     clean_speech_text = clean_text(text)
     
     return f"""
@@ -215,14 +223,13 @@ def get_javascript_speech_component(text: str) -> str:
             speechSynthesis.cancel();
             
             var utterance = new SpeechSynthesisUtterance(`{clean_speech_text}`);
-            utterance.rate = 0.8;
-            utterance.pitch = 1.0;
+            utterance.rate = {voice_settings['voice_speed']};
+            utterance.pitch = {voice_settings['voice_pitch']};
             utterance.volume = 1.0;
             
-            // Try to find a good voice
+            // Load voices and select based on user preference
             var voices = speechSynthesis.getVoices();
             if (voices.length === 0) {{
-                // Voices not loaded yet, wait a bit
                 setTimeout(function() {{
                     voices = speechSynthesis.getVoices();
                     selectVoice();
@@ -232,23 +239,47 @@ def get_javascript_speech_component(text: str) -> str:
             }}
             
             function selectVoice() {{
-                var preferredVoices = voices.filter(voice => 
-                    (voice.lang.startsWith('en-') && 
-                     (voice.name.includes('Female') || 
-                      voice.name.includes('Woman') ||
-                      voice.name.includes('Karen') ||
-                      voice.name.includes('Samantha') ||
-                      voice.name.includes('Susan')))
-                );
+                var voiceType = '{voice_settings['voice_type']}';
+                var selectedVoice = null;
                 
-                if (preferredVoices.length > 0) {{
-                    utterance.voice = preferredVoices[0];
-                }} else {{
-                    // Fallback to any English voice
-                    var englishVoices = voices.filter(voice => voice.lang.startsWith('en-'));
-                    if (englishVoices.length > 0) {{
-                        utterance.voice = englishVoices[0];
-                    }}
+                // Enhanced voice selection based on personality
+                if (voiceType === 'caring') {{
+                    selectedVoice = voices.find(voice => 
+                        voice.lang.startsWith('en-') && 
+                        (voice.name.includes('Female') || voice.name.includes('Karen') || 
+                         voice.name.includes('Susan') || voice.name.includes('Victoria') ||
+                         voice.name.includes('Samantha'))
+                    );
+                }} else if (voiceType === 'professional') {{
+                    selectedVoice = voices.find(voice => 
+                        voice.lang.startsWith('en-') && 
+                        (voice.name.includes('Daniel') || voice.name.includes('Alex') ||
+                         voice.name.includes('David') || voice.name.includes('Mark'))
+                    );
+                }} else if (voiceType === 'energetic') {{
+                    selectedVoice = voices.find(voice => 
+                        voice.lang.startsWith('en-') && 
+                        (voice.name.includes('Zira') || voice.name.includes('Catherine') ||
+                         voice.name.includes('Moira') || voice.name.includes('Fiona'))
+                    );
+                }} else if (voiceType === 'wise') {{
+                    selectedVoice = voices.find(voice => 
+                        voice.lang.startsWith('en-') && 
+                        (voice.name.includes('George') || voice.name.includes('Bruce') ||
+                         voice.name.includes('Arthur') || voice.name.includes('James'))
+                    );
+                }}
+                
+                // Fallback to best available English voice
+                if (!selectedVoice) {{
+                    selectedVoice = voices.find(voice => 
+                        voice.lang.startsWith('en-') && 
+                        (voice.quality === 'high' || voice.localService === true)
+                    ) || voices.find(voice => voice.lang.startsWith('en-'));
+                }}
+                
+                if (selectedVoice) {{
+                    utterance.voice = selectedVoice;
                 }}
                 
                 speechSynthesis.speak(utterance);
@@ -256,7 +287,11 @@ def get_javascript_speech_component(text: str) -> str:
             
             utterance.onstart = function() {{
                 document.getElementById('speakButton').innerHTML = '🔇 Stop Speaking';
-                document.getElementById('speakButton').onclick = function() {{ speechSynthesis.cancel(); }};
+                document.getElementById('speakButton').onclick = function() {{ 
+                    speechSynthesis.cancel();
+                    document.getElementById('speakButton').innerHTML = '🔊 Play Response';
+                    document.getElementById('speakButton').onclick = speakText;
+                }};
             }};
             
             utterance.onend = function() {{
@@ -270,26 +305,31 @@ def get_javascript_speech_component(text: str) -> str:
             }};
             
         }} else {{
-            alert('Text-to-speech is not supported in this browser');
+            alert('Text-to-speech is not supported in this browser. Please try Chrome or Edge for best results.');
         }}
     }}
     
-    // Auto-play option (uncomment to enable)
-    // setTimeout(speakText, 500);
+    // Auto-play if enabled
+    var autoPlay = {str(voice_settings.get('auto_speak', True)).lower()};
+    if (autoPlay) {{
+        setTimeout(speakText, 800);
+    }}
     </script>
     
     <div style="text-align: center; margin: 10px 0;">
         <button id="speakButton" onclick="speakText()" style="
-            background: linear-gradient(45deg, #007bff, #0056b3);
+            background: linear-gradient(45deg, #28a745, #20c997);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
             cursor: pointer;
-            font-size: 14px;
-            transition: transform 0.2s;
-        " onmouseover="this.style.transform='scale(1.05)'" 
-           onmouseout="this.style.transform='scale(1)'">
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(40, 167, 69, 0.4)'" 
+           onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(40, 167, 69, 0.3)'">
             🔊 Play Response
         </button>
     </div>
