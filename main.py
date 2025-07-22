@@ -1106,286 +1106,243 @@ def main():
         # WhatsApp-style text input with voice button
         st.markdown("### ✍️ Send Message")
         
-        # Check for voice message first
+        # Check for voice message first and process immediately
         voice_message = check_for_pending_voice_message()
-        
-        # WhatsApp-style input container with voice button on LEFT
-        whatsapp_input_html = """
-        <div style="
-            display: flex;
-            align-items: flex-end;
-            gap: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 25px;
-            border: 2px solid rgba(138, 43, 226, 0.2);
-            margin-bottom: 15px;
-        ">
-            <!-- Voice Button (LEFT SIDE) -->
-            <button id="voiceButton" 
-                    onmousedown="startRecording()" 
-                    onmouseup="stopRecording()"
-                    ontouchstart="startRecording()" 
-                    ontouchend="stopRecording()"
-                    style="
-                        background: linear-gradient(135deg, #8A2BE2, #9370DB);
-                        border: none;
-                        border-radius: 50%;
-                        width: 45px;
-                        height: 45px;
-                        color: white;
-                        font-size: 18px;
-                        cursor: pointer;
-                        box-shadow: 0 2px 8px rgba(138, 43, 226, 0.3);
-                        transition: all 0.2s ease;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        user-select: none;
-                        -webkit-user-select: none;
-                        flex-shrink: 0;
-                        order: 1;
-                    "
-                    onmouseover="if(!this.classList.contains('recording')) this.style.transform='scale(1.1)'"
-                    onmouseout="if(!this.classList.contains('recording')) this.style.transform='scale(1)'">
-                🎤
-            </button>
-            
-            <!-- Voice Status (RIGHT SIDE) -->
-            <div id="voiceStatus" style="
-                flex-grow: 1;
-                padding: 10px 15px;
-                background: white;
-                border-radius: 20px;
-                border: 1px solid #ddd;
-                min-height: 45px;
-                display: flex;
-                align-items: center;
-                color: #666;
-                font-size: 14px;
-                order: 2;
-            ">
-                🎤 Hold button to record, or type below...
-            </div>
-        </div>
-        
-        <!-- Voice Waveform (hidden initially) -->
-        <div id="voiceWaveform" style="
-            display: none;
-            justify-content: center;
-            align-items: center;
-            gap: 3px;
-            margin: 10px 0;
-            padding: 15px;
-            background: rgba(138, 43, 226, 0.1);
-            border-radius: 15px;
-        ">
-            <div class="wave-bar" style="width: 4px; height: 20px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite;"></div>
-            <div class="wave-bar" style="width: 4px; height: 20px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.2s;"></div>
-            <div class="wave-bar" style="width: 4px; height: 20px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.4s;"></div>
-            <div class="wave-bar" style="width: 4px; height: 20px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.6s;"></div>
-            <div class="wave-bar" style="width: 4px; height: 20px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.8s;"></div>
-        </div>
-
-        <!-- Hidden form for voice input submission -->
-        <form id="voiceForm" style="display: none;">
-            <input type="text" id="voiceInput" name="voice_message" />
-            <button type="submit" id="voiceSubmit">Submit</button>
-        </form>
-
-        <script>
-        let recognition;
-        let isRecording = false;
-        let finalTranscript = '';
-        
-        // CSS Animation for waveform
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes wave {
-                0%, 100% { height: 20px; }
-                50% { height: 40px; }
-            }
-            .recording {
-                background: linear-gradient(135deg, #ff4757, #ff3742) !important;
-                animation: pulse-record 1s ease-in-out infinite !important;
-            }
-            @keyframes pulse-record {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-                100% { transform: scale(1); }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // Initialize speech recognition
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-            
-            recognition.onstart = function() {
-                document.getElementById('voiceStatus').innerHTML = '🔴 Recording... Release to send automatically';
-                document.getElementById('voiceWaveform').style.display = 'flex';
-                finalTranscript = '';
-            };
-            
-            recognition.onresult = function(event) {
-                let interimTranscript = '';
-                finalTranscript = '';
-                
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
-                    }
-                }
-                
-                // Show live transcription
-                const displayText = finalTranscript + interimTranscript;
-                if (displayText.trim()) {
-                    document.getElementById('voiceStatus').innerHTML = '📝 "' + displayText + '"';
-                }
-            };
-            
-            recognition.onend = function() {
-                // Auto-submit when recording ends
-                if (finalTranscript.trim()) {
-                    document.getElementById('voiceStatus').innerHTML = '✅ Sending message automatically...';
-                    
-                    // Method 1: Fill the regular text area and submit
-                    const textArea = document.querySelector('textarea[placeholder*="Ask about"]');
-                    if (textArea) {
-                        textArea.value = finalTranscript.trim();
-                        textArea.dispatchEvent(new Event('input', { bubbles: true }));
-                        textArea.dispatchEvent(new Event('change', { bubbles: true }));
-                        
-                        // Find and click the Send button after a short delay
-                        setTimeout(() => {
-                            const sendButton = document.querySelector('button[kind="primary"]');
-                            if (sendButton && sendButton.textContent.includes('Send')) {
-                                sendButton.click();
-                                console.log('Voice message sent:', finalTranscript.trim());
-                            } else {
-                                // Fallback: try other methods
-                                console.log('Send button not found, trying alternative method');
-                                fallbackSubmission();
-                            }
-                        }, 500);
-                    } else {
-                        fallbackSubmission();
-                    }
-                    
-                    // Reset after 3 seconds
-                    setTimeout(() => {
-                        resetRecording();
-                    }, 3000);
-                    
-                } else {
-                    document.getElementById('voiceStatus').innerHTML = '❌ No speech detected. Try again.';
-                    setTimeout(resetRecording, 2000);
-                }
-            };
-            
-            recognition.onerror = function(event) {
-                console.error('Speech recognition error:', event.error);
-                document.getElementById('voiceStatus').innerHTML = '❌ Error: ' + event.error + '. Try again.';
-                setTimeout(resetRecording, 3000);
-            };
-        }
-
-        function fallbackSubmission() {
-            // Method 2: Try to trigger Streamlit rerun with stored message
-            sessionStorage.setItem('pending_voice_message', finalTranscript.trim());
-            
-            // Method 3: Create custom event
-            const voiceEvent = new CustomEvent('voiceMessageSubmit', {
-                detail: { message: finalTranscript.trim() }
-            });
-            window.dispatchEvent(voiceEvent);
-            
-            // Method 4: Try to reload page with query parameter
-            setTimeout(() => {
-                const url = new URL(window.location);
-                url.searchParams.set('voice_msg', encodeURIComponent(finalTranscript.trim()));
-                window.location.href = url.toString();
-            }, 2000);
-        }
-
-        function startRecording() {
-            if (isRecording) return;
-            
-            isRecording = true;
-            const button = document.getElementById('voiceButton');
-            button.classList.add('recording');
-            
-            if (recognition) {
-                try {
-                    recognition.start();
-                } catch (error) {
-                    console.error('Recognition start error:', error);
-                    resetRecording();
-                }
-            } else {
-                alert('Speech recognition not supported. Please use Chrome or Edge browser.');
-                resetRecording();
-            }
-        }
-
-        function stopRecording() {
-            if (!isRecording) return;
-            
-            isRecording = false;
-            if (recognition) {
-                recognition.stop(); // This will trigger onend which handles auto-submit
-            }
-        }
-
-        function resetRecording() {
-            isRecording = false;
-            const button = document.getElementById('voiceButton');
-            button.classList.remove('recording');
-            document.getElementById('voiceStatus').innerHTML = '🎤 Hold button to record, or type below...';
-            document.getElementById('voiceWaveform').style.display = 'none';
-        }
-        
-        // Listen for page load to check for voice messages
-        window.addEventListener('load', function() {
-            const storedMessage = sessionStorage.getItem('pending_voice_message');
-            if (storedMessage) {
-                sessionStorage.removeItem('pending_voice_message');
-                const textArea = document.querySelector('textarea[placeholder*="Ask about"]');
-                if (textArea) {
-                    textArea.value = storedMessage;
-                    textArea.dispatchEvent(new Event('input', { bubbles: true }));
-                    
-                    setTimeout(() => {
-                        const sendButton = document.querySelector('button[kind="primary"]');
-                        if (sendButton && sendButton.textContent.includes('Send')) {
-                            sendButton.click();
-                        }
-                    }, 1000);
-                }
-            }
-        });
-        </script>
-        """
-        
-        st.components.v1.html(whatsapp_input_html, height=150)
-        
-        # Process voice message if found
         if voice_message:
             process_voice_message(voice_message)
-
-        # Regular text input form with shorter button
+        
+        # Regular text input form with voice button integration
         with st.form("message_form", clear_on_submit=True):
-            user_input = st.text_area(
-                "Type your message:",
-                height=80,
-                placeholder="Ask about your goals, challenges, or anything related to success..."
-            )
+            col_input, col_voice = st.columns([5, 1])
+            
+            with col_input:
+                user_input = st.text_area(
+                    "Type your message:",
+                    height=80,
+                    placeholder="Ask about your goals, challenges, or anything related to success...",
+                    key="user_text_input"
+                )
+            
+            with col_voice:
+                st.markdown("**🎤 Voice**")
+                # WhatsApp-style voice button on RIGHT side
+                voice_button_html = """
+                <div style="margin-top: 10px;">
+                    <button id="voiceButton" 
+                            onmousedown="startRecording()" 
+                            onmouseup="stopRecording()"
+                            ontouchstart="startRecording()" 
+                            ontouchend="stopRecording()"
+                            style="
+                                background: linear-gradient(135deg, #8A2BE2, #9370DB);
+                                border: none;
+                                border-radius: 50%;
+                                width: 60px;
+                                height: 60px;
+                                color: white;
+                                font-size: 24px;
+                                cursor: pointer;
+                                box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+                                transition: all 0.2s ease;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                user-select: none;
+                                -webkit-user-select: none;
+                                margin: 0 auto;
+                            "
+                            onmouseover="if(!this.classList.contains('recording')) this.style.transform='scale(1.1)'"
+                            onmouseout="if(!this.classList.contains('recording')) this.style.transform='scale(1)'">
+                        🎤
+                    </button>
+                    
+                    <div id="voiceStatus" style="
+                        text-align: center;
+                        margin-top: 8px;
+                        font-size: 11px;
+                        color: #8A2BE2;
+                        font-weight: bold;
+                        min-height: 15px;
+                    ">
+                        Hold to record
+                    </div>
+                    
+                    <!-- Voice Waveform -->
+                    <div id="voiceWaveform" style="
+                        display: none;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 2px;
+                        margin-top: 8px;
+                    ">
+                        <div class="wave-bar" style="width: 3px; height: 15px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite;"></div>
+                        <div class="wave-bar" style="width: 3px; height: 15px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.2s;"></div>
+                        <div class="wave-bar" style="width: 3px; height: 15px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.4s;"></div>
+                        <div class="wave-bar" style="width: 3px; height: 15px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.6s;"></div>
+                    </div>
+                </div>
+
+                <script>
+                let recognition;
+                let isRecording = false;
+                let finalTranscript = '';
+                
+                // CSS Animation for waveform
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes wave {
+                        0%, 100% { height: 15px; }
+                        50% { height: 25px; }
+                    }
+                    .recording {
+                        background: linear-gradient(135deg, #ff4757, #ff3742) !important;
+                        animation: pulse-record 1s ease-in-out infinite !important;
+                    }
+                    @keyframes pulse-record {
+                        0% { transform: scale(1); }
+                        50% { transform: scale(1.1); }
+                        100% { transform: scale(1); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Initialize speech recognition
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    recognition = new SpeechRecognition();
+                    recognition.continuous = false;
+                    recognition.interimResults = true;
+                    recognition.lang = 'en-US';
+                    
+                    recognition.onstart = function() {
+                        document.getElementById('voiceStatus').innerHTML = 'Recording...';
+                        document.getElementById('voiceWaveform').style.display = 'flex';
+                        finalTranscript = '';
+                    };
+                    
+                    recognition.onresult = function(event) {
+                        let interimTranscript = '';
+                        finalTranscript = '';
+                        
+                        for (let i = event.resultIndex; i < event.results.length; i++) {
+                            if (event.results[i].isFinal) {
+                                finalTranscript += event.results[i][0].transcript;
+                            } else {
+                                interimTranscript += event.results[i][0].transcript;
+                            }
+                        }
+                        
+                        // Show live transcription in status
+                        const displayText = finalTranscript + interimTranscript;
+                        if (displayText.trim()) {
+                            document.getElementById('voiceStatus').innerHTML = 'Got it!';
+                        }
+                    };
+                    
+                    recognition.onend = function() {
+                        // Auto-submit when recording ends
+                        if (finalTranscript.trim()) {
+                            document.getElementById('voiceStatus').innerHTML = 'Sending...';
+                            
+                            // RELIABLE METHOD: Fill text area and trigger form submission
+                            const textArea = document.querySelector('textarea[data-testid="stTextArea"]');
+                            if (!textArea) {
+                                // Try alternative selectors
+                                const textAreas = document.querySelectorAll('textarea');
+                                for (let ta of textAreas) {
+                                    if (ta.placeholder && ta.placeholder.includes('Ask about')) {
+                                        textArea = ta;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (textArea) {
+                                // Fill the text area
+                                textArea.value = finalTranscript.trim();
+                                textArea.focus();
+                                
+                                // Trigger input events
+                                textArea.dispatchEvent(new Event('input', { bubbles: true }));
+                                textArea.dispatchEvent(new Event('change', { bubbles: true }));
+                                
+                                // Find and click submit button
+                                setTimeout(() => {
+                                    const submitButtons = document.querySelectorAll('button');
+                                    for (let btn of submitButtons) {
+                                        if (btn.textContent.trim() === 'Send' || btn.textContent.includes('Send')) {
+                                            btn.click();
+                                            console.log('Voice message submitted successfully!');
+                                            break;
+                                        }
+                                    }
+                                }, 200);
+                                
+                                // Reset after successful submission
+                                setTimeout(() => {
+                                    resetRecording();
+                                }, 1000);
+                            } else {
+                                // Fallback: Use URL parameter method
+                                console.log('Text area not found, using URL method');
+                                const url = new URL(window.location);
+                                url.searchParams.set('voice_msg', encodeURIComponent(finalTranscript.trim()));
+                                window.location.href = url.toString();
+                            }
+                            
+                        } else {
+                            document.getElementById('voiceStatus').innerHTML = 'No speech detected';
+                            setTimeout(resetRecording, 2000);
+                        }
+                    };
+                    
+                    recognition.onerror = function(event) {
+                        console.error('Speech recognition error:', event.error);
+                        document.getElementById('voiceStatus').innerHTML = 'Error occurred';
+                        setTimeout(resetRecording, 2000);
+                    };
+                }
+
+                function startRecording() {
+                    if (isRecording) return;
+                    
+                    isRecording = true;
+                    const button = document.getElementById('voiceButton');
+                    button.classList.add('recording');
+                    
+                    if (recognition) {
+                        try {
+                            recognition.start();
+                        } catch (error) {
+                            console.error('Recognition start error:', error);
+                            resetRecording();
+                        }
+                    } else {
+                        alert('Speech recognition not supported. Please use Chrome or Edge browser.');
+                        resetRecording();
+                    }
+                }
+
+                function stopRecording() {
+                    if (!isRecording) return;
+                    
+                    isRecording = false;
+                    if (recognition) {
+                        recognition.stop();
+                    }
+                }
+
+                function resetRecording() {
+                    isRecording = false;
+                    const button = document.getElementById('voiceButton');
+                    button.classList.remove('recording');
+                    document.getElementById('voiceStatus').innerHTML = 'Hold to record';
+                    document.getElementById('voiceWaveform').style.display = 'none';
+                }
+                </script>
+                """
+                
+                st.components.v1.html(voice_button_html, height=120)
             
             submitted = st.form_submit_button("Send", type="primary")
             
