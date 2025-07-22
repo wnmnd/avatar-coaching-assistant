@@ -1348,7 +1348,7 @@ def user_profile_sidebar():
         )
        
         # Voice personality
-        st.subheader("🎤 Voice Style")
+        st.subheader("Voice Style")
         voice_type = st.selectbox(
             "Coach Personality",
             ["caring", "professional", "energetic", "wise"],
