@@ -1531,11 +1531,11 @@ def main():
                 align-items: center;
             ">
                 <div id="voiceStatus" style="
-                    color: #8A2BE2;
+                    color: #000000;
                     font-weight: bold;
                     font-size: 14px;
                 ">
-                    🎤 Tap once to record, tap again to stop and send message
+                    Tap once to record, tap again to stop and send message
                 </div>
             </div>
            
