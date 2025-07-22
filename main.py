@@ -328,9 +328,9 @@ def avatar_component(is_speaking=False):
     
     st.markdown(avatar_html, unsafe_allow_html=True)
 
-# Enhanced Voice Recording Component - AUTO-SEND VERSION  
+# Enhanced Voice Recording Component - DIRECT PROCESSING VERSION
 def enhanced_voice_recorder():
-    """Enhanced voice recording with automatic sending after 1 second"""
+    """Enhanced voice recording with direct processing to conversation"""
     
     # Create unique component ID to avoid conflicts
     component_id = f"voice_recorder_{int(time.time() * 1000)}"
@@ -413,6 +413,9 @@ def enhanced_voice_recorder():
         <div class="wave-bar" style="width: 6px; height: 30px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; animation-delay: 0.3s;"></div>
         <div class="wave-bar" style="width: 6px; height: 30px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; animation-delay: 0.4s;"></div>
     </div>
+    
+    <!-- Hidden input for voice message -->
+    <input type="hidden" id="voiceMessageInput_{component_id}" />
 
     <script>
     let recognition_{component_id};
@@ -596,23 +599,31 @@ def enhanced_voice_recorder():
         if (!finalMessage) return;
         
         console.log('Auto-sending voice message:', finalMessage);
-        document.getElementById('voiceStatus_{component_id}').innerHTML = '✅ Sending message: "' + finalMessage + '"';
+        document.getElementById('voiceStatus_{component_id}').innerHTML = '✅ Message sent: "' + finalMessage + '" - Processing by coach...';
         
-        // Store in sessionStorage and redirect immediately
-        const voiceData = {{
-            message: finalMessage,
-            timestamp: Date.now(),
-            processed: false
-        }};
-        sessionStorage.setItem('voice_message_data', JSON.stringify(voiceData));
+        // Store voice message in hidden input to trigger Streamlit rerun
+        const hiddenInput = document.getElementById('voiceMessageInput_{component_id}');
+        if (hiddenInput) {{
+            hiddenInput.value = finalMessage;
+            
+            // Create a custom event to trigger processing
+            const voiceEvent = new CustomEvent('voiceMessage', {{
+                detail: {{ message: finalMessage, timestamp: Date.now() }}
+            }});
+            document.dispatchEvent(voiceEvent);
+            
+            // Store in sessionStorage as backup
+            sessionStorage.setItem('pendingVoiceMessage', JSON.stringify({{
+                message: finalMessage,
+                timestamp: Date.now(),
+                processed: false
+            }}));
+            
+            console.log('Voice message stored for processing:', finalMessage);
+        }}
         
-        // Immediate redirect to process message
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.set('voice_input', encodeURIComponent(finalMessage));
-        currentUrl.searchParams.set('timestamp', Date.now().toString());
-        
-        console.log('Redirecting to process voice message...');
-        window.location.href = currentUrl.toString();
+        // Reset after 3 seconds
+        setTimeout(resetRecording_{component_id}, 3000);
     }}
 
     function resetRecording_{component_id}() {{
@@ -637,6 +648,44 @@ def enhanced_voice_recorder():
     
     # Display the voice recorder
     st.components.v1.html(voice_recorder_html, height=250)
+    
+    # Check for voice messages in session storage every time this component renders
+    voice_check_script = """
+    <script>
+    function checkPendingVoiceMessage() {
+        try {
+            const pendingMsg = sessionStorage.getItem('pendingVoiceMessage');
+            if (pendingMsg) {
+                const voiceData = JSON.parse(pendingMsg);
+                if (!voiceData.processed) {
+                    console.log('Found pending voice message:', voiceData.message);
+                    // Mark as processed immediately
+                    voiceData.processed = true;
+                    sessionStorage.setItem('pendingVoiceMessage', JSON.stringify(voiceData));
+                    
+                    // Redirect to trigger Streamlit processing
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('voice_input', encodeURIComponent(voiceData.message));
+                    url.searchParams.set('timestamp', voiceData.timestamp.toString());
+                    window.location.href = url.toString();
+                    return true;
+                }
+            }
+        } catch (error) {
+            console.error('Error checking pending voice message:', error);
+        }
+        return false;
+    }
+    
+    // Check immediately and then periodically
+    if (!checkPendingVoiceMessage()) {
+        // Check every 2 seconds for new voice messages
+        setInterval(checkPendingVoiceMessage, 2000);
+    }
+    </script>
+    """
+    
+    st.components.v1.html(voice_check_script, height=0)
 
 # Voice Message Checker
 def check_voice_message():
@@ -1417,6 +1466,42 @@ def main():
         
         # Enhanced voice recorder with auto-send
         enhanced_voice_recorder()
+        
+        # Manual trigger button as backup
+        col_voice1, col_voice2 = st.columns([3, 1])
+        with col_voice2:
+            if st.button("🔄 Process Voice", key="manual_voice_trigger", help="Click if voice message didn't send automatically"):
+                # Check session storage for any pending messages
+                voice_process_script = """
+                <script>
+                try {
+                    const pendingMsg = sessionStorage.getItem('pendingVoiceMessage');
+                    if (pendingMsg) {
+                        const voiceData = JSON.parse(pendingMsg);
+                        if (!voiceData.processed && voiceData.message) {
+                            console.log('Manually processing voice message:', voiceData.message);
+                            // Mark as processed
+                            voiceData.processed = true;
+                            sessionStorage.setItem('pendingVoiceMessage', JSON.stringify(voiceData));
+                            
+                            // Redirect immediately
+                            const url = new URL(window.location.href);
+                            url.searchParams.set('voice_input', encodeURIComponent(voiceData.message));
+                            url.searchParams.set('timestamp', voiceData.timestamp.toString());
+                            window.location.href = url.toString();
+                        } else {
+                            alert('No pending voice message found. Please record a new message.');
+                        }
+                    } else {
+                        alert('No voice message found. Please record a message first.');
+                    }
+                } catch (error) {
+                    console.error('Error processing voice message:', error);
+                    alert('Error processing voice message. Please try recording again.');
+                }
+                </script>
+                """
+                st.components.v1.html(voice_process_script, height=0)
         
         # Clear chat
         if st.button("🗑️ Clear Chat"):
