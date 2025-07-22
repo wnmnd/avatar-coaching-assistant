@@ -1058,8 +1058,62 @@ def main():
         if st.session_state.is_speaking:
             st.session_state.is_speaking = False
         
-        # WhatsApp voice input
+        # WhatsApp voice input with auto-submit
         whatsapp_voice_note()
+        
+        # Check for voice messages using simple session state
+        if 'voice_pending' not in st.session_state:
+            st.session_state.voice_pending = None
+        
+        # Simple voice message processor 
+        voice_processor_html = """
+        <script>
+        // Simple check for voice message
+        const voiceMsg = sessionStorage.getItem('pending_voice_message');
+        if (voiceMsg) {
+            sessionStorage.removeItem('pending_voice_message');
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('voice_input', voiceMsg);
+            
+            // Submit voice message (this will be handled by Streamlit)
+            console.log('Processing voice message:', voiceMsg);
+            
+            // Store in window for Python to access
+            window.pendingVoiceMessage = voiceMsg;
+        }
+        </script>
+        """
+        
+        st.components.v1.html(voice_processor_html, height=0)
+        
+        # Check if there's a voice message to process
+        voice_message_script = """
+        <script>
+        if (window.pendingVoiceMessage) {
+            // Find the text area and set its value
+            const textArea = document.querySelector('textarea[placeholder*="discuss"]');
+            if (textArea) {
+                textArea.value = window.pendingVoiceMessage;
+                textArea.dispatchEvent(new Event('input', { bubbles: true }));
+                
+                // Find and click the submit button
+                setTimeout(() => {
+                    const submitButton = document.querySelector('button[kind="primary"]');
+                    if (submitButton && submitButton.textContent.includes('Send')) {
+                        submitButton.click();
+                    }
+                }, 500);
+            }
+            
+            // Clear the pending message
+            window.pendingVoiceMessage = null;
+        }
+        </script>
+        """
+        
+        st.components.v1.html(voice_message_script, height=0)
     
     with col2:
         # Chat interface
