@@ -402,7 +402,7 @@ def generate_avatar_video(text, avatar_choice):
             "Content-Type": "application/json"
         }
         
-        # HeyGen request payload with current avatar
+        # HeyGen request payload with current avatar (lower resolution for free plans)
         payload = {
             "video_inputs": [{
                 "character": {
@@ -414,16 +414,13 @@ def generate_avatar_video(text, avatar_choice):
                     "input_text": clean_text,
                     "voice_id": voice_id,
                     "speed": 1.0
-                },
-                "background": {
-                    "type": "color",
-                    "value": "#f0e6ff"
                 }
             }],
             "dimension": {
-                "width": 400,
-                "height": 400
-            }
+                "width": 256,  # Lower resolution for free/basic plans
+                "height": 256
+            },
+            "aspect_ratio": "1:1"
         }
         
         st.write(f"📝 Text: {clean_text}")
@@ -498,14 +495,26 @@ def poll_heygen_video_status(video_id, api_key, max_attempts=20):
                         st.error("❌ No video URL in completed response")
                         return None
                 elif status == "failed":
-                    error_msg = data.get("error", "Unknown error")
+                    error_info = data.get("error", {})
+                    error_code = error_info.get("code", "Unknown")
+                    error_msg = error_info.get("message", "Unknown error")
+                    
                     progress_placeholder.error(f"❌ Video generation failed: {error_msg}")
+                    
+                    # Provide specific help for common errors
+                    if "RESOLUTION_NOT_ALLOWED" in error_code:
+                        st.info("💡 Try upgrading your HeyGen plan for higher resolution videos")
+                    elif "AVATAR_NOT_ALLOWED" in error_code:
+                        st.info("💡 This avatar requires a higher plan subscription")
+                    elif "CREDIT" in error_code.upper():
+                        st.info("💡 Please check your HeyGen account credits")
+                    
                     return None
-                elif status in ["pending", "processing"]:
+                elif status in ["pending", "processing", "waiting"]:
                     time.sleep(3)  # Wait 3 seconds
                     continue
                 else:
-                    st.write(f"🔄 Unknown status: {status}")
+                    st.write(f"🔄 Status: {status} - continuing...")
                     time.sleep(3)
             else:
                 st.error(f"❌ Status check failed: {response.status_code}")
@@ -1370,7 +1379,12 @@ def main():
                                             "input_text": "Hello, this is a test message!",
                                             "voice_id": voice_id
                                         }
-                                    }]
+                                    }],
+                                    "dimension": {
+                                        "width": 256,  # Lower resolution for free plans
+                                        "height": 256
+                                    },
+                                    "aspect_ratio": "1:1"
                                 }
                                 
                                 try:
