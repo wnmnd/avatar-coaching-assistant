@@ -984,14 +984,14 @@ def chat_interface():
 # Enhanced user profile sidebar
 def user_profile_sidebar():
     with st.sidebar:
-        st.header("👤 Your Coach Settings")
+        st.header("Your Coach Settings")
         
         # Basic info
         name = st.text_input("Your Name", value=st.session_state.user_profile.get('name', ''))
         goals = st.text_area("Your Goals", value=st.session_state.user_profile.get('goals', ''))
         
         # Enhanced avatar choices
-        st.subheader("🎭 Choose Your AI Coach")
+        st.subheader("Choose Your AI Coach")
         avatar_options = {
             "sophia": "👩‍💼 Sophia - Professional Female Coach",
             "marcus": "👨‍💼 Marcus - Business Male Mentor", 
@@ -1011,7 +1011,7 @@ def user_profile_sidebar():
         )
         
         # Voice personality
-        st.subheader("🎤 Voice Style")
+        st.subheader("Voice Style")
         voice_type = st.selectbox(
             "Coach Personality",
             ["caring", "professional", "energetic", "wise"],
@@ -1019,15 +1019,15 @@ def user_profile_sidebar():
                 st.session_state.user_profile.get('voice_type', 'caring')
             ),
             format_func=lambda x: {
-                'caring': '💝 Caring & Supportive',
-                'professional': '💼 Professional & Direct', 
-                'energetic': '⚡ Energetic & Motivating',
-                'wise': '🧙‍♂️ Wise & Thoughtful'
+                'caring': 'Caring & Supportive',
+                'professional': 'Professional & Direct', 
+                'energetic': 'Energetic & Motivating',
+                'wise': 'Wise & Thoughtful'
             }[x]
         )
         
         # Save profile
-        if st.button("💾 Save Settings", type="primary"):
+        if st.button("Save Settings", type="primary"):
             st.session_state.user_profile = {
                 'name': name,
                 'goals': goals,
@@ -1056,7 +1056,7 @@ def main():
     # Header
     st.markdown("""
     <div class="main-header">
-        <h1>🎯 Avatar Success Coach</h1>
+        <h1>Avatar Success Coach</h1>
         <p>Your AI-powered success mentor with instant talking avatars</p>
     </div>
     """, unsafe_allow_html=True)
@@ -1104,7 +1104,7 @@ def main():
         chat_interface()
         
         # WhatsApp-style text input with voice button
-        st.markdown("### ✍️ Send Message")
+        st.markdown("### Send Message")
         
         # Check for voice message first and process immediately
         voice_message = check_for_pending_voice_message()
@@ -1124,7 +1124,7 @@ def main():
                 )
             
             with col_voice:
-                st.markdown("**🎤 Voice**")
+                st.markdown("**Voice**")
                 # WhatsApp-style voice button on RIGHT side
                 voice_button_html = """
                 <div style="margin-top: 10px;">
@@ -1372,7 +1372,7 @@ def main():
                 st.rerun()
         
         # Clear chat
-        if st.button("🗑️ Clear Chat"):
+        if st.button("🗑Clear Chat"):
             st.session_state.chat_history = []
             st.session_state.is_speaking = False
             st.session_state.voice_played = False
@@ -1424,8 +1424,8 @@ def main():
                     else:
                         create_instant_browser_voice(test_text, voice_type, test_gender)
                 
-                st.subheader("🎤 Voice Input Test")
-                if st.button("🔊 Test Voice Recording"):
+                st.subheader("Voice Input Test")
+                if st.button("Test Voice Recording"):
                     st.info("Use the voice button next to the text input above to test voice recording!")
                     st.markdown("**Instructions:**")
                     st.markdown("1. Hold the 🎤 button next to the text input")
@@ -1433,7 +1433,7 @@ def main():
                     st.markdown("3. Release the button to auto-send")
                 
                 # Test ALL personalities button
-                if st.button("🎭 Test All Personalities"):
+                if st.button("Test All Personalities"):
                     st.session_state.voice_played = False
                     st.write("Testing all voice personalities...")
                     
@@ -1454,14 +1454,14 @@ def main():
                         if i < len(personalities) - 1:
                             st.write("---")
                 
-                st.subheader("🎭 Avatar Animation Test")
-                if st.button("🎬 Test Avatar Animation"):
+                st.subheader("Avatar Animation Test")
+                if st.button("Test Avatar Animation"):
                     st.info("Testing avatar animation - check the avatar above!")
                     st.session_state.is_speaking = True
                     st.rerun()
             
             with col_debug2:
-                st.subheader("🔧 System Status")
+                st.subheader("System Status")
                 st.write("**API Connections:**")
                 st.write(f"✅ Gemini AI: {bool(st.secrets.get('GEMINI_API_KEY'))}")
                 st.write(f"✅ ElevenLabs: {bool(setup_elevenlabs())}")
