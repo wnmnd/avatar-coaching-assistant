@@ -1433,7 +1433,7 @@ def main():
         let recognition;
         let isRecording = false;
         let finalTranscript = '';
-        let voiceProcessingKey = 'voice_processing_{int(time.time() * 1000)}';
+        let interimTranscript = '';
         
         // CSS Animations
         const style = document.createElement('style');
@@ -1455,105 +1455,136 @@ def main():
         `;
         document.head.appendChild(style);
         
-        // Initialize speech recognition
+        // Enhanced speech recognition with better sensitivity
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {{
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = true;
+            
+            // IMPROVED SENSITIVITY SETTINGS
+            recognition.continuous = true;          // Keep listening
+            recognition.interimResults = true;     // Show real-time results
+            recognition.maxAlternatives = 3;       // More alternatives
             recognition.lang = 'en-US';
             
             recognition.onstart = function() {{
-                document.getElementById('voiceStatus').innerHTML = '🔴 Recording... Release to send automatically';
+                console.log('Voice recognition started');
+                document.getElementById('voiceStatus').innerHTML = '🔴 Recording... I can hear you! Release when done.';
                 document.getElementById('voiceWaveform').style.display = 'flex';
                 finalTranscript = '';
+                interimTranscript = '';
             }};
             
             recognition.onresult = function(event) {{
-                let interimTranscript = '';
-                finalTranscript = '';
+                interimTranscript = '';
                 
+                // Process all results for better accuracy
                 for (let i = event.resultIndex; i < event.results.length; i++) {{
+                    const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {{
-                        finalTranscript += event.results[i][0].transcript;
+                        finalTranscript += transcript + ' ';
                     }} else {{
-                        interimTranscript += event.results[i][0].transcript;
+                        interimTranscript += transcript;
                     }}
                 }}
                 
+                // Show live transcription with better feedback
                 const displayText = finalTranscript + interimTranscript;
                 if (displayText.trim()) {{
-                    document.getElementById('voiceStatus').innerHTML = '📝 "' + displayText + '"';
+                    document.getElementById('voiceStatus').innerHTML = '📝 I heard: "' + displayText.trim() + '"';
+                }} else {{
+                    document.getElementById('voiceStatus').innerHTML = '👂 Listening... Speak clearly';
                 }}
             }};
             
             recognition.onend = function() {{
+                console.log('Recognition ended. Final transcript:', finalTranscript.trim());
+                
                 if (finalTranscript.trim()) {{
-                    document.getElementById('voiceStatus').innerHTML = '✅ Sending message...';
+                    document.getElementById('voiceStatus').innerHTML = '✅ Got your message! Processing...';
                     
-                    // RELIABLE METHOD: Use Streamlit's session state
-                    const voiceData = {{
-                        message: finalTranscript.trim(),
-                        timestamp: Date.now(),
-                        key: voiceProcessingKey
-                    }};
+                    // DIRECT METHOD: Use Streamlit session state immediately
+                    const voiceMessage = finalTranscript.trim();
                     
-                    // Store in sessionStorage
-                    sessionStorage.setItem('streamlit_voice_data', JSON.stringify(voiceData));
+                    // Store in session state for immediate processing
+                    const timestamp = Date.now();
+                    const voiceKey = 'voice_' + timestamp;
                     
-                    // Method 1: Try to trigger Streamlit rerun
-                    try {{
-                        // Create a custom event for Streamlit
-                        const streamlitEvent = new CustomEvent('streamlitVoiceMessage', {{
-                            detail: voiceData
-                        }});
-                        window.dispatchEvent(streamlitEvent);
-                        
-                        // Force page refresh to ensure processing
-                        setTimeout(() => {{
-                            window.location.reload();
-                        }}, 1500);
-                        
-                    }} catch (error) {{
-                        console.error('Voice submission error:', error);
-                        // Fallback: Direct page reload
-                        setTimeout(() => {{
-                            window.location.reload();
-                        }}, 1000);
-                    }}
+                    // Use URL parameters for reliable delivery
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('voice_message', encodeURIComponent(voiceMessage));
+                    currentUrl.searchParams.set('voice_timestamp', timestamp.toString());
+                    
+                    console.log('Sending voice message:', voiceMessage);
+                    
+                    // Immediate redirect to process message
+                    window.location.href = currentUrl.toString();
                     
                 }} else {{
-                    document.getElementById('voiceStatus').innerHTML = '❌ No speech detected. Try again.';
-                    setTimeout(resetRecording, 2500);
+                    document.getElementById('voiceStatus').innerHTML = '❌ Could not understand. Please speak louder and clearer.';
+                    setTimeout(resetRecording, 3000);
                 }}
             }};
             
             recognition.onerror = function(event) {{
                 console.error('Speech recognition error:', event.error);
-                document.getElementById('voiceStatus').innerHTML = '❌ Recognition error: ' + event.error;
-                setTimeout(resetRecording, 3000);
+                let errorMsg = 'Error occurred';
+                
+                switch(event.error) {{
+                    case 'no-speech':
+                        errorMsg = '❌ No speech detected. Speak louder!';
+                        break;
+                    case 'audio-capture':
+                        errorMsg = '❌ Microphone error. Check permissions.';
+                        break;
+                    case 'not-allowed':
+                        errorMsg = '❌ Microphone access denied. Enable microphone.';
+                        break;
+                    case 'network':
+                        errorMsg = '❌ Network error. Check connection.';
+                        break;
+                    default:
+                        errorMsg = '❌ Recognition error: ' + event.error;
+                }}
+                
+                document.getElementById('voiceStatus').innerHTML = errorMsg;
+                setTimeout(resetRecording, 4000);
             }};
+            
+            recognition.onspeechstart = function() {{
+                console.log('Speech detected');
+                document.getElementById('voiceStatus').innerHTML = '👂 Good! I can hear you speaking...';
+            }};
+            
+            recognition.onspeechend = function() {{
+                console.log('Speech ended');
+                document.getElementById('voiceStatus').innerHTML = '⏳ Processing what you said...';
+            }};
+            
         }} else {{
-            document.getElementById('voiceStatus').innerHTML = '❌ Voice recording not supported on this browser';
+            document.getElementById('voiceStatus').innerHTML = '❌ Voice recording not supported. Use Chrome/Edge browser.';
         }}
 
         function startRecording() {{
             if (isRecording) return;
             
+            console.log('Starting recording...');
             isRecording = true;
             const button = document.getElementById('voiceButton');
             button.classList.add('recording');
             
             if (recognition) {{
                 try {{
+                    // Reset transcripts
+                    finalTranscript = '';
+                    interimTranscript = '';
                     recognition.start();
                 }} catch (error) {{
                     console.error('Failed to start recording:', error);
-                    document.getElementById('voiceStatus').innerHTML = '❌ Failed to start recording';
+                    document.getElementById('voiceStatus').innerHTML = '❌ Failed to start. Try again.';
                     resetRecording();
                 }}
             }} else {{
-                document.getElementById('voiceStatus').innerHTML = '❌ Speech recognition not supported';
+                document.getElementById('voiceStatus').innerHTML = '❌ Speech recognition not available';
                 resetRecording();
             }}
         }}
@@ -1561,7 +1592,9 @@ def main():
         function stopRecording() {{
             if (!isRecording) return;
             
+            console.log('Stopping recording...');
             isRecording = false;
+            
             if (recognition) {{
                 recognition.stop();
             }}
@@ -1576,75 +1609,49 @@ def main():
             document.getElementById('voiceStatus').innerHTML = '🎤 Hold the button to record your voice message';
             document.getElementById('voiceWaveform').style.display = 'none';
         }}
-
-        // Check for stored voice data on page load
-        window.addEventListener('load', function() {{
-            setTimeout(() => {{
-                const storedData = sessionStorage.getItem('streamlit_voice_data');
-                if (storedData) {{
-                    try {{
-                        const voiceData = JSON.parse(storedData);
-                        sessionStorage.removeItem('streamlit_voice_data');
-                        
-                        // Set a flag for Python to pick up
-                        sessionStorage.setItem('python_voice_message', voiceData.message);
-                        console.log('Voice message ready for Python:', voiceData.message);
-                        
-                    }} catch (e) {{
-                        console.error('Error processing stored voice data:', e);
-                    }}
-                }}
-            }}, 500);
-        }});
         </script>
         """
         
         st.components.v1.html(voice_section_html, height=200)
         
-        # Check for voice message from JavaScript
-        voice_check_script = """
-        <script>
-        // Check for voice message from sessionStorage
-        const pythonVoiceMessage = sessionStorage.getItem('python_voice_message');
-        if (pythonVoiceMessage) {
-            sessionStorage.removeItem('python_voice_message');
+        # DIRECT voice message processing from URL parameters
+        if 'voice_message' in st.query_params and 'voice_timestamp' in st.query_params:
+            voice_message = st.query_params['voice_message']
+            voice_timestamp = st.query_params['voice_timestamp']
             
-            // Store in a way Python can access via query params
-            const url = new URL(window.location);
-            url.searchParams.set('voice_input', encodeURIComponent(pythonVoiceMessage));
-            window.location.href = url.toString();
-        }
-        </script>
-        """
-        
-        st.components.v1.html(voice_check_script, height=0)
-        
-        # Process voice input from URL parameters
-        if 'voice_input' in st.query_params:
-            voice_message = st.query_params['voice_input']
-            # Clear the parameter
-            del st.query_params['voice_input']
+            # Clear the parameters immediately
+            del st.query_params['voice_message'] 
+            del st.query_params['voice_timestamp']
             
             if voice_message.strip():
-                # Process immediately
+                # Process voice message immediately
+                st.success(f"🎤 Voice message received: \"{voice_message}\"")
+                
+                # Reset voice flag
                 st.session_state.voice_played = False
                 
+                # Add user message to conversation
                 st.session_state.chat_history.append({
                     'role': 'user',
                     'content': voice_message,
                     'timestamp': datetime.now()
                 })
                 
+                # Get coach response immediately
                 with st.spinner("Your coach is responding to your voice message..."):
                     coach_response = get_coach_response(voice_message, st.session_state.chat_history)
                 
+                # Add coach response to conversation
                 st.session_state.chat_history.append({
                     'role': 'coach',
                     'content': coach_response,
                     'timestamp': datetime.now()
                 })
                 
+                # Enable voice response
                 st.session_state.is_speaking = True
+                
+                # Force immediate refresh to show the conversation
                 st.rerun()
         
         # Clear chat
