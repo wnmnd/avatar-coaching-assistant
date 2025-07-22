@@ -1372,7 +1372,7 @@ def main():
                 st.rerun()
         
         # Clear chat
-        if st.button("🗑Clear Chat"):
+        if st.button("Clear Chat"):
             st.session_state.chat_history = []
             st.session_state.is_speaking = False
             st.session_state.voice_played = False
