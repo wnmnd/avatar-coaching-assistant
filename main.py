@@ -476,9 +476,9 @@ def whatsapp_voice_note():
     if st.button("🔄 Check for Voice Input", key="voice_check"):
         st.info("Voice input integration ready. Hold the microphone button to record.")
 
-# Fixed Natural Voice with NO DOUBLE PLAYBACK
+# Fixed Natural Voice with MOBILE SUPPORT
 def natural_voice_component(text, voice_type="professional"):
-    """Single voice playback - prevents doubles"""
+    """Single voice playback with mobile support - prevents doubles"""
     if not text or st.session_state.get('voice_played', False):
         return
     
@@ -504,8 +504,194 @@ def natural_voice_component(text, voice_type="professional"):
         # Premium ElevenLabs voice with gender matching
         create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type, avatar_gender)
     else:
-        # Enhanced browser TTS with gender matching
-        create_instant_browser_voice(text, voice_type, avatar_gender)
+        # Enhanced browser TTS with mobile support
+        create_mobile_friendly_voice(text, voice_type, avatar_gender)
+
+def create_mobile_friendly_voice(text, voice_type, gender):
+    """Mobile-friendly browser TTS with user interaction support"""
+    
+    clean_text = enhance_text_for_speech(text, voice_type)
+    
+    # Voice personality settings
+    voice_settings = {
+        'professional': {'rate': 0.85, 'pitch': 1.0, 'emphasis': 'neutral'},
+        'confident': {'rate': 1.1, 'pitch': 0.8, 'emphasis': 'strong'},
+        'caring': {'rate': 0.75, 'pitch': 1.3, 'emphasis': 'gentle'},
+        'wise': {'rate': 0.65, 'pitch': 0.7, 'emphasis': 'thoughtful'},
+        'energetic': {'rate': 1.25, 'pitch': 1.4, 'emphasis': 'excited'},
+        'executive': {'rate': 0.9, 'pitch': 0.85, 'emphasis': 'authoritative'}
+    }
+    
+    settings = voice_settings.get(voice_type, voice_settings['professional'])
+    
+    # Strong gender adjustments
+    if gender == 'male':
+        settings['pitch'] = max(0.4, settings['pitch'] - 0.4)  # Much deeper for males
+    else:
+        settings['pitch'] = min(1.6, settings['pitch'] + 0.2)  # Higher for females
+    
+    # Add personality-specific pauses and emphasis
+    if voice_type == 'wise':
+        clean_text = clean_text.replace('.', '... ')
+        clean_text = clean_text.replace(',', ', ')
+    elif voice_type == 'energetic':
+        clean_text = clean_text.replace('!', '! ')
+        clean_text = clean_text.replace('.', '! ')
+    elif voice_type == 'caring':
+        clean_text = clean_text.replace('you', 'you... ')
+    elif voice_type == 'confident':
+        clean_text = clean_text.replace('.', '. ')
+    
+    voice_html = f"""
+    <div style="
+        padding: 15px;
+        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
+        border-radius: 15px;
+        border: 1px solid rgba(138, 43, 226, 0.2);
+        margin: 10px 0;
+        text-align: center;
+    ">
+        <div style="margin-bottom: 10px; color: #8A2BE2; font-weight: bold;">
+            🎭 Your coach is speaking...
+        </div>
+        <button id="playVoiceButton" onclick="playVoiceManually()" style="
+            background: linear-gradient(135deg, #8A2BE2, #9370DB);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+            display: none;
+        ">
+            🔊 Tap to hear voice (Mobile)
+        </button>
+    </div>
+
+    <script>
+    let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let voiceUtterance = null;
+    
+    function playVoiceMobileFriendly() {{
+        if ('speechSynthesis' in window) {{
+            // Cancel any existing speech
+            speechSynthesis.cancel();
+            
+            voiceUtterance = new SpeechSynthesisUtterance(`{clean_text}`);
+            voiceUtterance.rate = {settings['rate']};
+            voiceUtterance.pitch = {settings['pitch']};
+            voiceUtterance.volume = 1.0;
+            
+            // Gender and personality-based voice selection
+            const voices = speechSynthesis.getVoices();
+            let bestVoice;
+            
+            if ('{gender}' === 'male') {{
+                if ('{voice_type}' === 'wise') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('daniel') ||
+                         v.name.toLowerCase().includes('alex') ||
+                         v.name.toLowerCase().includes('male'))
+                    );
+                }} else if ('{voice_type}' === 'confident' || '{voice_type}' === 'executive') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('david') ||
+                         v.name.toLowerCase().includes('mark') ||
+                         v.name.toLowerCase().includes('male'))
+                    );
+                }}
+                
+                if (!bestVoice) {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        v.name.toLowerCase().includes('male')
+                    );
+                }}
+            }} else {{
+                if ('{voice_type}' === 'caring') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('samantha') ||
+                         v.name.toLowerCase().includes('susan') ||
+                         v.name.toLowerCase().includes('female'))
+                    );
+                }} else if ('{voice_type}' === 'energetic') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('victoria') ||
+                         v.name.toLowerCase().includes('karen') ||
+                         v.name.toLowerCase().includes('female'))
+                    );
+                }} else if ('{voice_type}' === 'professional') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('alex') ||
+                         v.name.toLowerCase().includes('female'))
+                    );
+                }}
+            }}
+            
+            if (!bestVoice) {{
+                bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
+            }}
+            
+            if (bestVoice) {{
+                voiceUtterance.voice = bestVoice;
+                console.log('Selected voice:', bestVoice.name, 'for', '{voice_type}', '{gender}');
+            }}
+            
+            // Voice-specific adjustments
+            if ('{voice_type}' === 'wise') {{
+                voiceUtterance.rate = voiceUtterance.rate * 0.8;
+            }} else if ('{voice_type}' === 'energetic') {{
+                voiceUtterance.rate = voiceUtterance.rate * 1.2;
+                voiceUtterance.volume = 1.0;
+            }} else if ('{voice_type}' === 'caring') {{
+                voiceUtterance.pitch = voiceUtterance.pitch * 1.1;
+            }}
+            
+            // Start speech
+            speechSynthesis.speak(voiceUtterance);
+            console.log('Voice started for {voice_type} {gender}');
+        }}
+    }}
+    
+    function playVoiceManually() {{
+        const button = document.getElementById('playVoiceButton');
+        button.style.display = 'none';
+        playVoiceMobileFriendly();
+    }}
+    
+    // Handle mobile autoplay restrictions
+    if (isMobileDevice) {{
+        // Show manual play button for mobile
+        document.getElementById('playVoiceButton').style.display = 'inline-block';
+        console.log('Mobile device detected - showing manual play button');
+    }} else {{
+        // Auto-play for desktop
+        if (speechSynthesis.getVoices().length > 0) {{
+            setTimeout(playVoiceMobileFriendly, 500);
+        }} else {{
+            speechSynthesis.onvoiceschanged = function() {{
+                setTimeout(playVoiceMobileFriendly, 500);
+            }};
+        }}
+    }}
+    
+    // Also try auto-play even on mobile (some browsers allow it)
+    setTimeout(() => {{
+        if (!isMobileDevice || speechSynthesis.speaking) {{
+            // Hide manual button if auto-play worked
+            document.getElementById('playVoiceButton').style.display = 'none';
+        }}
+    }}, 1000);
+    </script>
+    """
+    
+    st.components.v1.html(voice_html, height=120)
 
 def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
     """Instant ElevenLabs voice with gender-matched voices"""
@@ -924,16 +1110,13 @@ def get_coach_response(user_input, chat_history):
         name = st.session_state.user_profile.get('name', 'there')
         return f"I'm still here for you, {name}. Could you share that with me again?"
 
-# Voice Input Processing Functions (moved after get_coach_response)
+# Voice Input Processing Functions
 def check_for_pending_voice_message():
-    """Check for voice messages in URL parameters"""
-    # Simple method: check query params
+    """Check for voice messages in URL parameters (legacy)"""
     if 'voice_msg' in st.query_params:
         voice_message = st.query_params['voice_msg']
-        # Clear the query param immediately
         del st.query_params['voice_msg']
         return voice_message
-    
     return None
 
 def process_voice_message(voice_input):
@@ -941,21 +1124,17 @@ def process_voice_message(voice_input):
     if not voice_input or not voice_input.strip():
         return
     
-    # Reset voice flag for new conversation
     st.session_state.voice_played = False
     
-    # Add user message
     st.session_state.chat_history.append({
         'role': 'user',
         'content': voice_input,
         'timestamp': datetime.now()
     })
     
-    # Get coach response
     with st.spinner("Your coach is responding to your voice message..."):
         coach_response = get_coach_response(voice_input, st.session_state.chat_history)
     
-    # Add coach response
     st.session_state.chat_history.append({
         'role': 'coach',
         'content': coach_response,
@@ -984,14 +1163,14 @@ def chat_interface():
 # Enhanced user profile sidebar
 def user_profile_sidebar():
     with st.sidebar:
-        st.header("Your Coach Settings")
+        st.header("👤 Your Coach Settings")
         
         # Basic info
         name = st.text_input("Your Name", value=st.session_state.user_profile.get('name', ''))
         goals = st.text_area("Your Goals", value=st.session_state.user_profile.get('goals', ''))
         
         # Enhanced avatar choices
-        st.subheader("Choose Your AI Coach")
+        st.subheader("🎭 Choose Your AI Coach")
         avatar_options = {
             "sophia": "👩‍💼 Sophia - Professional Female Coach",
             "marcus": "👨‍💼 Marcus - Business Male Mentor", 
@@ -1011,7 +1190,7 @@ def user_profile_sidebar():
         )
         
         # Voice personality
-        st.subheader("Voice Style")
+        st.subheader("🎤 Voice Style")
         voice_type = st.selectbox(
             "Coach Personality",
             ["caring", "professional", "energetic", "wise"],
@@ -1019,15 +1198,15 @@ def user_profile_sidebar():
                 st.session_state.user_profile.get('voice_type', 'caring')
             ),
             format_func=lambda x: {
-                'caring': 'Caring & Supportive',
-                'professional': 'Professional & Direct', 
-                'energetic': 'Energetic & Motivating',
-                'wise': 'Wise & Thoughtful'
+                'caring': '💝 Caring & Supportive',
+                'professional': '💼 Professional & Direct', 
+                'energetic': '⚡ Energetic & Motivating',
+                'wise': '🧙‍♂️ Wise & Thoughtful'
             }[x]
         )
         
         # Save profile
-        if st.button("Save Settings", type="primary"):
+        if st.button("💾 Save Settings", type="primary"):
             st.session_state.user_profile = {
                 'name': name,
                 'goals': goals,
@@ -1056,7 +1235,7 @@ def main():
     # Header
     st.markdown("""
     <div class="main-header">
-        <h1>Avatar Success Coach</h1>
+        <h1>🎯 Avatar Success Coach</h1>
         <p>Your AI-powered success mentor with instant talking avatars</p>
     </div>
     """, unsafe_allow_html=True)
@@ -1103,246 +1282,16 @@ def main():
         # Chat interface
         chat_interface()
         
-        # WhatsApp-style text input with voice button
-        st.markdown("### Send Message")
+        # Regular text input form with voice section below
+        st.markdown("### ✍️ Send Message")
         
-        # Check for voice message first and process immediately
-        voice_message = check_for_pending_voice_message()
-        if voice_message:
-            process_voice_message(voice_message)
-        
-        # Regular text input form with voice button integration
         with st.form("message_form", clear_on_submit=True):
-            col_input, col_voice = st.columns([5, 1])
-            
-            with col_input:
-                user_input = st.text_area(
-                    "Type your message:",
-                    height=80,
-                    placeholder="Ask about your goals, challenges, or anything related to success...",
-                    key="user_text_input"
-                )
-            
-            with col_voice:
-                st.markdown("**Voice**")
-                # WhatsApp-style voice button on RIGHT side
-                voice_button_html = """
-                <div style="margin-top: 10px;">
-                    <button id="voiceButton" 
-                            onmousedown="startRecording()" 
-                            onmouseup="stopRecording()"
-                            ontouchstart="startRecording()" 
-                            ontouchend="stopRecording()"
-                            style="
-                                background: linear-gradient(135deg, #8A2BE2, #9370DB);
-                                border: none;
-                                border-radius: 50%;
-                                width: 60px;
-                                height: 60px;
-                                color: white;
-                                font-size: 24px;
-                                cursor: pointer;
-                                box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
-                                transition: all 0.2s ease;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                user-select: none;
-                                -webkit-user-select: none;
-                                margin: 0 auto;
-                            "
-                            onmouseover="if(!this.classList.contains('recording')) this.style.transform='scale(1.1)'"
-                            onmouseout="if(!this.classList.contains('recording')) this.style.transform='scale(1)'">
-                        🎤
-                    </button>
-                    
-                    <div id="voiceStatus" style="
-                        text-align: center;
-                        margin-top: 8px;
-                        font-size: 11px;
-                        color: #8A2BE2;
-                        font-weight: bold;
-                        min-height: 15px;
-                    ">
-                        Hold to record
-                    </div>
-                    
-                    <!-- Voice Waveform -->
-                    <div id="voiceWaveform" style="
-                        display: none;
-                        justify-content: center;
-                        align-items: center;
-                        gap: 2px;
-                        margin-top: 8px;
-                    ">
-                        <div class="wave-bar" style="width: 3px; height: 15px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite;"></div>
-                        <div class="wave-bar" style="width: 3px; height: 15px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.2s;"></div>
-                        <div class="wave-bar" style="width: 3px; height: 15px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.4s;"></div>
-                        <div class="wave-bar" style="width: 3px; height: 15px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.6s;"></div>
-                    </div>
-                </div>
-
-                <script>
-                let recognition;
-                let isRecording = false;
-                let finalTranscript = '';
-                
-                // CSS Animation for waveform
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes wave {
-                        0%, 100% { height: 15px; }
-                        50% { height: 25px; }
-                    }
-                    .recording {
-                        background: linear-gradient(135deg, #ff4757, #ff3742) !important;
-                        animation: pulse-record 1s ease-in-out infinite !important;
-                    }
-                    @keyframes pulse-record {
-                        0% { transform: scale(1); }
-                        50% { transform: scale(1.1); }
-                        100% { transform: scale(1); }
-                    }
-                `;
-                document.head.appendChild(style);
-                
-                // Initialize speech recognition
-                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    recognition = new SpeechRecognition();
-                    recognition.continuous = false;
-                    recognition.interimResults = true;
-                    recognition.lang = 'en-US';
-                    
-                    recognition.onstart = function() {
-                        document.getElementById('voiceStatus').innerHTML = 'Recording...';
-                        document.getElementById('voiceWaveform').style.display = 'flex';
-                        finalTranscript = '';
-                    };
-                    
-                    recognition.onresult = function(event) {
-                        let interimTranscript = '';
-                        finalTranscript = '';
-                        
-                        for (let i = event.resultIndex; i < event.results.length; i++) {
-                            if (event.results[i].isFinal) {
-                                finalTranscript += event.results[i][0].transcript;
-                            } else {
-                                interimTranscript += event.results[i][0].transcript;
-                            }
-                        }
-                        
-                        // Show live transcription in status
-                        const displayText = finalTranscript + interimTranscript;
-                        if (displayText.trim()) {
-                            document.getElementById('voiceStatus').innerHTML = 'Got it!';
-                        }
-                    };
-                    
-                    recognition.onend = function() {
-                        // Auto-submit when recording ends
-                        if (finalTranscript.trim()) {
-                            document.getElementById('voiceStatus').innerHTML = 'Sending...';
-                            
-                            // RELIABLE METHOD: Fill text area and trigger form submission
-                            const textArea = document.querySelector('textarea[data-testid="stTextArea"]');
-                            if (!textArea) {
-                                // Try alternative selectors
-                                const textAreas = document.querySelectorAll('textarea');
-                                for (let ta of textAreas) {
-                                    if (ta.placeholder && ta.placeholder.includes('Ask about')) {
-                                        textArea = ta;
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                            if (textArea) {
-                                // Fill the text area
-                                textArea.value = finalTranscript.trim();
-                                textArea.focus();
-                                
-                                // Trigger input events
-                                textArea.dispatchEvent(new Event('input', { bubbles: true }));
-                                textArea.dispatchEvent(new Event('change', { bubbles: true }));
-                                
-                                // Find and click submit button
-                                setTimeout(() => {
-                                    const submitButtons = document.querySelectorAll('button');
-                                    for (let btn of submitButtons) {
-                                        if (btn.textContent.trim() === 'Send' || btn.textContent.includes('Send')) {
-                                            btn.click();
-                                            console.log('Voice message submitted successfully!');
-                                            break;
-                                        }
-                                    }
-                                }, 200);
-                                
-                                // Reset after successful submission
-                                setTimeout(() => {
-                                    resetRecording();
-                                }, 1000);
-                            } else {
-                                // Fallback: Use URL parameter method
-                                console.log('Text area not found, using URL method');
-                                const url = new URL(window.location);
-                                url.searchParams.set('voice_msg', encodeURIComponent(finalTranscript.trim()));
-                                window.location.href = url.toString();
-                            }
-                            
-                        } else {
-                            document.getElementById('voiceStatus').innerHTML = 'No speech detected';
-                            setTimeout(resetRecording, 2000);
-                        }
-                    };
-                    
-                    recognition.onerror = function(event) {
-                        console.error('Speech recognition error:', event.error);
-                        document.getElementById('voiceStatus').innerHTML = 'Error occurred';
-                        setTimeout(resetRecording, 2000);
-                    };
-                }
-
-                function startRecording() {
-                    if (isRecording) return;
-                    
-                    isRecording = true;
-                    const button = document.getElementById('voiceButton');
-                    button.classList.add('recording');
-                    
-                    if (recognition) {
-                        try {
-                            recognition.start();
-                        } catch (error) {
-                            console.error('Recognition start error:', error);
-                            resetRecording();
-                        }
-                    } else {
-                        alert('Speech recognition not supported. Please use Chrome or Edge browser.');
-                        resetRecording();
-                    }
-                }
-
-                function stopRecording() {
-                    if (!isRecording) return;
-                    
-                    isRecording = false;
-                    if (recognition) {
-                        recognition.stop();
-                    }
-                }
-
-                function resetRecording() {
-                    isRecording = false;
-                    const button = document.getElementById('voiceButton');
-                    button.classList.remove('recording');
-                    document.getElementById('voiceStatus').innerHTML = 'Hold to record';
-                    document.getElementById('voiceWaveform').style.display = 'none';
-                }
-                </script>
-                """
-                
-                st.components.v1.html(voice_button_html, height=120)
+            user_input = st.text_area(
+                "Type your message:",
+                height=80,
+                placeholder="Ask about your goals, challenges, or anything related to success...",
+                key="user_text_input"
+            )
             
             submitted = st.form_submit_button("Send", type="primary")
             
@@ -1371,8 +1320,335 @@ def main():
                 st.session_state.is_speaking = True
                 st.rerun()
         
+        # Check and process voice message using session state
+        if 'pending_voice_input' in st.session_state and st.session_state.pending_voice_input:
+            voice_input = st.session_state.pending_voice_input
+            st.session_state.pending_voice_input = None  # Clear it
+            
+            # Process voice message
+            st.session_state.voice_played = False
+            
+            st.session_state.chat_history.append({
+                'role': 'user',
+                'content': voice_input,
+                'timestamp': datetime.now()
+            })
+            
+            with st.spinner("Your coach is responding to your voice message..."):
+                coach_response = get_coach_response(voice_input, st.session_state.chat_history)
+            
+            st.session_state.chat_history.append({
+                'role': 'coach',
+                'content': coach_response,
+                'timestamp': datetime.now()
+            })
+            
+            st.session_state.is_speaking = True
+            st.rerun()
+        
+        # Voice recording section BELOW the form with button on right
+        st.markdown("---")
+        st.markdown("### 🎤 Voice Message")
+        
+        voice_section_html = f"""
+        <div style="
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
+            border-radius: 20px;
+            border: 2px solid rgba(138, 43, 226, 0.2);
+            margin: 10px 0;
+        ">
+            <!-- Voice Status Area (LEFT) -->
+            <div id="voiceStatusArea" style="
+                flex-grow: 1;
+                padding: 10px 15px;
+                background: white;
+                border-radius: 15px;
+                border: 1px solid #ddd;
+                min-height: 50px;
+                display: flex;
+                align-items: center;
+            ">
+                <div id="voiceStatus" style="
+                    color: #8A2BE2;
+                    font-weight: bold;
+                    font-size: 14px;
+                ">
+                    🎤 Hold the button to record your voice message
+                </div>
+            </div>
+            
+            <!-- Voice Button (RIGHT SIDE) -->
+            <button id="voiceButton" 
+                    onmousedown="startRecording()" 
+                    onmouseup="stopRecording()"
+                    ontouchstart="startRecording()" 
+                    ontouchend="stopRecording()"
+                    style="
+                        background: linear-gradient(135deg, #8A2BE2, #9370DB);
+                        border: none;
+                        border-radius: 50%;
+                        width: 70px;
+                        height: 70px;
+                        color: white;
+                        font-size: 28px;
+                        cursor: pointer;
+                        box-shadow: 0 4px 20px rgba(138, 43, 226, 0.4);
+                        transition: all 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        user-select: none;
+                        -webkit-user-select: none;
+                        flex-shrink: 0;
+                    "
+                    onmouseover="if(!this.classList.contains('recording')) this.style.transform='scale(1.05)'"
+                    onmouseout="if(!this.classList.contains('recording')) this.style.transform='scale(1)'">
+                🎤
+            </button>
+        </div>
+        
+        <!-- Voice Waveform Animation -->
+        <div id="voiceWaveform" style="
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            margin: 15px 0;
+            padding: 20px;
+            background: rgba(138, 43, 226, 0.1);
+            border-radius: 15px;
+        ">
+            <div class="wave-bar" style="width: 5px; height: 25px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite;"></div>
+            <div class="wave-bar" style="width: 5px; height: 25px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; animation-delay: 0.1s;"></div>
+            <div class="wave-bar" style="width: 5px; height: 25px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; animation-delay: 0.2s;"></div>
+            <div class="wave-bar" style="width: 5px; height: 25px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; animation-delay: 0.3s;"></div>
+            <div class="wave-bar" style="width: 5px; height: 25px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; animation-delay: 0.4s;"></div>
+        </div>
+
+        <script>
+        let recognition;
+        let isRecording = false;
+        let finalTranscript = '';
+        let voiceProcessingKey = 'voice_processing_{int(time.time() * 1000)}';
+        
+        // CSS Animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes wave {{
+                0%, 100% {{ height: 25px; }}
+                50% {{ height: 45px; }}
+            }}
+            .recording {{
+                background: linear-gradient(135deg, #ff4757, #ff3742) !important;
+                animation: pulse-record 1s ease-in-out infinite !important;
+                transform: scale(1.1) !important;
+            }}
+            @keyframes pulse-record {{
+                0% {{ box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4); }}
+                50% {{ box-shadow: 0 6px 30px rgba(255, 71, 87, 0.8); }}
+                100% {{ box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4); }}
+            }}
+        `;
+        document.head.appendChild(style);
+        
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {{
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = function() {{
+                document.getElementById('voiceStatus').innerHTML = '🔴 Recording... Release to send automatically';
+                document.getElementById('voiceWaveform').style.display = 'flex';
+                finalTranscript = '';
+            }};
+            
+            recognition.onresult = function(event) {{
+                let interimTranscript = '';
+                finalTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {{
+                    if (event.results[i].isFinal) {{
+                        finalTranscript += event.results[i][0].transcript;
+                    }} else {{
+                        interimTranscript += event.results[i][0].transcript;
+                    }}
+                }}
+                
+                const displayText = finalTranscript + interimTranscript;
+                if (displayText.trim()) {{
+                    document.getElementById('voiceStatus').innerHTML = '📝 "' + displayText + '"';
+                }}
+            }};
+            
+            recognition.onend = function() {{
+                if (finalTranscript.trim()) {{
+                    document.getElementById('voiceStatus').innerHTML = '✅ Sending message...';
+                    
+                    // RELIABLE METHOD: Use Streamlit's session state
+                    const voiceData = {{
+                        message: finalTranscript.trim(),
+                        timestamp: Date.now(),
+                        key: voiceProcessingKey
+                    }};
+                    
+                    // Store in sessionStorage
+                    sessionStorage.setItem('streamlit_voice_data', JSON.stringify(voiceData));
+                    
+                    // Method 1: Try to trigger Streamlit rerun
+                    try {{
+                        // Create a custom event for Streamlit
+                        const streamlitEvent = new CustomEvent('streamlitVoiceMessage', {{
+                            detail: voiceData
+                        }});
+                        window.dispatchEvent(streamlitEvent);
+                        
+                        // Force page refresh to ensure processing
+                        setTimeout(() => {{
+                            window.location.reload();
+                        }}, 1500);
+                        
+                    }} catch (error) {{
+                        console.error('Voice submission error:', error);
+                        // Fallback: Direct page reload
+                        setTimeout(() => {{
+                            window.location.reload();
+                        }}, 1000);
+                    }}
+                    
+                }} else {{
+                    document.getElementById('voiceStatus').innerHTML = '❌ No speech detected. Try again.';
+                    setTimeout(resetRecording, 2500);
+                }}
+            }};
+            
+            recognition.onerror = function(event) {{
+                console.error('Speech recognition error:', event.error);
+                document.getElementById('voiceStatus').innerHTML = '❌ Recognition error: ' + event.error;
+                setTimeout(resetRecording, 3000);
+            }};
+        }} else {{
+            document.getElementById('voiceStatus').innerHTML = '❌ Voice recording not supported on this browser';
+        }}
+
+        function startRecording() {{
+            if (isRecording) return;
+            
+            isRecording = true;
+            const button = document.getElementById('voiceButton');
+            button.classList.add('recording');
+            
+            if (recognition) {{
+                try {{
+                    recognition.start();
+                }} catch (error) {{
+                    console.error('Failed to start recording:', error);
+                    document.getElementById('voiceStatus').innerHTML = '❌ Failed to start recording';
+                    resetRecording();
+                }}
+            }} else {{
+                document.getElementById('voiceStatus').innerHTML = '❌ Speech recognition not supported';
+                resetRecording();
+            }}
+        }}
+
+        function stopRecording() {{
+            if (!isRecording) return;
+            
+            isRecording = false;
+            if (recognition) {{
+                recognition.stop();
+            }}
+        }}
+
+        function resetRecording() {{
+            isRecording = false;
+            const button = document.getElementById('voiceButton');
+            if (button) {{
+                button.classList.remove('recording');
+            }}
+            document.getElementById('voiceStatus').innerHTML = '🎤 Hold the button to record your voice message';
+            document.getElementById('voiceWaveform').style.display = 'none';
+        }}
+
+        // Check for stored voice data on page load
+        window.addEventListener('load', function() {{
+            setTimeout(() => {{
+                const storedData = sessionStorage.getItem('streamlit_voice_data');
+                if (storedData) {{
+                    try {{
+                        const voiceData = JSON.parse(storedData);
+                        sessionStorage.removeItem('streamlit_voice_data');
+                        
+                        // Set a flag for Python to pick up
+                        sessionStorage.setItem('python_voice_message', voiceData.message);
+                        console.log('Voice message ready for Python:', voiceData.message);
+                        
+                    }} catch (e) {{
+                        console.error('Error processing stored voice data:', e);
+                    }}
+                }}
+            }}, 500);
+        }});
+        </script>
+        """
+        
+        st.components.v1.html(voice_section_html, height=200)
+        
+        # Check for voice message from JavaScript
+        voice_check_script = """
+        <script>
+        // Check for voice message from sessionStorage
+        const pythonVoiceMessage = sessionStorage.getItem('python_voice_message');
+        if (pythonVoiceMessage) {
+            sessionStorage.removeItem('python_voice_message');
+            
+            // Store in a way Python can access via query params
+            const url = new URL(window.location);
+            url.searchParams.set('voice_input', encodeURIComponent(pythonVoiceMessage));
+            window.location.href = url.toString();
+        }
+        </script>
+        """
+        
+        st.components.v1.html(voice_check_script, height=0)
+        
+        # Process voice input from URL parameters
+        if 'voice_input' in st.query_params:
+            voice_message = st.query_params['voice_input']
+            # Clear the parameter
+            del st.query_params['voice_input']
+            
+            if voice_message.strip():
+                # Process immediately
+                st.session_state.voice_played = False
+                
+                st.session_state.chat_history.append({
+                    'role': 'user',
+                    'content': voice_message,
+                    'timestamp': datetime.now()
+                })
+                
+                with st.spinner("Your coach is responding to your voice message..."):
+                    coach_response = get_coach_response(voice_message, st.session_state.chat_history)
+                
+                st.session_state.chat_history.append({
+                    'role': 'coach',
+                    'content': coach_response,
+                    'timestamp': datetime.now()
+                })
+                
+                st.session_state.is_speaking = True
+                st.rerun()
+        
         # Clear chat
-        if st.button("Clear Chat"):
+        if st.button("🗑️ Clear Chat"):
             st.session_state.chat_history = []
             st.session_state.is_speaking = False
             st.session_state.voice_played = False
@@ -1422,10 +1698,10 @@ def main():
                     if elevenlabs_key and elevenlabs_key != "your_elevenlabs_api_key_here":
                         create_instant_elevenlabs_voice(test_text, elevenlabs_key, voice_type, test_gender)
                     else:
-                        create_instant_browser_voice(test_text, voice_type, test_gender)
+                        create_mobile_friendly_voice(test_text, voice_type, test_gender)
                 
-                st.subheader("Voice Input Test")
-                if st.button("Test Voice Recording"):
+                st.subheader("🎤 Voice Input Test")
+                if st.button("🔊 Test Voice Recording"):
                     st.info("Use the voice button next to the text input above to test voice recording!")
                     st.markdown("**Instructions:**")
                     st.markdown("1. Hold the 🎤 button next to the text input")
@@ -1433,7 +1709,7 @@ def main():
                     st.markdown("3. Release the button to auto-send")
                 
                 # Test ALL personalities button
-                if st.button("Test All Personalities"):
+                if st.button("🎭 Test All Personalities"):
                     st.session_state.voice_played = False
                     st.write("Testing all voice personalities...")
                     
@@ -1454,14 +1730,14 @@ def main():
                         if i < len(personalities) - 1:
                             st.write("---")
                 
-                st.subheader("Avatar Animation Test")
-                if st.button("Test Avatar Animation"):
+                st.subheader("🎭 Avatar Animation Test")
+                if st.button("🎬 Test Avatar Animation"):
                     st.info("Testing avatar animation - check the avatar above!")
                     st.session_state.is_speaking = True
                     st.rerun()
             
             with col_debug2:
-                st.subheader("System Status")
+                st.subheader("🔧 System Status")
                 st.write("**API Connections:**")
                 st.write(f"✅ Gemini AI: {bool(st.secrets.get('GEMINI_API_KEY'))}")
                 st.write(f"✅ ElevenLabs: {bool(setup_elevenlabs())}")
