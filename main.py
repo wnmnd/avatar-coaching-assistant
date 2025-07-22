@@ -1109,7 +1109,7 @@ def main():
         # Check for voice message first
         voice_message = check_for_pending_voice_message()
         
-        # WhatsApp-style input container
+        # WhatsApp-style input container with voice button on LEFT
         whatsapp_input_html = """
         <div style="
             display: flex;
@@ -1121,7 +1121,7 @@ def main():
             border: 2px solid rgba(138, 43, 226, 0.2);
             margin-bottom: 15px;
         ">
-            <!-- Voice Button -->
+            <!-- Voice Button (LEFT SIDE) -->
             <button id="voiceButton" 
                     onmousedown="startRecording()" 
                     onmouseup="stopRecording()"
@@ -1144,13 +1144,14 @@ def main():
                         user-select: none;
                         -webkit-user-select: none;
                         flex-shrink: 0;
+                        order: 1;
                     "
                     onmouseover="if(!this.classList.contains('recording')) this.style.transform='scale(1.1)'"
                     onmouseout="if(!this.classList.contains('recording')) this.style.transform='scale(1)'">
                 🎤
             </button>
             
-            <!-- Voice Status -->
+            <!-- Voice Status (RIGHT SIDE) -->
             <div id="voiceStatus" style="
                 flex-grow: 1;
                 padding: 10px 15px;
@@ -1162,8 +1163,9 @@ def main():
                 align-items: center;
                 color: #666;
                 font-size: 14px;
+                order: 2;
             ">
-                Hold mic to record, or type below...
+                🎤 Hold button to record, or type below...
             </div>
         </div>
         
@@ -1184,6 +1186,12 @@ def main():
             <div class="wave-bar" style="width: 4px; height: 20px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.6s;"></div>
             <div class="wave-bar" style="width: 4px; height: 20px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 2px; animation: wave 1.5s ease-in-out infinite; animation-delay: 0.8s;"></div>
         </div>
+
+        <!-- Hidden form for voice input submission -->
+        <form id="voiceForm" style="display: none;">
+            <input type="text" id="voiceInput" name="voice_message" />
+            <button type="submit" id="voiceSubmit">Submit</button>
+        </form>
 
         <script>
         let recognition;
@@ -1218,7 +1226,7 @@ def main():
             recognition.lang = 'en-US';
             
             recognition.onstart = function() {
-                document.getElementById('voiceStatus').innerHTML = '🔴 Recording... Release to send';
+                document.getElementById('voiceStatus').innerHTML = '🔴 Recording... Release to send automatically';
                 document.getElementById('voiceWaveform').style.display = 'flex';
                 finalTranscript = '';
             };
@@ -1245,19 +1253,35 @@ def main():
             recognition.onend = function() {
                 // Auto-submit when recording ends
                 if (finalTranscript.trim()) {
-                    document.getElementById('voiceStatus').innerHTML = '✅ Sending message...';
+                    document.getElementById('voiceStatus').innerHTML = '✅ Sending message automatically...';
                     
-                    // SIMPLE: Store and redirect with query parameter
-                    const message = finalTranscript.trim();
-                    const currentUrl = new URL(window.location);
-                    currentUrl.searchParams.set('voice_msg', encodeURIComponent(message));
+                    // Method 1: Fill the regular text area and submit
+                    const textArea = document.querySelector('textarea[placeholder*="Ask about"]');
+                    if (textArea) {
+                        textArea.value = finalTranscript.trim();
+                        textArea.dispatchEvent(new Event('input', { bubbles: true }));
+                        textArea.dispatchEvent(new Event('change', { bubbles: true }));
+                        
+                        // Find and click the Send button after a short delay
+                        setTimeout(() => {
+                            const sendButton = document.querySelector('button[kind="primary"]');
+                            if (sendButton && sendButton.textContent.includes('Send')) {
+                                sendButton.click();
+                                console.log('Voice message sent:', finalTranscript.trim());
+                            } else {
+                                // Fallback: try other methods
+                                console.log('Send button not found, trying alternative method');
+                                fallbackSubmission();
+                            }
+                        }, 500);
+                    } else {
+                        fallbackSubmission();
+                    }
                     
-                    console.log('Redirecting with voice message:', message);
-                    
-                    // Redirect to same page with voice message in URL
+                    // Reset after 3 seconds
                     setTimeout(() => {
-                        window.location.href = currentUrl.toString();
-                    }, 1000);
+                        resetRecording();
+                    }, 3000);
                     
                 } else {
                     document.getElementById('voiceStatus').innerHTML = '❌ No speech detected. Try again.';
@@ -1270,6 +1294,24 @@ def main():
                 document.getElementById('voiceStatus').innerHTML = '❌ Error: ' + event.error + '. Try again.';
                 setTimeout(resetRecording, 3000);
             };
+        }
+
+        function fallbackSubmission() {
+            // Method 2: Try to trigger Streamlit rerun with stored message
+            sessionStorage.setItem('pending_voice_message', finalTranscript.trim());
+            
+            // Method 3: Create custom event
+            const voiceEvent = new CustomEvent('voiceMessageSubmit', {
+                detail: { message: finalTranscript.trim() }
+            });
+            window.dispatchEvent(voiceEvent);
+            
+            // Method 4: Try to reload page with query parameter
+            setTimeout(() => {
+                const url = new URL(window.location);
+                url.searchParams.set('voice_msg', encodeURIComponent(finalTranscript.trim()));
+                window.location.href = url.toString();
+            }, 2000);
         }
 
         function startRecording() {
@@ -1305,9 +1347,29 @@ def main():
             isRecording = false;
             const button = document.getElementById('voiceButton');
             button.classList.remove('recording');
-            document.getElementById('voiceStatus').innerHTML = 'Hold mic to record, or type below...';
+            document.getElementById('voiceStatus').innerHTML = '🎤 Hold button to record, or type below...';
             document.getElementById('voiceWaveform').style.display = 'none';
         }
+        
+        // Listen for page load to check for voice messages
+        window.addEventListener('load', function() {
+            const storedMessage = sessionStorage.getItem('pending_voice_message');
+            if (storedMessage) {
+                sessionStorage.removeItem('pending_voice_message');
+                const textArea = document.querySelector('textarea[placeholder*="Ask about"]');
+                if (textArea) {
+                    textArea.value = storedMessage;
+                    textArea.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    setTimeout(() => {
+                        const sendButton = document.querySelector('button[kind="primary"]');
+                        if (sendButton && sendButton.textContent.includes('Send')) {
+                            sendButton.click();
+                        }
+                    }, 1000);
+                }
+            }
+        });
         </script>
         """
         
