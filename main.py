@@ -270,117 +270,125 @@ def setup_gemini():
         st.error(f"❌ Gemini API Error: {str(e)}")
         st.stop()
 
-def setup_heygen():
-    """Setup HeyGen API for real avatars"""
-    return st.secrets.get("HEYGEN_API_KEY") or os.getenv("HEYGEN_API_KEY")
+def setup_did():
+    """Setup D-ID API for real avatars"""
+    return st.secrets.get("DID_API_KEY") or os.getenv("DID_API_KEY")
 
 def setup_elevenlabs():
     """Setup ElevenLabs for natural voice"""
     return st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
 
-# HeyGen Avatar Integration
+# D-ID Avatar Integration
 def generate_avatar_video(text, avatar_choice):
-    """Generate real talking avatar video using HeyGen"""
-    heygen_key = setup_heygen()
-    if not heygen_key or heygen_key == "your_heygen_api_key_here":
-        st.warning("⚠️ HeyGen API key not set. Using emoji avatar.")
+    """Generate real talking avatar video using D-ID"""
+    did_key = setup_did()
+    if not did_key or did_key == "your_did_api_key_here":
+        st.warning("⚠️ D-ID API key not set. Using emoji avatar.")
         return None
     
     try:
-        # Debug: Show API attempt
-        st.info(f"🎬 Generating {avatar_choice} avatar video...")
+        st.info(f"🎬 Generating {avatar_choice} avatar video with D-ID...")
         
-        # Correct HeyGen API endpoint
-        url = "https://api.heygen.com/v2/video/generate"
+        # D-ID API endpoint
+        url = "https://api.d-id.com/talks"
         headers = {
-            "X-API-KEY": heygen_key,
+            "Authorization": f"Basic {did_key}",
             "Content-Type": "application/json"
         }
         
-        # Map avatars to correct HeyGen IDs and voices
+        # D-ID Avatar configurations with realistic human presenters
         avatar_configs = {
-            'anna': {
-                'avatar_id': 'anna_costume1_cameraA',
-                'voice_id': '1bd001e7e50f421d891986aad5158bc8'  # Female voice
+            'sophia': {
+                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/alice.jpg',
+                'voice_id': 'microsoft:en-US-AriaNeural',
+                'name': 'Sophia - Professional Female Coach'
             },
-            'josh': {
-                'avatar_id': 'josh_lite3_20230714', 
-                'voice_id': 'onwK4e9ZLuTAKqWW03F9'  # Male voice (Daniel)
+            'marcus': {
+                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/or-roman.jpg', 
+                'voice_id': 'microsoft:en-US-GuyNeural',
+                'name': 'Marcus - Business Mentor'
             },
-            'monica': {
-                'avatar_id': 'monica_costume1_cameraA',
-                'voice_id': 'EXAVITQu4vr4xnSDxMaL'  # Female voice (Bella)
+            'elena': {
+                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/amy.jpg',
+                'voice_id': 'microsoft:en-US-JennyNeural',
+                'name': 'Elena - Caring Guide'
             },
-            'wayne': {
-                'avatar_id': 'wayne_20240711',
-                'voice_id': 'TxGEqnHWrfWFTfGW9XjX'  # Male voice (Josh)
+            'david': {
+                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/david.jpg',
+                'voice_id': 'microsoft:en-US-DavisNeural', 
+                'name': 'David - Wise Advisor'
+            },
+            'maya': {
+                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/maya.jpg',
+                'voice_id': 'microsoft:en-US-SaraNeural',
+                'name': 'Maya - Success Coach'
+            },
+            'james': {
+                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/james.jpg',
+                'voice_id': 'microsoft:en-US-JasonNeural',
+                'name': 'James - Executive Coach'
             }
         }
         
-        config = avatar_configs.get(avatar_choice, avatar_configs['anna'])
+        config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
         
+        # D-ID request payload
         payload = {
-            "video_inputs": [{
-                "character": {
-                    "type": "avatar",
-                    "avatar_id": config['avatar_id']
+            "source_url": config['source_url'],
+            "script": {
+                "type": "text",
+                "subtitles": "false",
+                "provider": {
+                    "type": "microsoft",
+                    "voice_id": config['voice_id']
                 },
-                "voice": {
-                    "type": "text",
-                    "input_text": text[:300],  # Shorter for faster generation
-                    "voice_id": config['voice_id'],
-                    "speed": 1.0
-                },
-                "background": {
-                    "type": "color",
-                    "value": "#f0e6ff"
-                }
-            }],
-            "dimension": {
-                "width": 400,
-                "height": 400
+                "ssml": "false",
+                "input": text[:500]  # D-ID has character limits
+            },
+            "config": {
+                "fluent": "false",
+                "pad_audio": "0.0",
+                "stitch": "true"
             }
         }
         
-        # Debug: Show request details
-        st.write(f"🔍 Requesting avatar: {config['avatar_id']}")
+        st.write(f"🔍 Creating avatar: {config['name']}")
         
-        response = requests.post(url, headers=headers, json=payload, timeout=15)
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
         
-        # Debug: Show response
-        st.write(f"📡 API Response: {response.status_code}")
+        st.write(f"📡 D-ID API Response: {response.status_code}")
         
-        if response.status_code == 200:
+        if response.status_code == 201:  # D-ID returns 201 for successful creation
             result = response.json()
             st.write(f"📋 Response data: {result}")
             
-            video_id = result.get("data", {}).get("video_id")
-            if video_id:
-                st.success(f"✅ Video ID received: {video_id}")
-                # Poll for completion
-                return poll_video_status(video_id, heygen_key)
+            talk_id = result.get("id")
+            if talk_id:
+                st.success(f"✅ Talk ID received: {talk_id}")
+                return poll_did_video_status(talk_id, did_key)
             else:
-                st.error("❌ No video ID in response")
+                st.error("❌ No talk ID in response")
                 return None
         else:
-            st.error(f"❌ API Error {response.status_code}: {response.text}")
+            error_details = response.json() if response.headers.get('content-type') == 'application/json' else response.text
+            st.error(f"❌ D-ID API Error {response.status_code}: {error_details}")
             return None
         
     except Exception as e:
         st.error(f"❌ Avatar generation error: {str(e)}")
         return None
 
-def poll_video_status(video_id, api_key, max_attempts=20):
-    """Poll HeyGen for video completion with better error handling"""
-    headers = {"X-API-KEY": api_key}
+def poll_did_video_status(talk_id, api_key, max_attempts=30):
+    """Poll D-ID for video completion"""
+    headers = {"Authorization": f"Basic {api_key}"}
     
     progress_placeholder = st.empty()
     
     for attempt in range(max_attempts):
         try:
-            # Correct status endpoint
+            # D-ID status endpoint
             response = requests.get(
-                f"https://api.heygen.com/v1/video_status.get?video_id={video_id}",
+                f"https://api.d-id.com/talks/{talk_id}",
                 headers=headers,
                 timeout=10
             )
@@ -389,50 +397,49 @@ def poll_video_status(video_id, api_key, max_attempts=20):
             
             if response.status_code == 200:
                 result = response.json()
-                data = result.get("data", {})
-                status = data.get("status", "")
+                status = result.get("status", "")
                 
                 st.write(f"📊 Status: {status}")
                 
-                if status == "completed":
-                    video_url = data.get("video_url")
+                if status == "done":
+                    video_url = result.get("result_url")
                     progress_placeholder.success("✅ Avatar video ready!")
                     return video_url
-                elif status == "failed":
-                    error_msg = data.get("error", "Unknown error")
+                elif status == "error":
+                    error_msg = result.get("error", {}).get("description", "Unknown error")
                     progress_placeholder.error(f"❌ Video generation failed: {error_msg}")
                     return None
-                elif status in ["pending", "processing"]:
-                    time.sleep(3)  # Wait 3 seconds
+                elif status in ["created", "started"]:
+                    time.sleep(4)  # D-ID processing time
                     continue
                 else:
                     st.write(f"🔄 Unknown status: {status}")
-                    time.sleep(3)
+                    time.sleep(4)
             else:
                 st.error(f"❌ Status check failed: {response.status_code}")
-                time.sleep(3)
+                time.sleep(4)
                 
         except Exception as e:
             st.error(f"❌ Polling error: {str(e)}")
-            time.sleep(3)
+            time.sleep(4)
     
     progress_placeholder.error("⏰ Avatar generation timed out")
     return None
 
-# Enhanced Avatar Component with HeyGen
+# Enhanced Avatar Component with D-ID
 def avatar_component(is_speaking=False, latest_response=""):
     """Display real talking avatar or fallback emoji"""
     
     # Get avatar selection from profile
     profile = st.session_state.user_profile
-    avatar_choice = profile.get('avatar', 'anna')
+    avatar_choice = profile.get('avatar', 'sophia')
     
     # Try to generate real avatar if speaking and we have response
-    if is_speaking and latest_response and setup_heygen():
+    if is_speaking and latest_response and setup_did():
         # Show debug info
         with st.expander("🔍 Avatar Debug", expanded=True):
             st.write(f"Avatar choice: {avatar_choice}")
-            st.write(f"HeyGen key set: {bool(setup_heygen())}")
+            st.write(f"D-ID key set: {bool(setup_did())}")
             st.write(f"Response length: {len(latest_response)} chars")
         
         video_url = generate_avatar_video(latest_response, avatar_choice)
@@ -448,7 +455,7 @@ def avatar_component(is_speaking=False, latest_response=""):
                     </video>
                 </div>
                 <div class="avatar-status">
-                    ✅ Real avatar speaking!
+                    ✅ Real D-ID avatar speaking!
                 </div>
             </div>
             """
@@ -460,10 +467,12 @@ def avatar_component(is_speaking=False, latest_response=""):
     
     # Fallback to emoji avatar
     emoji_mapping = {
-        'anna': '👩‍💼',
-        'josh': '👨‍💼', 
-        'monica': '👩‍⚕️',
-        'wayne': '👨‍🎓'
+        'sophia': '👩‍💼',
+        'marcus': '👨‍💼', 
+        'elena': '👩‍⚕️',
+        'david': '👨‍🎓',
+        'maya': '👩‍🏫',
+        'james': '👨‍💻'
     }
     
     avatar_emoji = emoji_mapping.get(avatar_choice, '👩‍💼')
@@ -654,27 +663,35 @@ def natural_voice_component(text):
 def create_elevenlabs_voice(text, api_key, avatar_choice):
     """Create ultra-natural voice using ElevenLabs with proper male/female voices"""
     
-    # Correct ElevenLabs voice IDs for each avatar
+    # Updated ElevenLabs voice IDs for each avatar
     avatar_voices = {
-        'anna': {
+        'sophia': {
             'voice_id': 'EXAVITQu4vr4xnSDxMaL',  # Bella - Professional Female
-            'name': 'Bella (Professional Female)'
+            'name': 'Sophia (Professional Female)'
         },
-        'josh': {
+        'marcus': {
             'voice_id': 'onwK4e9ZLuTAKqWW03F9',  # Daniel - Deep Male
-            'name': 'Daniel (Professional Male)'
+            'name': 'Marcus (Professional Male)'
         },
-        'monica': {
+        'elena': {
             'voice_id': '21m00Tcm4TlvDq8ikWAM',  # Rachel - Warm Female  
-            'name': 'Rachel (Caring Female)'
+            'name': 'Elena (Caring Female)'
         },
-        'wayne': {
+        'david': {
             'voice_id': 'TxGEqnHWrfWFTfGW9XjX',  # Josh - Wise Male
-            'name': 'Josh (Wise Male)'
+            'name': 'David (Wise Male)'
+        },
+        'maya': {
+            'voice_id': 'AZnzlk1XvdvUeBnXmlld',  # Domi - Energetic Female
+            'name': 'Maya (Energetic Female)'
+        },
+        'james': {
+            'voice_id': 'VR6AewLTigWG4xSOukaG',  # Arnold - Executive Male
+            'name': 'James (Executive Male)'
         }
     }
     
-    voice_config = avatar_voices.get(avatar_choice, avatar_voices['anna'])
+    voice_config = avatar_voices.get(avatar_choice, avatar_voices['sophia'])
     voice_id = voice_config['voice_id']
     voice_name = voice_config['name']
     
@@ -772,33 +789,45 @@ def create_enhanced_browser_voice(text, avatar_choice):
     
     # Avatar-specific voice preferences
     avatar_voice_prefs = {
-        'anna': {
+        'sophia': {
             'gender': 'female',
             'type': 'professional',
             'pitch': 1.0,
             'name': 'Professional Female Voice'
         },
-        'josh': {
+        'marcus': {
             'gender': 'male', 
             'type': 'professional',
             'pitch': 0.8,
             'name': 'Professional Male Voice'
         },
-        'monica': {
+        'elena': {
             'gender': 'female',
             'type': 'caring',
             'pitch': 1.1,
             'name': 'Caring Female Voice'
         },
-        'wayne': {
+        'david': {
             'gender': 'male',
             'type': 'wise', 
             'pitch': 0.7,
             'name': 'Wise Male Voice'
+        },
+        'maya': {
+            'gender': 'female',
+            'type': 'energetic',
+            'pitch': 1.2,
+            'name': 'Energetic Female Voice'
+        },
+        'james': {
+            'gender': 'male',
+            'type': 'executive',
+            'pitch': 0.9,
+            'name': 'Executive Male Voice'
         }
     }
     
-    voice_pref = avatar_voice_prefs.get(avatar_choice, avatar_voice_prefs['anna'])
+    voice_pref = avatar_voice_prefs.get(avatar_choice, avatar_voice_prefs['sophia'])
     adjusted_pitch = voice_pref['pitch']
     voice_name = voice_pref['name']
     
@@ -1040,7 +1069,7 @@ def chat_interface():
         
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Simplified user profile sidebar
+# Enhanced user profile sidebar with new D-ID avatars
 def user_profile_sidebar():
     with st.sidebar:
         st.header("👤 Your Coach Settings")
@@ -1049,21 +1078,23 @@ def user_profile_sidebar():
         name = st.text_input("Your Name", value=st.session_state.user_profile.get('name', ''))
         goals = st.text_area("Your Goals", value=st.session_state.user_profile.get('goals', ''))
         
-        # Simplified avatar choices (4 options)
-        st.subheader("🎭 Choose Your Coach")
+        # Enhanced avatar choices (6 realistic options)
+        st.subheader("🎭 Choose Your AI Coach")
         avatar_options = {
-            "anna": "👩‍💼 Anna - Professional Coach",
-            "josh": "👨‍💼 Josh - Business Mentor", 
-            "monica": "👩‍⚕️ Monica - Caring Guide",
-            "wayne": "👨‍🎓 Wayne - Wise Advisor"
+            "sophia": "👩‍💼 Sophia - Professional Female Coach",
+            "marcus": "👨‍💼 Marcus - Business Male Mentor", 
+            "elena": "👩‍⚕️ Elena - Caring Female Guide",
+            "david": "👨‍🎓 David - Wise Male Advisor",
+            "maya": "👩‍🏫 Maya - Energetic Female Coach",
+            "james": "👨‍💻 James - Executive Male Coach"
         }
         
         avatar_choice = st.selectbox(
-            "Select Your Coach",
+            "Select Your Coach Avatar",
             options=list(avatar_options.keys()),
             format_func=lambda x: avatar_options[x],
             index=list(avatar_options.keys()).index(
-                st.session_state.user_profile.get('avatar', 'anna')
+                st.session_state.user_profile.get('avatar', 'sophia')
             )
         )
         
@@ -1105,7 +1136,7 @@ def main():
     st.markdown("""
     <div class="main-header">
         <h1>🎯 Avatar Success Coach</h1>
-        <p>Your AI-powered success mentor with real talking avatars</p>
+        <p>Your AI-powered success mentor with realistic D-ID talking avatars</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1115,7 +1146,7 @@ def main():
     # Show greeting for new users
     if st.session_state.user_profile and not st.session_state.chat_history:
         name = st.session_state.user_profile.get('name', 'there')
-        avatar = st.session_state.user_profile.get('avatar', 'anna')
+        avatar = st.session_state.user_profile.get('avatar', 'sophia')
         
         greeting = f"Hello {name}! I'm {avatar.title()}, your personal success coach. I'm here to help you achieve your wealth and success goals. What would you like to work on today?"
         
@@ -1199,24 +1230,24 @@ def main():
             col_debug1, col_debug2 = st.columns(2)
             
             with col_debug1:
-                st.subheader("🤖 HeyGen Avatar Test")
-                if st.button("🎬 Test HeyGen API"):
-                    heygen_key = setup_heygen()
-                    if heygen_key and heygen_key != "your_heygen_api_key_here":
-                        st.info("Testing HeyGen with sample text...")
-                        test_video = generate_avatar_video("Hello, this is a test message!", 'anna')
+                st.subheader("🤖 D-ID Avatar Test")
+                if st.button("🎬 Test D-ID API"):
+                    did_key = setup_did()
+                    if did_key and did_key != "your_did_api_key_here":
+                        st.info("Testing D-ID with sample text...")
+                        test_video = generate_avatar_video("Hello, this is a test message!", 'sophia')
                         if test_video:
-                            st.success("✅ HeyGen API working!")
+                            st.success("✅ D-ID API working!")
                             st.video(test_video)
                         else:
-                            st.error("❌ HeyGen API test failed")
+                            st.error("❌ D-ID API test failed")
                     else:
-                        st.error("❌ HeyGen API key not set")
+                        st.error("❌ D-ID API key not set")
             
             with col_debug2:
                 st.subheader("🎤 Voice Test")
                 if st.button("🔊 Test Voice System"):
-                    avatar_choice = st.session_state.user_profile.get('avatar', 'anna')
+                    avatar_choice = st.session_state.user_profile.get('avatar', 'sophia')
                     st.write(f"Testing voice for: {avatar_choice}")
                     natural_voice_component("Hello, this is a voice test for the avatar coaching system.")
             
@@ -1224,7 +1255,7 @@ def main():
             st.subheader("⚙️ Current Settings")
             st.json({
                 'avatar_choice': st.session_state.user_profile.get('avatar', 'none'),
-                'heygen_key_set': bool(setup_heygen() and setup_heygen() != "your_heygen_api_key_here"),
+                'did_key_set': bool(setup_did() and setup_did() != "your_did_api_key_here"),
                 'elevenlabs_key_set': bool(setup_elevenlabs() and setup_elevenlabs() != "your_elevenlabs_api_key_here"),
                 'gemini_key_set': bool(st.secrets.get("GEMINI_API_KEY")),
                 'chat_history_length': len(st.session_state.chat_history),
