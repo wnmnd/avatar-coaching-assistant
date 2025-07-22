@@ -31,6 +31,7 @@ def load_css():
     
     .avatar-container {
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         padding: 2rem;
@@ -38,6 +39,23 @@ def load_css():
         border-radius: 20px;
         margin-bottom: 2rem;
         box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
+    }
+    
+    .avatar-video {
+        position: relative;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+    
+    .avatar-status {
+        margin-top: 15px;
+        padding: 8px 16px;
+        background: rgba(138, 43, 226, 0.1);
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #8A2BE2;
+        text-align: center;
     }
     
     .avatar {
@@ -211,14 +229,319 @@ def load_css():
         box-shadow: 0 0 15px rgba(138, 43, 226, 0.3) !important;
     }
     
-    /* Slider Purple Theme */
+    /* Slider Purple Theme - Clean and Optimized */
     .stSlider > div > div > div > div {
         background: linear-gradient(90deg, #DDA0DD, #9370DB) !important;
+    }
+    
+    .stSlider > div > div > div > div > div {
+        background: #8A2BE2 !important;
+    }
+    
+    /* Slider track */
+    .stSlider > div > div > div {
+        background: rgba(221, 160, 221, 0.3) !important;
+    }
+    
+    /* Slider labels - FORCE back to original theme colors */
+    .stSlider > label,
+    .stSlider label,
+    .stSlider > div > label,
+    div[data-testid="stSlider"] label,
+    .stSlider label[data-testid="stWidgetLabel"],
+    .css-1d391kg .stSlider label {
+        color: inherit !important;
+        color: var(--text-color) !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Specific override for Speaking Speed and Voice Pitch labels */
+    .stSlider label:contains("Speaking Speed"),
+    .stSlider label:contains("Voice Pitch") {
+        color: rgba(250, 250, 250, 1) !important;
+    }
+    
+    /* Remove any purple coloring from slider labels */
+    .stSlider label[style*="color: #4A154B"],
+    .stSlider label[style*="color: #8A2BE2"],
+    .stSlider label[style*="color: purple"] {
+        color: rgba(250, 250, 250, 1) !important;
+    }
+    
+    /* Ensure slider labels use default theme styling */
+    .css-1d391kg .stSlider > label {
+        color: unset !important;
+    }
+    
+    /* Exception - keep slider VALUES purple but labels normal */
+    .stSlider div[class*="stNumberInput"] {
+        color: #8A2BE2 !important;
+    }
+    
+    /* Specifically target "Speaking Speed" and "Voice Pitch" labels */
+    .stSlider:has(+ *:contains("Speaking Speed")) label,
+    .stSlider:has(+ *:contains("Voice Pitch")) label,
+    label:contains("Speaking Speed"),
+    label:contains("Voice Pitch") {
+        color: rgba(250, 250, 250, 0.6) !important;
+    }
+    
+    /* Ensure section headers remain default color */
+    .css-1d391kg h1,
+    .css-1d391kg h2, 
+    .css-1d391kg h3,
+    .css-1d391kg h4 {
+        color: rgba(250, 250, 250, 1) !important;
+    }
+    
+    /* Keep only interactive elements purple */
+    .stButton,
+    .stFormSubmitButton,
+    .stCheckbox input:checked {
+        /* Purple styling already defined above */
+    }
+    
+    /* Nuclear option - force all non-button text in sidebar to default color */
+    .css-1d391kg *:not(button):not(.stButton):not(.stFormSubmitButton) {
+        color: rgba(250, 250, 250, 0.6) !important;
+    }
+    
+    /* Make sure headings are brighter */
+    .css-1d391kg h1,
+    .css-1d391kg h2,
+    .css-1d391kg h3 {
+        color: rgba(250, 250, 250, 1) !important;
+    }
+    
+    /* Exception for slider numeric values - keep these purple for emphasis */
+    .stSlider .st-emotion-cache-1inwz65,
+    .stSlider div[data-testid="stMarkdownContainer"]:has-text("0.80"),
+    .stSlider div[data-testid="stMarkdownContainer"]:has-text("1.00") {
+        color: #8A2BE2 !important;
+        font-weight: bold !important;
+    }
+    
+    /* Override any remaining purple text that isn't a button */
+    .css-1d391kg div:not(.stButton):not(.stFormSubmitButton) {
+        color: rgba(250, 250, 250, 0.6) !important;
+    }
+    
+    .css-1d391kg label:not(.stButton label):not(.stFormSubmitButton label) {
+        color: rgba(250, 250, 250, 0.6) !important;
+    }
+    
+    /* Alternative slider selectors for more specificity */
+    [data-baseweb="slider"] > div > div {
+        background: rgba(221, 160, 221, 0.3) !important;
+    }
+    
+    [data-baseweb="slider"] > div > div > div {
+        background: #9370DB !important;
+    }
+    
+    [data-baseweb="slider"] [role="slider"] {
+        background: #8A2BE2 !important;
+        border: 2px solid #6A1B9A !important;
+        box-shadow: 0 2px 10px rgba(138, 43, 226, 0.5) !important;
+    }
+    
+    [data-baseweb="slider"] [role="slider"]:hover {
+        background: #9932CC !important;
+        transform: scale(1.1) !important;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.6) !important;
+    }
+    
+    /* Slider value numbers - keep purple */
+    .stSlider .st-emotion-cache-1inwz65 {
+        color: #8A2BE2 !important;
+        font-weight: bold !important;
+    }
+    
+    /* Slider value display box */
+    .stSlider div[data-testid="stMarkdownContainer"] {
+        color: #8A2BE2 !important;
+        font-weight: bold !important;
+    }
+    
+    /* Slider min/max labels - keep default color */
+    .stSlider div[class*="tickBar"] {
+        color: inherit !important;
+    }
+    
+    /* Additional slider styling for all states */
+    div[data-testid="stSlider"] > div > div > div > div {
+        background: #9370DB !important;
+    }
+    
+    div[data-testid="stSlider"] > div > div > div {
+        background: rgba(147, 112, 219, 0.2) !important;
+    }
+    
+    /* Force purple theme on any remaining red elements in sliders */
+    .stSlider div[style*="rgb(255, 75, 75)"] {
+        background: #9370DB !important;
+    }
+    
+    .stSlider div[style*="rgb(255, 43, 43)"] {
+        background: #8A2BE2 !important;
+    }
+    
+    /* Target specific slider components */
+    .stSlider [class*="StyledThumb"] {
+        background-color: #8A2BE2 !important;
+        border-color: #6A1B9A !important;
+    }
+    
+    .stSlider [class*="StyledTrack"] {
+        background-color: #9370DB !important;
+    }
+    
+    .stSlider [class*="StyledTrackFill"] {
+        background-color: rgba(147, 112, 219, 0.3) !important;
+    }
+    
+    /* Override any remaining red colors globally in sidebar */
+    .css-1d391kg div[style*="rgb(255"], 
+    .css-1d391kg div[style*="rgb(255, 75, 75)"],
+    .css-1d391kg div[style*="#ff4b4b"],
+    .css-1d391kg div[style*="red"] {
+        background: #9370DB !important;
+    }
+    
+    /* Smooth slider interaction and better UX */
+    .stSlider button[role="slider"] {
+        background: #8A2BE2 !important;
+        border: 3px solid #6A1B9A !important;
+        box-shadow: 0 2px 10px rgba(138, 43, 226, 0.5) !important;
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 50% !important;
+        transition: all 0.2s ease !important;
+        cursor: grab !important;
+    }
+    
+    /* Slider thumb hover - easier to grab */
+    .stSlider button[role="slider"]:hover {
+        background: #9932CC !important;
+        transform: scale(1.2) !important;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.6) !important;
+        cursor: grab !important;
+    }
+    
+    /* Slider thumb active/dragging state */
+    .stSlider button[role="slider"]:active {
+        background: #9932CC !important;
+        transform: scale(1.3) !important;
+        box-shadow: 0 6px 20px rgba(138, 43, 226, 0.8) !important;
+        cursor: grabbing !important;
+        transition: all 0.1s ease !important;
+    }
+    
+    /* Slider track - make it easier to click */
+    .stSlider div[class*="baseweb"] div[class*="Track"] {
+        background: rgba(147, 112, 219, 0.3) !important;
+        height: 6px !important;
+        border-radius: 3px !important;
+        cursor: pointer !important;
+    }
+    
+    /* Slider track fill - smooth visual feedback */
+    .stSlider div[class*="baseweb"] div[class*="Fill"] {
+        background: linear-gradient(90deg, #DDA0DD, #9370DB) !important;
+        height: 6px !important;
+        border-radius: 3px !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    /* Slider container - ensure proper padding for easy interaction */
+    .stSlider > div {
+        padding: 10px 0 !important;
+    }
+    
+    /* Better touch/click targets */
+    [data-baseweb="slider"] {
+        padding: 15px 0 !important;
+        cursor: pointer !important;
+    }
+    
+    [data-baseweb="slider"] [role="slider"] {
+        width: 20px !important;
+        height: 20px !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    [data-baseweb="slider"] [role="slider"]:hover {
+        transform: scale(1.2) !important;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    [data-baseweb="slider"] [role="slider"]:active {
+        transform: scale(1.3) !important;
+        transition: all 0.1s ease !important;
+    }
+    
+    /* Slider track active portion */
+    .stSlider div[class*="baseweb"] div[class*="Track"] {
+        background: rgba(147, 112, 219, 0.3) !important;
+    }
+    
+    .stSlider div[class*="baseweb"] div[class*="Fill"] {
+        background: linear-gradient(90deg, #DDA0DD, #9370DB) !important;
+    }
+    
+    /* Force purple on inline styles - nuclear option */
+    .stSlider * {
+        color: inherit !important;
+    }
+    
+    .stSlider div[style*="background-color: rgb(255"] {
+        background: #9370DB !important;
     }
     
     /* Checkbox Purple Theme */
     .stCheckbox > label > div {
         background-color: #9370DB !important;
+        border-color: #8A2BE2 !important;
+        border-width: 2px !important;
+    }
+    
+    .stCheckbox > label > div[data-checked="true"] {
+        background-color: #8A2BE2 !important;
+        border-color: #6A1B9A !important;
+    }
+    
+    .stCheckbox > label > div > svg {
+        color: white !important;
+    }
+    
+    /* Alternative checkbox selectors */
+    div[data-testid="stCheckbox"] > label > div {
+        background: #9370DB !important;
+        border: 2px solid #8A2BE2 !important;
+        border-radius: 4px !important;
+    }
+    
+    div[data-testid="stCheckbox"] > label > div[data-checked="true"] {
+        background: linear-gradient(135deg, #8A2BE2, #6A1B9A) !important;
+        border-color: #4A154B !important;
+    }
+    
+    /* Checkbox checkmark */
+    div[data-testid="stCheckbox"] svg {
+        color: white !important;
+        font-weight: bold !important;
+    }
+    
+    /* Checkbox hover effect */
+    .stCheckbox > label > div:hover {
+        background-color: #8A2BE2 !important;
+        border-color: #6A1B9A !important;
+        box-shadow: 0 2px 8px rgba(138, 43, 226, 0.3) !important;
+    }
+    
+    /* Checkbox label text */
+    .stCheckbox > label {
+        color: inherit !important;
     }
     
     /* Multiselect Purple Theme */
@@ -301,7 +624,7 @@ def init_session_state():
     if 'user_profile' not in st.session_state:
         st.session_state.user_profile = {}
 
-# Configure Gemini AI
+# Configure APIs
 def setup_gemini():
     api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
     if not api_key or api_key == "your_gemini_api_key_here":
@@ -345,6 +668,65 @@ def setup_gemini():
         st.error(f"❌ Gemini API Error: {str(e)}")
         st.info("Possible solutions:\n1. Check your API key\n2. Verify internet connection\n3. Try a different model")
         st.stop()
+
+# HeyGen Avatar Integration
+def setup_heygen():
+    """Setup HeyGen API for avatar generation"""
+    api_key = st.secrets.get("HEYGEN_API_KEY") or os.getenv("HEYGEN_API_KEY")
+    if not api_key:
+        st.warning("⚠️ HeyGen API key not found. Avatar will use fallback mode.")
+        return None
+    return api_key
+
+def generate_avatar_video(text, heygen_key, avatar_id="default"):
+    """Generate avatar video using HeyGen API"""
+    if not heygen_key:
+        return None
+    
+    try:
+        import requests
+        
+        url = "https://api.heygen.com/v2/video/generate"
+        headers = {
+            "X-API-KEY": heygen_key,
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "video_inputs": [{
+                "character": {
+                    "type": "avatar",
+                    "avatar_id": avatar_id,
+                    "avatar_style": "normal"
+                },
+                "voice": {
+                    "type": "text",
+                    "input_text": text,
+                    "voice_id": "1bd001e7e50f421d891986aad5158bc8",  # Natural female voice
+                    "speed": 1.0,
+                    "emotion": "friendly"
+                },
+                "background": {
+                    "type": "color",
+                    "value": "#f0e6ff"  # Light purple background
+                }
+            }],
+            "dimension": {
+                "width": 400,
+                "height": 400
+            }
+        }
+        
+        response = requests.post(url, headers=headers, json=payload)
+        if response.status_code == 200:
+            return response.json().get("data", {}).get("video_id")
+        else:
+            st.error(f"HeyGen API Error: {response.status_code}")
+            return None
+            
+    except Exception as e:
+        st.error(f"Avatar generation error: {str(e)}")
+        return None
 
 # Load coaching knowledge base
 def load_coaching_knowledge():
@@ -451,54 +833,189 @@ def get_coach_response(user_input, chat_history):
         voice_type = st.session_state.user_profile.get('voice_type', 'caring')
         return fallback_responses.get(voice_type, f"I'm here to help you, {name}. Please tell me what you're thinking about.")
 
-# Speech recognition component
-def speech_to_text_component():
-    st.markdown("### 🎤 Voice Input")
+# WhatsApp-style voice note component
+def whatsapp_voice_note_component():
+    """WhatsApp-style voice recording interface"""
     
-    # Add speech recognition JavaScript
-    speech_js = """
+    voice_note_html = """
+    <div class="voice-note-container">
+        <div class="voice-controls">
+            <button id="voiceButton" onmousedown="startRecording()" onmouseup="stopRecording()" 
+                    ontouchstart="startRecording()" ontouchend="stopRecording()"
+                    style="
+                        background: linear-gradient(135deg, #8A2BE2, #9370DB);
+                        border: none;
+                        border-radius: 50%;
+                        width: 60px;
+                        height: 60px;
+                        color: white;
+                        font-size: 24px;
+                        cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+                        transition: all 0.2s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    "
+                    onmouseover="this.style.transform='scale(1.1)'"
+                    onmouseout="this.style.transform='scale(1)'">
+                🎤
+            </button>
+            <div id="recordingStatus" style="margin-left: 15px; color: #8A2BE2; font-weight: bold;">
+                Hold to record voice note
+            </div>
+        </div>
+        
+        <div id="voiceWaveform" class="voice-waveform" style="display: none;">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+        </div>
+        
+        <div id="transcriptionResult" style="
+            margin-top: 10px; 
+            padding: 10px; 
+            background: rgba(138, 43, 226, 0.1); 
+            border-radius: 10px; 
+            display: none;
+        "></div>
+    </div>
+
+    <style>
+    .voice-note-container {
+        padding: 20px;
+        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
+        border-radius: 15px;
+        margin: 10px 0;
+        border: 2px solid rgba(138, 43, 226, 0.2);
+    }
+    
+    .voice-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .voice-waveform {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 3px;
+        margin-top: 15px;
+    }
+    
+    .wave-bar {
+        width: 4px;
+        height: 20px;
+        background: linear-gradient(135deg, #8A2BE2, #9370DB);
+        border-radius: 2px;
+        animation: wave 1.5s ease-in-out infinite;
+    }
+    
+    .wave-bar:nth-child(2) { animation-delay: 0.2s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.4s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.6s; }
+    .wave-bar:nth-child(5) { animation-delay: 0.8s; }
+    
+    @keyframes wave {
+        0%, 100% { height: 20px; }
+        50% { height: 40px; }
+    }
+    
+    .recording {
+        background: linear-gradient(135deg, #ff4757, #ff3742) !important;
+        animation: pulse-record 1s ease-in-out infinite !important;
+    }
+    
+    @keyframes pulse-record {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    </style>
+
     <script>
-    function startSpeechRecognition() {
-        if ('webkitSpeechRecognition' in window) {
-            var recognition = new webkitSpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
+    let mediaRecorder;
+    let audioChunks = [];
+    let recognition;
+    let isRecording = false;
+
+    // Initialize speech recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        
+        recognition.onstart = function() {
+            document.getElementById('recordingStatus').innerHTML = '🎤 Listening... Release to send';
+            document.getElementById('voiceWaveform').style.display = 'flex';
+        };
+        
+        recognition.onresult = function(event) {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            document.getElementById('transcriptionResult').innerHTML = transcript;
+            document.getElementById('transcriptionResult').style.display = 'block';
             
-            recognition.onstart = function() {
-                document.getElementById('status').innerHTML = 'Listening...';
-                document.getElementById('micButton').innerHTML = '🔴 Stop';
-            };
-            
-            recognition.onresult = function(event) {
-                var transcript = event.results[0][0].transcript;
-                document.getElementById('speechResult').value = transcript;
-                document.getElementById('status').innerHTML = 'Speech captured!';
-                document.getElementById('micButton').innerHTML = '🎤 Start Recording';
-            };
-            
-            recognition.onerror = function(event) {
-                document.getElementById('status').innerHTML = 'Error: ' + event.error;
-                document.getElementById('micButton').innerHTML = '🎤 Start Recording';
-            };
-            
-            recognition.onend = function() {
-                document.getElementById('micButton').innerHTML = '🎤 Start Recording';
-            };
-            
+            // If final result, send to parent component
+            if (event.results[event.results.length - 1].isFinal) {
+                window.parent.postMessage({
+                    type: 'voice_input',
+                    text: transcript
+                }, '*');
+            }
+        };
+        
+        recognition.onerror = function(event) {
+            document.getElementById('recordingStatus').innerHTML = 'Error: ' + event.error;
+            resetRecording();
+        };
+        
+        recognition.onend = function() {
+            resetRecording();
+        };
+    }
+
+    function startRecording() {
+        if (isRecording) return;
+        
+        isRecording = true;
+        document.getElementById('voiceButton').classList.add('recording');
+        document.getElementById('transcriptionResult').style.display = 'none';
+        
+        if (recognition) {
             recognition.start();
         } else {
             alert('Speech recognition not supported in this browser');
+            resetRecording();
         }
     }
+
+    function stopRecording() {
+        if (!isRecording) return;
+        
+        isRecording = false;
+        if (recognition) {
+            recognition.stop();
+        }
+    }
+
+    function resetRecording() {
+        isRecording = false;
+        document.getElementById('voiceButton').classList.remove('recording');
+        document.getElementById('recordingStatus').innerHTML = 'Hold to record voice note';
+        document.getElementById('voiceWaveform').style.display = 'none';
+    }
     </script>
-    
-    <button onclick="startSpeechRecognition()" id="micButton">🎤 Start Recording</button>
-    <div id="status">Ready to listen</div>
-    <input type="text" id="speechResult" style="width: 100%; margin-top: 10px;" placeholder="Your speech will appear here">
     """
     
-    st.components.v1.html(speech_js, height=150)
+    return voice_note_html
 
 def clean_text(text):
     """Clean text for speech synthesis"""
@@ -520,160 +1037,330 @@ def clean_text(text):
     
     return text.strip()
 
-# Text-to-speech component
-def text_to_speech_component(text):
-    if text:
-        # Get user's voice preferences
-        voice_speed = st.session_state.user_profile.get('voice_speed', 0.8)
-        voice_pitch = st.session_state.user_profile.get('voice_pitch', 1.0)
-        voice_type = st.session_state.user_profile.get('voice_type', 'caring')
-        
-        # Add emotional context to the text based on content
-        empathetic_text = add_empathy_to_text(text, voice_type)
-        clean_speech_text = clean_text(empathetic_text)
-        
-        tts_js = f"""
-        <script>
-        function speakText() {{
-            if ('speechSynthesis' in window) {{
-                // Stop any currently playing speech
-                speechSynthesis.cancel();
+# Enhanced natural text-to-speech component
+def natural_text_to_speech_component(text):
+    """Enhanced TTS with more natural speech patterns"""
+    if not text:
+        return
+    
+    # Check for ElevenLabs API key for premium voice
+    elevenlabs_key = st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
+    
+    if elevenlabs_key:
+        # Use ElevenLabs for natural voice
+        tts_html = create_elevenlabs_speech(text, elevenlabs_key)
+    else:
+        # Enhanced browser TTS with natural parameters
+        tts_html = create_enhanced_browser_speech(text)
+    
+    st.components.v1.html(tts_html, height=80)
+
+def create_elevenlabs_speech(text, api_key):
+    """Create natural speech using ElevenLabs API"""
+    voice_type = st.session_state.user_profile.get('voice_type', 'caring')
+    
+    # ElevenLabs voice IDs for different personalities
+    voice_ids = {
+        'caring': 'EXAVITQu4vr4xnSDxMaL',      # Bella - warm and caring
+        'professional': 'ErXwobaYiN019PkySvjV',  # Antoni - professional
+        'energetic': 'ThT5KcBeYPX3keUQqHPh',    # Dorothy - energetic
+        'wise': 'onwK4e9ZLuTAKqWW03F9'          # Daniel - wise and deep
+    }
+    
+    voice_id = voice_ids.get(voice_type, voice_ids['caring'])
+    clean_text = clean_text_for_speech(text)
+    
+    return f"""
+    <script>
+    async function speakWithElevenLabs() {{
+        try {{
+            const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
+                method: 'POST',
+                headers: {{
+                    'Accept': 'audio/mpeg',
+                    'Content-Type': 'application/json',
+                    'xi-api-key': '{api_key}'
+                }},
+                body: JSON.stringify({{
+                    text: `{clean_text}`,
+                    model_id: 'eleven_monolingual_v1',
+                    voice_settings: {{
+                        stability: 0.7,
+                        similarity_boost: 0.8,
+                        style: 0.5,
+                        use_speaker_boost: true
+                    }}
+                }})
+            }});
+            
+            if (response.ok) {{
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
                 
-                var utterance = new SpeechSynthesisUtterance(`{clean_speech_text}`);
-                utterance.rate = {voice_speed};
-                utterance.pitch = {voice_pitch};
-                utterance.volume = 1.0;
+                document.getElementById('speakButton').innerHTML = '🔇 Stop Speaking';
+                audio.play();
                 
-                // Load voices and select based on user preference
-                var voices = speechSynthesis.getVoices();
-                if (voices.length === 0) {{
-                    setTimeout(function() {{
-                        voices = speechSynthesis.getVoices();
-                        selectVoice();
-                    }}, 100);
-                }} else {{
-                    selectVoice();
+                audio.onended = function() {{
+                    document.getElementById('speakButton').innerHTML = '🔊 Play Response';
+                }};
+            }} else {{
+                fallbackToWebSpeech();
+            }}
+        }} catch (error) {{
+            console.error('ElevenLabs error:', error);
+            fallbackToWebSpeech();
+        }}
+    }}
+    
+    function fallbackToWebSpeech() {{
+        // Fallback to enhanced browser speech
+        enhancedWebSpeech();
+    }}
+    
+    // Auto-play if enabled
+    var autoPlay = {str(st.session_state.user_profile.get('auto_speak', True)).lower()};
+    if (autoPlay) {{
+        setTimeout(speakWithElevenLabs, 800);
+    }}
+    </script>
+    
+    <div style="text-align: center; margin: 10px 0;">
+        <button id="speakButton" onclick="speakWithElevenLabs()" style="
+            background: linear-gradient(45deg, #9370DB, #8A2BE2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(147, 112, 219, 0.4);
+        ">
+            🔊 Play Natural Voice
+        </button>
+    </div>
+    """
+
+def create_enhanced_browser_speech(text):
+    """Enhanced browser speech with natural parameters"""
+    voice_type = st.session_state.user_profile.get('voice_type', 'caring')
+    voice_speed = st.session_state.user_profile.get('voice_speed', 0.8)
+    voice_pitch = st.session_state.user_profile.get('voice_pitch', 1.0)
+    
+    # Add natural speech patterns
+    enhanced_text = enhance_text_for_natural_speech(text, voice_type)
+    clean_text = clean_text_for_speech(enhanced_text)
+    
+    return f"""
+    <script>
+    function enhancedWebSpeech() {{
+        if ('speechSynthesis' in window) {{
+            speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
+            
+            // Enhanced natural parameters
+            utterance.rate = {voice_speed * 0.9};  // Slightly slower for clarity
+            utterance.pitch = {voice_pitch};
+            utterance.volume = 1.0;
+            
+            // Add breathing pauses and emphasis
+            let voices = speechSynthesis.getVoices();
+            if (voices.length === 0) {{
+                setTimeout(() => {{
+                    voices = speechSynthesis.getVoices();
+                    selectBestVoice();
+                }}, 100);
+            }} else {{
+                selectBestVoice();
+            }}
+            
+            function selectBestVoice() {{
+                let selectedVoice = null;
+                const voiceType = '{voice_type}';
+                
+                // Premium voice selection with quality filtering
+                const premiumVoices = voices.filter(voice => 
+                    voice.lang.startsWith('en-') && 
+                    (voice.localService === true || voice.name.includes('Premium') || 
+                     voice.name.includes('Enhanced') || voice.name.includes('Neural'))
+                );
+                
+                if (voiceType === 'caring') {{
+                    selectedVoice = premiumVoices.find(voice => 
+                        voice.name.includes('Female') || voice.name.includes('Woman') ||
+                        voice.name.includes('Samantha') || voice.name.includes('Karen') ||
+                        voice.name.includes('Susan') || voice.name.includes('Victoria')
+                    );
+                }} else if (voiceType === 'professional') {{
+                    selectedVoice = premiumVoices.find(voice => 
+                        voice.name.includes('Alex') || voice.name.includes('Daniel') ||
+                        voice.name.includes('David') || voice.name.includes('Mark')
+                    );
+                }} else if (voiceType === 'energetic') {{
+                    selectedVoice = premiumVoices.find(voice => 
+                        voice.name.includes('Zira') || voice.name.includes('Catherine') ||
+                        voice.name.includes('Fiona') || voice.name.includes('Moira')
+                    );
+                }} else if (voiceType === 'wise') {{
+                    selectedVoice = premiumVoices.find(voice => 
+                        voice.name.includes('Bruce') || voice.name.includes('George') ||
+                        voice.name.includes('Arthur') || voice.name.includes('James')
+                    );
                 }}
                 
-                function selectVoice() {{
-                    var voiceType = '{voice_type}';
-                    var selectedVoice = null;
-                    
-                    // Voice selection based on personality type
-                    if (voiceType === 'caring') {{
-                        selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('en-') && 
-                            (voice.name.includes('Female') || voice.name.includes('Karen') || 
-                             voice.name.includes('Susan') || voice.name.includes('Victoria'))
-                        );
-                    }} else if (voiceType === 'professional') {{
-                        selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('en-') && 
-                            (voice.name.includes('Samantha') || voice.name.includes('Alex') ||
-                             voice.name.includes('Daniel'))
-                        );
-                    }} else if (voiceType === 'energetic') {{
-                        selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('en-') && 
-                            (voice.name.includes('Zira') || voice.name.includes('Catherine') ||
-                             voice.name.includes('Moira'))
-                        );
-                    }} else if (voiceType === 'wise') {{
-                        selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('en-') && 
-                            (voice.name.includes('David') || voice.name.includes('Mark') ||
-                             voice.name.includes('Bruce'))
-                        );
-                    }}
-                    
-                    // Fallback to any good English voice
-                    if (!selectedVoice) {{
-                        selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('en-') && voice.quality !== 'low'
-                        );
-                    }}
-                    
-                    if (selectedVoice) {{
-                        utterance.voice = selectedVoice;
-                    }}
-                    
-                    speechSynthesis.speak(utterance);
+                // Fallback to best available voice
+                if (!selectedVoice) {{
+                    selectedVoice = premiumVoices[0] || voices.find(voice => 
+                        voice.lang.startsWith('en-') && voice.quality !== 'low'
+                    ) || voices[0];
                 }}
                 
+                if (selectedVoice) {{
+                    utterance.voice = selectedVoice;
+                }}
+                
+                // Enhanced speech events
                 utterance.onstart = function() {{
                     document.getElementById('speakButton').innerHTML = '🔇 Stop Speaking';
-                    document.getElementById('speakButton').onclick = function() {{ 
-                        speechSynthesis.cancel();
-                        document.getElementById('speakButton').innerHTML = '🔊 Play Response';
-                        document.getElementById('speakButton').onclick = speakText;
-                    }};
+                    document.getElementById('speakButton').style.background = 'linear-gradient(45deg, #ff4757, #ff3742)';
                 }};
                 
                 utterance.onend = function() {{
                     document.getElementById('speakButton').innerHTML = '🔊 Play Response';
-                    document.getElementById('speakButton').onclick = speakText;
+                    document.getElementById('speakButton').style.background = 'linear-gradient(45deg, #9370DB, #8A2BE2)';
                 }};
                 
                 utterance.onerror = function(event) {{
                     console.error('Speech synthesis error:', event.error);
-                    document.getElementById('speakButton').innerHTML = '🔊 Play Response (Error)';
+                    document.getElementById('speakButton').innerHTML = '🔊 Try Again';
                 }};
                 
-            }} else {{
-                alert('Text-to-speech is not supported in this browser. Please try Chrome or Edge.');
+                speechSynthesis.speak(utterance);
             }}
         }}
-        
-        // Auto-play if enabled
-        var autoPlay = {str(st.session_state.user_profile.get('auto_speak', True)).lower()};
-        if (autoPlay) {{
-            setTimeout(speakText, 800);
-        }}
-        </script>
-        
-        <div style="text-align: center; margin: 10px 0;">
-            <button id="speakButton" onclick="speakText()" style="
-                background: linear-gradient(45deg, #9370DB, #8A2BE2);
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 25px;
-                cursor: pointer;
-                font-size: 16px;
-                font-weight: bold;
-                transition: all 0.3s;
-                box-shadow: 0 4px 15px rgba(147, 112, 219, 0.4);
-                border: 1px solid rgba(138, 43, 226, 0.3);
-            " onmouseover="
-                this.style.background='linear-gradient(45deg, #8A2BE2, #7B68EE)'; 
-                this.style.transform='translateY(-2px)'; 
-                this.style.boxShadow='0 6px 20px rgba(147, 112, 219, 0.5)'
-            " onmouseout="
-                this.style.background='linear-gradient(45deg, #9370DB, #8A2BE2)'; 
-                this.style.transform='translateY(0px)'; 
-                this.style.boxShadow='0 4px 15px rgba(147, 112, 219, 0.4)'
-            ">
-                🔊 Play Response
-            </button>
-        </div>
-        """
-        
-        st.components.v1.html(tts_js, height=80)
+    }}
+    
+    // Auto-play if enabled
+    var autoPlay = {str(st.session_state.user_profile.get('auto_speak', True)).lower()};
+    if (autoPlay) {{
+        setTimeout(enhancedWebSpeech, 800);
+    }}
+    </script>
+    
+    <div style="text-align: center; margin: 10px 0;">
+        <button id="speakButton" onclick="enhancedWebSpeech()" style="
+            background: linear-gradient(45deg, #9370DB, #8A2BE2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(147, 112, 219, 0.4);
+        ">
+            🔊 Play Response
+        </button>
+    </div>
+    """
 
-# Avatar component
-def avatar_component(is_speaking=False):
+def clean_text_for_speech(text):
+    """Clean and prepare text for more natural speech"""
+    # Remove markdown
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+    text = re.sub(r'\*(.*?)\*', r'\1', text)
+    text = re.sub(r'#{1,6}\s', '', text)
+    
+    # Escape quotes for JavaScript
+    text = text.replace('"', '\\"').replace("'", "\\'")
+    text = text.replace('\n', ' ')
+    text = re.sub(r'\s+', ' ', text)
+    
+    return text.strip()
+
+def enhance_text_for_natural_speech(text, voice_type):
+    """Add natural speech patterns and emphasis"""
+    
+    # Add natural pauses
+    text = re.sub(r'([.!?])', r'\1... ', text)
+    text = re.sub(r'([,:;])', r'\1. ', text)
+    
+    # Add personality-based enhancements
+    if voice_type == 'caring':
+        text = re.sub(r'\b(you|your)\b', r'you', text, flags=re.IGNORECASE)
+        text = re.sub(r'!', '! That\'s wonderful!', text)
+    elif voice_type == 'energetic':
+        text = re.sub(r'\bgreat\b', 'absolutely fantastic', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bgood\b', 'amazing', text, flags=re.IGNORECASE)
+    elif voice_type == 'wise':
+        text = re.sub(r'\bremember\b', 'always remember', text, flags=re.IGNORECASE)
+        text = re.sub(r'\.', '. Take a moment to consider this.', text, count=1)
+    
+    return text
+
+# Avatar component with HeyGen integration
+def avatar_component(is_speaking=False, latest_message=""):
+    """Display talking avatar with HeyGen integration"""
     avatar_emoji = st.session_state.user_profile.get('avatar', '👩‍💼')
+    heygen_key = setup_heygen()
+    
+    if heygen_key and latest_message and is_speaking:
+        # Generate real avatar video
+        video_id = generate_avatar_video(latest_message, heygen_key)
+        
+        if video_id:
+            # Display HeyGen avatar video
+            avatar_html = f"""
+            <div class="avatar-container">
+                <div class="avatar-video">
+                    <video id="avatarVideo" autoplay muted controls style="
+                        width: 300px; 
+                        height: 300px; 
+                        border-radius: 50%; 
+                        object-fit: cover;
+                        border: 5px solid #8A2BE2;
+                        box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+                    ">
+                        <source src="https://api.heygen.com/v2/video/{video_id}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+            
+            <script>
+            // Auto-play avatar video
+            document.getElementById('avatarVideo').addEventListener('loadeddata', function() {{
+                this.play();
+            }});
+            </script>
+            """
+        else:
+            # Fallback to animated emoji
+            avatar_html = create_emoji_avatar(avatar_emoji, is_speaking)
+    else:
+        # Use emoji avatar as fallback or when not speaking
+        avatar_html = create_emoji_avatar(avatar_emoji, is_speaking)
+    
+    st.markdown(avatar_html, unsafe_allow_html=True)
+
+def create_emoji_avatar(avatar_emoji, is_speaking):
+    """Create animated emoji avatar as fallback"""
     avatar_class = "avatar speaking" if is_speaking else "avatar"
     
-    avatar_html = f"""
+    return f"""
     <div class="avatar-container">
         <div class="{avatar_class}">
             {avatar_emoji}
         </div>
+        <div class="avatar-status">
+            {'🎤 Speaking...' if is_speaking else '💭 Listening...'}
+        </div>
     </div>
     """
-    
-    st.markdown(avatar_html, unsafe_allow_html=True)
 
 # Chat interface
 def chat_interface():
@@ -892,11 +1579,25 @@ def main():
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        # Avatar
-        avatar_component(st.session_state.is_speaking)
+        # Avatar with HeyGen integration
+        latest_response = ""
+        if st.session_state.chat_history:
+            latest_msg = st.session_state.chat_history[-1]
+            if latest_msg['role'] == 'coach':
+                latest_response = latest_msg['content']
         
-        # Speech input
-        speech_to_text_component()
+        avatar_component(st.session_state.is_speaking, latest_response)
+        
+        # WhatsApp-style voice input
+        st.markdown("### 🎤 Voice Message")
+        voice_html = whatsapp_voice_note_component()
+        st.components.v1.html(voice_html, height=200)
+        
+        # Handle voice input messages
+        if st.button("🔄 Check Voice Input", key="check_voice"):
+            # This would normally receive data from the voice component
+            # For now, we'll add a placeholder
+            pass
     
     with col2:
         # Chat interface
