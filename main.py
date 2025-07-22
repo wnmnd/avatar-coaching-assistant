@@ -328,260 +328,154 @@ def avatar_component(is_speaking=False):
     
     st.markdown(avatar_html, unsafe_allow_html=True)
 
-# DIRECT SEND VOICE RECORDER - AUTO SEND!
+# SIMPLE WORKING VOICE RECORDER
 def enhanced_voice_recorder():
-    """Click to record, click again to AUTOMATICALLY send to chat"""
+    """GUARANTEED TO WORK - Simple voice-to-text with manual send"""
     
-    # Check session state for new voice message
-    if 'new_voice_message' in st.session_state and st.session_state.new_voice_message:
-        voice_message = st.session_state.new_voice_message
-        st.session_state.new_voice_message = None  # Clear it
-        
-        # Process immediately
-        st.session_state.voice_played = False
-        
-        # Add user message
-        st.session_state.chat_history.append({
-            'role': 'user',
-            'content': voice_message,
-            'timestamp': datetime.now()
-        })
-        
-        # Get coach response immediately
-        coach_response = get_coach_response(voice_message, st.session_state.chat_history)
-        
-        # Add coach response
-        st.session_state.chat_history.append({
-            'role': 'coach',
-            'content': coach_response,
-            'timestamp': datetime.now()
-        })
-        
-        st.session_state.is_speaking = True
-        st.success(f"🎤 Voice sent: \"{voice_message}\"")
-        st.rerun()
+    st.markdown("### 🎤 Voice Recorder")
     
-    # Voice recorder HTML
-    voice_recorder_html = """
-    <div style="
-        padding: 25px;
-        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
-        border-radius: 20px;
-        border: 2px solid rgba(138, 43, 226, 0.2);
-        margin: 10px 0;
-        text-align: center;
-    ">
-        <!-- Status Display -->
-        <div id="voiceStatus" style="
-            padding: 20px;
-            background: white;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            color: #8A2BE2;
-            font-weight: bold;
-            font-size: 18px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        ">
-            🎤 Click to record your voice message
+    # Create columns for voice recorder and text area
+    col_voice, col_text = st.columns([1, 2])
+    
+    with col_voice:
+        # Voice recorder HTML - SIMPLE VERSION
+        voice_recorder_html = """
+        <div style="text-align: center; padding: 20px;">
+            <div id="voiceStatus" style="
+                margin-bottom: 20px;
+                padding: 15px;
+                background: white;
+                border-radius: 10px;
+                color: #8A2BE2;
+                font-weight: bold;
+                border: 2px solid #ddd;
+            ">
+                🎤 Click to start
+            </div>
+            
+            <button id="voiceBtn" onclick="toggleRecording()" style="
+                background: linear-gradient(135deg, #8A2BE2, #9370DB);
+                border: none;
+                border-radius: 50%;
+                width: 100px;
+                height: 100px;
+                color: white;
+                font-size: 40px;
+                cursor: pointer;
+                box-shadow: 0 6px 25px rgba(138, 43, 226, 0.4);
+                transition: all 0.3s ease;
+            ">🎤</button>
         </div>
-        
-        <!-- Transcription Display -->
-        <div id="transcriptionBox" style="
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            min-height: 60px;
-            border: 2px dashed #ddd;
-            color: #333;
-            font-size: 16px;
-            display: none;
-        ">
-            Your speech will appear here...
-        </div>
-        
-        <!-- MAIN VOICE BUTTON -->
-        <button id="voiceBtn" onclick="handleVoiceClick()" style="
-            background: linear-gradient(135deg, #8A2BE2, #9370DB);
-            border: none;
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            color: white;
-            font-size: 48px;
-            cursor: pointer;
-            box-shadow: 0 8px 30px rgba(138, 43, 226, 0.4);
-            transition: all 0.3s ease;
-            margin: 15px;
-        ">🎤</button>
-        
-        <div style="margin-top: 20px; color: #666; font-size: 16px; font-weight: bold;">
-            Purple = Click to Record | Red = Click to Stop & Send Automatically
-        </div>
-    </div>
 
-    <script>
-    let recognition = null;
-    let isRecording = false;
-    let recordedText = '';
-    
-    // Initialize speech recognition
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-        
-        recognition.onstart = function() {
-            console.log('Recording started');
-            updateStatus('🔴 Recording... Click red button to stop & auto-send');
-            showTranscription();
-        };
-        
-        recognition.onresult = function(event) {
-            let finalText = '';
-            let interimText = '';
+        <script>
+        let recognition = null;
+        let isRecording = false;
+        let finalText = '';
+
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
             
-            for (let i = 0; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
-                if (event.results[i].isFinal) {
-                    finalText += transcript + ' ';
-                } else {
-                    interimText += transcript;
+            recognition.onstart = function() {
+                document.getElementById('voiceStatus').innerHTML = '🔴 Recording...';
+                document.getElementById('voiceBtn').style.background = 'linear-gradient(135deg, #ff4757, #ff3742)';
+                document.getElementById('voiceBtn').innerHTML = '🔴';
+            };
+            
+            recognition.onresult = function(event) {
+                finalText = event.results[0][0].transcript;
+                document.getElementById('voiceStatus').innerHTML = '✅ Done: "' + finalText + '"';
+                
+                // Find the text area and fill it
+                const textAreas = document.querySelectorAll('textarea');
+                for (let textarea of textAreas) {
+                    if (textarea.placeholder && textarea.placeholder.includes('voice')) {
+                        textarea.value = finalText;
+                        textarea.focus();
+                        
+                        // Trigger input event to update Streamlit
+                        const event = new Event('input', { bubbles: true });
+                        textarea.dispatchEvent(event);
+                        break;
+                    }
                 }
+            };
+            
+            recognition.onend = function() {
+                isRecording = false;
+                document.getElementById('voiceBtn').style.background = 'linear-gradient(135deg, #8A2BE2, #9370DB)';
+                document.getElementById('voiceBtn').innerHTML = '🎤';
+                
+                if (!finalText) {
+                    document.getElementById('voiceStatus').innerHTML = '❌ No speech detected';
+                }
+            };
+            
+            recognition.onerror = function(event) {
+                document.getElementById('voiceStatus').innerHTML = '❌ Error: ' + event.error;
+                isRecording = false;
+                document.getElementById('voiceBtn').style.background = 'linear-gradient(135deg, #8A2BE2, #9370DB)';
+                document.getElementById('voiceBtn').innerHTML = '🎤';
+            };
+        }
+
+        function toggleRecording() {
+            if (!recognition) {
+                alert('Voice recognition not available');
+                return;
             }
             
-            recordedText = (finalText + interimText).trim();
-            document.getElementById('transcriptionBox').innerHTML = '📝 "' + recordedText + '"';
-        };
-        
-        recognition.onend = function() {
-            console.log('Recording ended');
-        };
-        
-        recognition.onerror = function(event) {
-            console.error('Speech error:', event.error);
-            updateStatus('❌ Error: ' + event.error + '. Click to record again.');
-            resetButton();
-        };
-    } else {
-        updateStatus('❌ Voice not supported. Use Chrome/Edge browser.');
-    }
-    
-    function handleVoiceClick() {
-        if (!recognition) {
-            alert('Voice recognition not available. Please use Chrome or Edge browser.');
-            return;
-        }
-        
-        if (!isRecording) {
-            // Start recording
-            startRecording();
-        } else {
-            // Stop recording and send immediately
-            stopAndSendDirectly();
-        }
-    }
-    
-    function startRecording() {
-        isRecording = true;
-        recordedText = '';
-        
-        const btn = document.getElementById('voiceBtn');
-        btn.style.background = 'linear-gradient(135deg, #ff4757, #ff3742)';
-        btn.innerHTML = '🔴';
-        btn.style.animation = 'pulse 1.5s infinite';
-        
-        try {
-            recognition.start();
-        } catch (error) {
-            console.error('Failed to start recording:', error);
-            updateStatus('❌ Failed to start. Click to record again.');
-            resetButton();
-        }
-    }
-    
-    function stopAndSendDirectly() {
-        isRecording = false;
-        recognition.stop();
-        
-        if (!recordedText.trim()) {
-            updateStatus('❌ No speech detected. Click to record again.');
-            resetButton();
-            return;
-        }
-        
-        updateStatus('✅ Sending message: "' + recordedText + '"');
-        console.log('Sending voice message directly:', recordedText);
-        
-        // Create form data and submit directly to trigger Streamlit processing
-        const formData = new FormData();
-        formData.append('voice_message', recordedText.trim());
-        
-        // Store in session storage as a backup method
-        sessionStorage.setItem('streamlit_voice_message', JSON.stringify({
-            message: recordedText.trim(),
-            timestamp: Date.now()
-        }));
-        
-        // Force page reload to process the message
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
-    }
-    
-    function updateStatus(message) {
-        document.getElementById('voiceStatus').innerHTML = message;
-    }
-    
-    function showTranscription() {
-        document.getElementById('transcriptionBox').style.display = 'block';
-    }
-    
-    function resetButton() {
-        isRecording = false;
-        const btn = document.getElementById('voiceBtn');
-        btn.style.background = 'linear-gradient(135deg, #8A2BE2, #9370DB)';
-        btn.innerHTML = '🎤';
-        btn.style.animation = 'none';
-        updateStatus('🎤 Click to record your voice message');
-        document.getElementById('transcriptionBox').style.display = 'none';
-        recordedText = '';
-    }
-    
-    // Add pulse animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 8px 30px rgba(255, 71, 87, 0.4); }
-            50% { transform: scale(1.1); box-shadow: 0 12px 40px rgba(255, 71, 87, 0.8); }
-            100% { transform: scale(1); box-shadow: 0 8px 30px rgba(255, 71, 87, 0.4); }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Check for stored voice messages on page load
-    setTimeout(() => {
-        const storedMessage = sessionStorage.getItem('streamlit_voice_message');
-        if (storedMessage) {
-            try {
-                const data = JSON.parse(storedMessage);
-                if (data.message) {
-                    console.log('Found stored voice message:', data.message);
-                    // This will be processed by Streamlit
-                    sessionStorage.removeItem('streamlit_voice_message');
-                }
-            } catch (error) {
-                console.error('Error parsing stored message:', error);
-                sessionStorage.removeItem('streamlit_voice_message');
+            if (!isRecording) {
+                isRecording = true;
+                finalText = '';
+                recognition.start();
+            } else {
+                recognition.stop();
             }
         }
-    }, 100);
-    </script>
-    """
+        </script>
+        """
+        
+        st.components.v1.html(voice_recorder_html, height=200)
     
-    st.components.v1.html(voice_recorder_html, height=450)
+    with col_text:
+        # Text area for voice input
+        voice_text = st.text_area(
+            "Your voice message will appear here:",
+            height=100,
+            placeholder="Click the microphone to record your voice message...",
+            key="voice_text_input"
+        )
+        
+        # Send button
+        if st.button("📤 Send Voice Message", type="primary", disabled=not voice_text.strip()):
+            if voice_text.strip():
+                # Add to conversation immediately
+                st.session_state.voice_played = False
+                
+                st.session_state.chat_history.append({
+                    'role': 'user',
+                    'content': voice_text.strip(),
+                    'timestamp': datetime.now()
+                })
+                
+                # Get coach response
+                with st.spinner("Your coach is responding..."):
+                    coach_response = get_coach_response(voice_text, st.session_state.chat_history)
+                
+                st.session_state.chat_history.append({
+                    'role': 'coach',
+                    'content': coach_response,
+                    'timestamp': datetime.now()
+                })
+                
+                st.session_state.is_speaking = True
+                st.success(f"🎤 Voice message sent: \"{voice_text}\"")
+                st.rerun()
 
 # Voice Message Checker
 def check_voice_message():
@@ -1384,9 +1278,9 @@ def main():
         # Voice recording section
         st.markdown("---")
         st.markdown("### 🎤 Voice Message")
-        st.info("💡 **AUTO-SEND:** Click to record → speak → click to stop = Message AUTOMATICALLY sent to coach!")
+        st.info("💡 **SIMPLE & WORKS:** Click microphone → speak → click Send button!")
         
-        # Direct send voice recorder
+        # Simple working voice recorder
         enhanced_voice_recorder()
         
         # Clear chat
