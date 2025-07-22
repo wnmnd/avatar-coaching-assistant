@@ -1663,15 +1663,78 @@ def main():
                     const voiceMessage = finalTranscript.trim();
                     console.log('Auto-submitting voice message:', voiceMessage);
                    
-                    // Enhanced auto-submission method
-                    const currentUrl = new URL(window.location.href);
-                    currentUrl.searchParams.set('auto_voice_message', encodeURIComponent(voiceMessage));
-                    currentUrl.searchParams.set('voice_timestamp', Date.now().toString());
+                    // Enhanced auto-submission - try multiple methods
+                    console.log('Attempting auto-submission with message:', voiceMessage);
                    
-                    console.log('Auto-redirecting with voice message:', voiceMessage);
+                    // Method 1: Try to fill and submit the form directly
+                    const textArea = document.querySelector('textarea[key="user_text_input"], textarea[placeholder*="Ask about your goals"], textarea[placeholder*="Type your message"]');
+                    if (textArea) {{
+                        console.log('Found textarea, filling with voice message');
+                        textArea.value = voiceMessage;
+                       
+                        // Trigger multiple events to ensure Streamlit recognizes the change
+                        textArea.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        textArea.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        textArea.focus();
+                       
+                        // Wait for Streamlit to process the input, then submit
+                        setTimeout(() => {{
+                            // Try multiple submit button selectors
+                            const submitSelectors = [
+                                '.stFormSubmitButton button',
+                                'button[kind="primary"]',
+                                'button[type="submit"]',
+                                'form button[type="submit"]',
+                                'button:contains("Send")'
+                            ];
+                           
+                            let submitBtn = null;
+                            for (let selector of submitSelectors) {{
+                                submitBtn = document.querySelector(selector);
+                                if (submitBtn) break;
+                            }}
+                           
+                            // Also try to find button by text content
+                            if (!submitBtn) {{
+                                submitBtn = [...document.querySelectorAll('button')].find(btn =>
+                                    btn.textContent.includes('Send') ||
+                                    btn.textContent.includes('Submit') ||
+                                    btn.getAttribute('type') === 'submit'
+                                );
+                            }}
+                           
+                            if (submitBtn) {{
+                                console.log('Found submit button, clicking:', submitBtn);
+                                submitBtn.click();
+                                document.getElementById('voiceStatus').innerHTML = '🚀 Message sent automatically!';
+                            }} else {{
+                                console.log('No submit button found, trying form submission');
+                                // Try to submit the form directly
+                                const form = textArea.closest('form');
+                                if (form) {{
+                                    console.log('Submitting form directly');
+                                    form.submit();
+                                    document.getElementById('voiceStatus').innerHTML = '🚀 Message sent automatically!';
+                                }} else {{
+                                    console.log('No form found, using URL fallback method');
+                                    useUrlFallback(voiceMessage);
+                                }}
+                            }}
+                        }}, 200);
+                       
+                    }} else {{
+                        console.log('Textarea not found, using URL fallback method immediately');
+                        useUrlFallback(voiceMessage);
+                    }}
                    
-                    // Immediate redirect to process message automatically
-                    window.location.href = currentUrl.toString();
+                    // Fallback function
+                    function useUrlFallback(message) {{
+                        const currentUrl = new URL(window.location.href);
+                        currentUrl.searchParams.set('auto_voice_message', encodeURIComponent(message));
+                        currentUrl.searchParams.set('voice_timestamp', Date.now().toString());
+                        console.log('Redirecting with URL parameters');
+                        window.location.href = currentUrl.toString();
+                    }}
                    
                 }} else {{
                     document.getElementById('voiceStatus').innerHTML = '❌ Could not understand. Please speak louder and clearer.';
@@ -1930,3 +1993,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
