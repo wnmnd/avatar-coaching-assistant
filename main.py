@@ -1637,7 +1637,7 @@ def main():
             // When recognition starts
             tapRecognition.onstart = function() {{
                 console.log('✅ TAP Recording started');
-                document.getElementById('voiceStatus').innerHTML = '🔴 Recording now... Tap STOP when finished speaking';
+                document.getElementById('voiceStatus').innerHTML = '🔴 Recording now...';
                 document.getElementById('voiceWaveform').style.display = 'flex';
                 tapVoiceTranscript = '';
             }};
