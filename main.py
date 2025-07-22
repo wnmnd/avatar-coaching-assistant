@@ -558,9 +558,10 @@ def avatar_component(is_speaking=False, latest_response=""):
     
     # Try to generate real avatar if speaking and we have response
     if is_speaking and latest_response and setup_heygen():
-        # Simple loading indicator without debug clutter
-        with st.spinner(f"🎬 Creating {avatar_choice} avatar video..."):
-            video_url = generate_avatar_video(latest_response, avatar_choice)
+        # Show what's happening during generation
+        with st.expander("🔍 Avatar Generation Details", expanded=True):
+            st.info(f"🎬 Creating {avatar_choice} avatar video...")
+            video_url = generate_avatar_video(latest_response, avatar_choice, debug_mode=True)
             
         if video_url:
             # Display real talking avatar
