@@ -270,89 +270,115 @@ def setup_gemini():
         st.error(f"❌ Gemini API Error: {str(e)}")
         st.stop()
 
-def setup_did():
-    """Setup D-ID API for real avatars"""
-    return st.secrets.get("DID_API_KEY") or os.getenv("DID_API_KEY")
-
-def encode_did_credentials(api_key):
-    """Properly encode D-ID API credentials for Basic Auth"""
-    import base64
-    # D-ID API key format is username:password, encode to base64
-    if api_key and ":" in api_key:
-        encoded_bytes = base64.b64encode(api_key.encode('utf-8'))
-        return encoded_bytes.decode('utf-8')
-    return api_key
+def setup_heygen():
+    """Setup HeyGen API for real avatars"""
+    return st.secrets.get("HEYGEN_API_KEY") or os.getenv("HEYGEN_API_KEY")
 
 def setup_elevenlabs():
     """Setup ElevenLabs for natural voice"""
     return st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
 
-# D-ID Avatar Integration
+# HeyGen Avatar Integration  
 def generate_avatar_video(text, avatar_choice):
-    """Generate real talking avatar video using D-ID with minimal payload"""
-    did_key = setup_did()
-    if not did_key or did_key == "your_did_api_key_here":
-        st.warning("⚠️ D-ID API key not set. Using emoji avatar.")
+    """Generate real talking avatar video using HeyGen"""
+    heygen_key = setup_heygen()
+    if not heygen_key or heygen_key == "your_heygen_api_key_here":
+        st.warning("⚠️ HeyGen API key not set. Using emoji avatar.")
         return None
     
     try:
-        st.info(f"🎬 Generating {avatar_choice} avatar video with D-ID...")
+        st.info(f"🎬 Generating {avatar_choice} avatar video with HeyGen...")
         
-        # D-ID API endpoint
-        url = "https://api.d-id.com/talks"
-        
-        # Properly encode the API key for Basic Auth
-        encoded_key = encode_did_credentials(did_key)
-        
+        # HeyGen API endpoint
+        url = "https://api.heygen.com/v2/video/generate"
         headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Authorization": f"Basic {encoded_key}"
+            "X-API-KEY": heygen_key,
+            "Content-Type": "application/json"
         }
         
-        # Use simple, reliable image URLs that work with D-ID
-        avatar_images = {
-            'sophia': 'https://create-images-results.d-id.com/DefaultPresenter_Female/image.jpeg',
-            'marcus': 'https://create-images-results.d-id.com/DefaultPresenter_Male/image.jpeg', 
-            'elena': 'https://create-images-results.d-id.com/api%7CFluentBusiness_Female_1/image.png',
-            'david': 'https://create-images-results.d-id.com/api%7CFluentBusiness_Male_1/image.png',
-            'maya': 'https://create-images-results.d-id.com/DefaultPresenter_Female_2/image.jpeg',
-            'james': 'https://create-images-results.d-id.com/DefaultPresenter_Male_2/image.jpeg'
-        }
-        
-        # Clean and limit text - keep it very simple
-        clean_text = text.strip()[:100]  # Much shorter limit
-        clean_text = re.sub(r'[^a-zA-Z0-9\s\.\,\!\?]', '', clean_text)  # Only basic chars
-        if not clean_text:
-            clean_text = "Hello, how can I help you today?"
-        
-        # MINIMAL payload structure - following working examples
-        payload = {
-            "source_url": avatar_images.get(avatar_choice, avatar_images['sophia']),
-            "script": {
-                "type": "text",
-                "input": clean_text
+        # HeyGen Avatar configurations with working avatar IDs
+        avatar_configs = {
+            'sophia': {
+                'avatar_id': 'anna_costume1_cameraA',
+                'voice_id': '1bd001e7e50f421d891986aad5158bc8',  # Female voice
+                'name': 'Sophia - Professional Female Coach'
+            },
+            'marcus': {
+                'avatar_id': 'josh_lite3_20230714', 
+                'voice_id': 'onwK4e9ZLuTAKqWW03F9',  # Male voice (Daniel)
+                'name': 'Marcus - Business Mentor'
+            },
+            'elena': {
+                'avatar_id': 'monica_costume1_cameraA',
+                'voice_id': 'EXAVITQu4vr4xnSDxMaL',  # Female voice (Bella)
+                'name': 'Elena - Caring Guide'
+            },
+            'david': {
+                'avatar_id': 'wayne_20240711',
+                'voice_id': 'TxGEqnHWrfWFTfGW9XjX',  # Male voice (Josh)
+                'name': 'David - Wise Advisor'
+            },
+            'maya': {
+                'avatar_id': 'lisa_costume1_cameraA',
+                'voice_id': '21m00Tcm4TlvDq8ikWAM',  # Female voice (Rachel)
+                'name': 'Maya - Success Coach'
+            },
+            'james': {
+                'avatar_id': 'davis_20240711',
+                'voice_id': 'VR6AewLTigWG4xSOukaG',  # Male voice (Arnold)
+                'name': 'James - Executive Coach'
             }
         }
         
-        st.write(f"🔍 Creating avatar with minimal payload")
+        config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
+        
+        # Clean and limit text input
+        clean_text = text.strip()[:300]  # HeyGen limit
+        clean_text = re.sub(r'[^\w\s\.\,\!\?\;\:\-]', '', clean_text)  # Clean special chars
+        if not clean_text:
+            clean_text = "Hello, how can I help you today?"
+        
+        # HeyGen request payload
+        payload = {
+            "video_inputs": [{
+                "character": {
+                    "type": "avatar",
+                    "avatar_id": config['avatar_id']
+                },
+                "voice": {
+                    "type": "text",
+                    "input_text": clean_text,
+                    "voice_id": config['voice_id'],
+                    "speed": 1.0
+                },
+                "background": {
+                    "type": "color",
+                    "value": "#f0e6ff"
+                }
+            }],
+            "dimension": {
+                "width": 400,
+                "height": 400
+            }
+        }
+        
+        st.write(f"🔍 Creating avatar: {config['name']}")
         st.write(f"📝 Text: {clean_text}")
-        st.write(f"🖼️ Image: {payload['source_url']}")
         
         response = requests.post(url, headers=headers, json=payload, timeout=30)
         
-        st.write(f"📡 D-ID API Response: {response.status_code}")
+        st.write(f"📡 HeyGen API Response: {response.status_code}")
         
-        if response.status_code == 201:  # D-ID returns 201 for successful creation
+        if response.status_code == 200:
             result = response.json()
             st.write(f"📋 Response data: {result}")
             
-            talk_id = result.get("id")
-            if talk_id:
-                st.success(f"✅ Talk ID received: {talk_id}")
-                return poll_did_video_status(talk_id, encoded_key)
+            video_id = result.get("data", {}).get("video_id")
+            if video_id:
+                st.success(f"✅ Video ID received: {video_id}")
+                return poll_heygen_video_status(video_id, heygen_key)
             else:
-                st.error("❌ No talk ID in response")
+                st.error("❌ No video ID in response")
                 return None
         else:
             try:
@@ -360,19 +386,15 @@ def generate_avatar_video(text, avatar_choice):
             except:
                 error_details = response.text
             
-            st.error(f"❌ D-ID API Error {response.status_code}: {error_details}")
+            st.error(f"❌ HeyGen API Error {response.status_code}: {error_details}")
             
             # Provide helpful error messages
             if response.status_code == 401:
-                st.error("🔑 Authentication failed. Please check your D-ID API key format.")
-                st.info("💡 API key should be in format 'username:password' (with colon)")
+                st.error("🔑 Authentication failed. Please check your HeyGen API key.")
             elif response.status_code == 402:
-                st.error("💳 Insufficient credits. Please check your D-ID account balance.")
+                st.error("💳 Insufficient credits. Please check your HeyGen account balance.")
             elif response.status_code == 429:
                 st.error("⏰ Rate limit exceeded. Please wait and try again.")
-            elif response.status_code == 500:
-                st.error("🔧 Server error. Try with simpler text or different avatar.")
-                st.info("💡 Suggestion: Try text like 'Hello there' first")
             
             return None
         
@@ -380,20 +402,17 @@ def generate_avatar_video(text, avatar_choice):
         st.error(f"❌ Avatar generation error: {str(e)}")
         return None
 
-def poll_did_video_status(talk_id, encoded_api_key, max_attempts=30):
-    """Poll D-ID for video completion"""
-    headers = {
-        "Authorization": f"Basic {encoded_api_key}",
-        "Accept": "application/json"
-    }
+def poll_heygen_video_status(video_id, api_key, max_attempts=20):
+    """Poll HeyGen for video completion"""
+    headers = {"X-API-KEY": api_key}
     
     progress_placeholder = st.empty()
     
     for attempt in range(max_attempts):
         try:
-            # D-ID status endpoint
+            # HeyGen status endpoint
             response = requests.get(
-                f"https://api.d-id.com/talks/{talk_id}",
+                f"https://api.heygen.com/v1/video_status.get?video_id={video_id}",
                 headers=headers,
                 timeout=10
             )
@@ -402,44 +421,41 @@ def poll_did_video_status(talk_id, encoded_api_key, max_attempts=30):
             
             if response.status_code == 200:
                 result = response.json()
-                status = result.get("status", "")
+                data = result.get("data", {})
+                status = data.get("status", "")
                 
                 st.write(f"📊 Status: {status}")
                 
-                if status == "done":
-                    video_url = result.get("result_url")
+                if status == "completed":
+                    video_url = data.get("video_url")
                     if video_url:
                         progress_placeholder.success("✅ Avatar video ready!")
                         return video_url
                     else:
                         st.error("❌ No video URL in completed response")
                         return None
-                elif status == "error":
-                    error_msg = result.get("error", {})
-                    if isinstance(error_msg, dict):
-                        error_description = error_msg.get("description", "Unknown error")
-                    else:
-                        error_description = str(error_msg)
-                    progress_placeholder.error(f"❌ Video generation failed: {error_description}")
+                elif status == "failed":
+                    error_msg = data.get("error", "Unknown error")
+                    progress_placeholder.error(f"❌ Video generation failed: {error_msg}")
                     return None
-                elif status in ["created", "started"]:
-                    time.sleep(4)  # D-ID processing time
+                elif status in ["pending", "processing"]:
+                    time.sleep(3)  # Wait 3 seconds
                     continue
                 else:
-                    st.write(f"🔄 Status: {status} - continuing...")
-                    time.sleep(4)
+                    st.write(f"🔄 Unknown status: {status}")
+                    time.sleep(3)
             else:
-                st.error(f"❌ Status check failed: {response.status_code} - {response.text}")
-                time.sleep(4)
+                st.error(f"❌ Status check failed: {response.status_code}")
+                time.sleep(3)
                 
         except Exception as e:
             st.error(f"❌ Polling error: {str(e)}")
-            time.sleep(4)
+            time.sleep(3)
     
     progress_placeholder.error("⏰ Avatar generation timed out")
     return None
 
-# Enhanced Avatar Component with D-ID
+# Enhanced Avatar Component with HeyGen
 def avatar_component(is_speaking=False, latest_response=""):
     """Display real talking avatar or fallback emoji"""
     
@@ -448,11 +464,11 @@ def avatar_component(is_speaking=False, latest_response=""):
     avatar_choice = profile.get('avatar', 'sophia')
     
     # Try to generate real avatar if speaking and we have response
-    if is_speaking and latest_response and setup_did():
+    if is_speaking and latest_response and setup_heygen():
         # Show debug info
         with st.expander("🔍 Avatar Debug", expanded=True):
             st.write(f"Avatar choice: {avatar_choice}")
-            st.write(f"D-ID key set: {bool(setup_did())}")
+            st.write(f"HeyGen key set: {bool(setup_heygen())}")
             st.write(f"Response length: {len(latest_response)} chars")
         
         video_url = generate_avatar_video(latest_response, avatar_choice)
@@ -468,7 +484,7 @@ def avatar_component(is_speaking=False, latest_response=""):
                     </video>
                 </div>
                 <div class="avatar-status">
-                    ✅ Real D-ID avatar speaking!
+                    ✅ Real HeyGen avatar speaking!
                 </div>
             </div>
             """
@@ -1149,7 +1165,7 @@ def main():
     st.markdown("""
     <div class="main-header">
         <h1>🎯 Avatar Success Coach</h1>
-        <p>Your AI-powered success mentor with realistic D-ID talking avatars</p>
+        <p>Your AI-powered success mentor with realistic HeyGen talking avatars</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1243,42 +1259,46 @@ def main():
             col_debug1, col_debug2 = st.columns(2)
             
             with col_debug1:
-                st.subheader("🤖 D-ID Avatar Test")
-                if st.button("🎬 Test D-ID API"):
-                    did_key = setup_did()
-                    if did_key and did_key != "your_did_api_key_here":
-                        st.info("Testing D-ID with minimal payload...")
+                st.subheader("🤖 HeyGen Avatar Test")
+                if st.button("🎬 Test HeyGen API"):
+                    heygen_key = setup_heygen()
+                    if heygen_key and heygen_key != "your_heygen_api_key_here":
+                        st.info("Testing HeyGen with sample text...")
                         
-                        # Test with absolute minimal request
-                        url = "https://api.d-id.com/talks"
-                        encoded_key = encode_did_credentials(did_key)
+                        # Test with direct HeyGen request
+                        url = "https://api.heygen.com/v2/video/generate"
                         headers = {
-                            "Accept": "application/json",
-                            "Content-Type": "application/json", 
-                            "Authorization": f"Basic {encoded_key}"
+                            "X-API-KEY": heygen_key,
+                            "Content-Type": "application/json"
                         }
                         
                         test_payload = {
-                            "source_url": "https://create-images-results.d-id.com/DefaultPresenter_Female/image.jpeg",
-                            "script": {
-                                "type": "text",
-                                "input": "Hello there"
-                            }
+                            "video_inputs": [{
+                                "character": {
+                                    "type": "avatar",
+                                    "avatar_id": "anna_costume1_cameraA"
+                                },
+                                "voice": {
+                                    "type": "text",
+                                    "input_text": "Hello, this is a test message!",
+                                    "voice_id": "1bd001e7e50f421d891986aad5158bc8"
+                                }
+                            }]
                         }
                         
                         try:
                             response = requests.post(url, headers=headers, json=test_payload, timeout=15)
                             st.write(f"Response code: {response.status_code}")
                             
-                            if response.status_code == 201:
+                            if response.status_code == 200:
                                 result = response.json()
-                                st.success("✅ D-ID API working!")
+                                st.success("✅ HeyGen API working!")
                                 st.json(result)
                                 
                                 # Try to get the video
-                                talk_id = result.get("id")
-                                if talk_id:
-                                    video_url = poll_did_video_status(talk_id, encoded_key)
+                                video_id = result.get("data", {}).get("video_id")
+                                if video_id:
+                                    video_url = poll_heygen_video_status(video_id, heygen_key)
                                     if video_url:
                                         st.video(video_url)
                             else:
@@ -1287,7 +1307,7 @@ def main():
                         except Exception as e:
                             st.error(f"❌ Request failed: {str(e)}")
                     else:
-                        st.error("❌ D-ID API key not set")
+                        st.error("❌ HeyGen API key not set")
             
             with col_debug2:
                 st.subheader("🎤 Voice Test")
@@ -1300,7 +1320,7 @@ def main():
             st.subheader("⚙️ Current Settings")
             st.json({
                 'avatar_choice': st.session_state.user_profile.get('avatar', 'none'),
-                'did_key_set': bool(setup_did() and setup_did() != "your_did_api_key_here"),
+                'heygen_key_set': bool(setup_heygen() and setup_heygen() != "your_heygen_api_key_here"),
                 'elevenlabs_key_set': bool(setup_elevenlabs() and setup_elevenlabs() != "your_elevenlabs_api_key_here"),
                 'gemini_key_set': bool(st.secrets.get("GEMINI_API_KEY")),
                 'chat_history_length': len(st.session_state.chat_history),
