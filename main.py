@@ -289,14 +289,14 @@ def avatar_component(is_speaking=False):
     profile = st.session_state.user_profile
     avatar_choice = profile.get('avatar', 'sophia')
     
-    # Avatar selection with personality
+    # Avatar selection with personality and gender
     avatar_configs = {
-        'sophia': {'emoji': '👩‍💼', 'name': 'Sophia', 'voice_type': 'professional'},
-        'marcus': {'emoji': '👨‍💼', 'name': 'Marcus', 'voice_type': 'confident'}, 
-        'elena': {'emoji': '👩‍⚕️', 'name': 'Elena', 'voice_type': 'caring'},
-        'david': {'emoji': '👨‍🎓', 'name': 'David', 'voice_type': 'wise'},
-        'maya': {'emoji': '👩‍🏫', 'name': 'Maya', 'voice_type': 'energetic'},
-        'james': {'emoji': '👨‍💻', 'name': 'James', 'voice_type': 'executive'}
+        'sophia': {'emoji': '👩‍💼', 'name': 'Sophia', 'voice_type': 'professional', 'gender': 'female'},
+        'marcus': {'emoji': '👨‍💼', 'name': 'Marcus', 'voice_type': 'confident', 'gender': 'male'}, 
+        'elena': {'emoji': '👩‍⚕️', 'name': 'Elena', 'voice_type': 'caring', 'gender': 'female'},
+        'david': {'emoji': '👨‍🎓', 'name': 'David', 'voice_type': 'wise', 'gender': 'male'},
+        'maya': {'emoji': '👩‍🏫', 'name': 'Maya', 'voice_type': 'energetic', 'gender': 'female'},
+        'james': {'emoji': '👨‍💻', 'name': 'James', 'voice_type': 'executive', 'gender': 'male'}
     }
     
     config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
@@ -485,27 +485,50 @@ def natural_voice_component(text, voice_type="professional"):
     # Mark voice as played to prevent doubles
     st.session_state.voice_played = True
     
+    # Get avatar gender for proper voice selection
+    profile = st.session_state.user_profile
+    avatar_choice = profile.get('avatar', 'sophia')
+    avatar_configs = {
+        'sophia': {'gender': 'female', 'voice_type': 'professional'},
+        'marcus': {'gender': 'male', 'voice_type': 'confident'}, 
+        'elena': {'gender': 'female', 'voice_type': 'caring'},
+        'david': {'gender': 'male', 'voice_type': 'wise'},
+        'maya': {'gender': 'female', 'voice_type': 'energetic'},
+        'james': {'gender': 'male', 'voice_type': 'executive'}
+    }
+    avatar_gender = avatar_configs.get(avatar_choice, {}).get('gender', 'female')
+    
     elevenlabs_key = setup_elevenlabs()
     
     if elevenlabs_key and elevenlabs_key != "your_elevenlabs_api_key_here":
-        # Premium ElevenLabs voice with instant playback
-        create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type)
+        # Premium ElevenLabs voice with gender matching
+        create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type, avatar_gender)
     else:
-        # Enhanced browser TTS with instant playback
-        create_instant_browser_voice(text, voice_type)
+        # Enhanced browser TTS with gender matching
+        create_instant_browser_voice(text, voice_type, avatar_gender)
 
-def create_instant_elevenlabs_voice(text, api_key, voice_type):
-    """Instant ElevenLabs voice - no delays"""
+def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
+    """Instant ElevenLabs voice with gender-matched voices"""
     
-    # Voice selection based on avatar personality
-    voice_configs = {
-        'professional': {'voice_id': 'EXAVITQu4vr4xnSDxMaL', 'name': 'Professional'},
-        'confident': {'voice_id': 'onwK4e9ZLuTAKqWW03F9', 'name': 'Confident'},
-        'caring': {'voice_id': '21m00Tcm4TlvDq8ikWAM', 'name': 'Caring'},
-        'wise': {'voice_id': 'TxGEqnHWrfWFTfGW9XjX', 'name': 'Wise'},
-        'energetic': {'voice_id': 'AZnzlk1XvdvUeBnXmlld', 'name': 'Energetic'},
-        'executive': {'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'Executive'}
-    }
+    # Voice selection based on gender and personality
+    if gender == 'male':
+        voice_configs = {
+            'professional': {'voice_id': 'TxGEqnHWrfWFTfGW9XjX', 'name': 'Professional Male'},
+            'confident': {'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'Confident Male'},
+            'caring': {'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Caring Male'},
+            'wise': {'voice_id': 'onwK4e9ZLuTAKqWW03F9', 'name': 'Wise Male'},
+            'energetic': {'voice_id': 'pNInz6obpgDQGcFmaJgB', 'name': 'Energetic Male'},
+            'executive': {'voice_id': 'Yko7PKHZNXotIFUBG7I9', 'name': 'Executive Male'}
+        }
+    else:  # female
+        voice_configs = {
+            'professional': {'voice_id': 'EXAVITQu4vr4xnSDxMaL', 'name': 'Professional Female'},
+            'confident': {'voice_id': 'ThT5KcBeYPX3keUQqHPh', 'name': 'Confident Female'},
+            'caring': {'voice_id': '21m00Tcm4TlvDq8ikWAM', 'name': 'Caring Female'},
+            'wise': {'voice_id': 'XrExE9yKIg1WjnnlVkGX', 'name': 'Wise Female'},
+            'energetic': {'voice_id': 'AZnzlk1XvdvUeBnXmlld', 'name': 'Energetic Female'},
+            'executive': {'voice_id': 'SOYHLrjzK2X1ezoPC6cr', 'name': 'Executive Female'}
+        }
     
     voice_config = voice_configs.get(voice_type, voice_configs['professional'])
     voice_id = voice_config['voice_id']
@@ -569,12 +592,32 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type):
             
             const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
             utterance.rate = 0.9;
-            utterance.pitch = 1.0;
+            utterance.pitch = {1.0 if gender == 'female' else 0.7};
             utterance.volume = 1.0;
             
-            // Find best voice for personality
+            // Gender-based voice selection for fallback
             const voices = speechSynthesis.getVoices();
-            const bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
+            let bestVoice;
+            
+            if ('{gender}' === 'male') {{
+                bestVoice = voices.find(v => 
+                    v.lang.startsWith('en-') && 
+                    (v.name.toLowerCase().includes('male') || 
+                     v.name.toLowerCase().includes('david') ||
+                     v.name.toLowerCase().includes('mark'))
+                );
+            }} else {{
+                bestVoice = voices.find(v => 
+                    v.lang.startsWith('en-') && 
+                    (v.name.toLowerCase().includes('female') || 
+                     v.name.toLowerCase().includes('samantha'))
+                );
+            }}
+            
+            if (!bestVoice) {{
+                bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
+            }}
+            
             if (bestVoice) utterance.voice = bestVoice;
             
             speechSynthesis.speak(utterance);
@@ -588,8 +631,8 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type):
     
     st.components.v1.html(voice_html, height=0)
 
-def create_instant_browser_voice(text, voice_type):
-    """Instant browser TTS with personality matching"""
+def create_instant_browser_voice(text, voice_type, gender):
+    """Instant browser TTS with gender and personality matching"""
     
     clean_text = enhance_text_for_speech(text, voice_type)
     
@@ -605,6 +648,12 @@ def create_instant_browser_voice(text, voice_type):
     
     settings = voice_settings.get(voice_type, voice_settings['professional'])
     
+    # Adjust pitch for gender
+    if gender == 'male':
+        settings['pitch'] = max(0.5, settings['pitch'] - 0.3)  # Lower pitch for males
+    else:
+        settings['pitch'] = min(1.5, settings['pitch'] + 0.1)  # Slightly higher pitch for females
+    
     voice_html = f"""
     <script>
     function playInstantBrowserVoice() {{
@@ -616,14 +665,40 @@ def create_instant_browser_voice(text, voice_type):
             utterance.pitch = {settings['pitch']};
             utterance.volume = 1.0;
             
-            // Auto-select best voice
+            // Gender-based voice selection
             const voices = speechSynthesis.getVoices();
-            let bestVoice = voices.find(v => v.lang.startsWith('en-') && v.localService) || 
-                          voices.find(v => v.lang.startsWith('en-')) || 
-                          voices[0];
+            let bestVoice;
+            
+            if ('{gender}' === 'male') {{
+                // Prefer male voices
+                bestVoice = voices.find(v => 
+                    v.lang.startsWith('en-') && 
+                    (v.name.toLowerCase().includes('male') || 
+                     v.name.toLowerCase().includes('david') ||
+                     v.name.toLowerCase().includes('mark') ||
+                     v.name.toLowerCase().includes('alex') ||
+                     v.name.toLowerCase().includes('daniel'))
+                ) || voices.find(v => v.lang.startsWith('en-') && v.localService);
+            }} else {{
+                // Prefer female voices  
+                bestVoice = voices.find(v => 
+                    v.lang.startsWith('en-') && 
+                    (v.name.toLowerCase().includes('female') || 
+                     v.name.toLowerCase().includes('samantha') ||
+                     v.name.toLowerCase().includes('victoria') ||
+                     v.name.toLowerCase().includes('susan') ||
+                     v.name.toLowerCase().includes('karen'))
+                ) || voices.find(v => v.lang.startsWith('en-') && v.localService);
+            }}
+            
+            // Fallback to any English voice
+            if (!bestVoice) {{
+                bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
+            }}
             
             if (bestVoice) {{
                 utterance.voice = bestVoice;
+                console.log('Selected voice:', bestVoice.name, 'for gender:', '{gender}');
             }}
             
             // Play immediately
@@ -934,7 +1009,25 @@ def main():
                     st.session_state.voice_played = False  # Reset for test
                     avatar_choice = st.session_state.user_profile.get('avatar', 'sophia')
                     st.write(f"Testing voice for: {avatar_choice}")
-                    natural_voice_component("Hello, this is a voice test for the avatar coaching system.", "professional")
+                    
+                    # Get avatar gender for test
+                    avatar_configs = {
+                        'sophia': {'gender': 'female'},
+                        'marcus': {'gender': 'male'}, 
+                        'elena': {'gender': 'female'},
+                        'david': {'gender': 'male'},
+                        'maya': {'gender': 'female'},
+                        'james': {'gender': 'male'}
+                    }
+                    test_gender = avatar_configs.get(avatar_choice, {}).get('gender', 'female')
+                    test_text = f"Hello, this is a voice test for {avatar_choice}, your {test_gender} avatar coach."
+                    
+                    # Test with actual gender
+                    elevenlabs_key = setup_elevenlabs()
+                    if elevenlabs_key and elevenlabs_key != "your_elevenlabs_api_key_here":
+                        create_instant_elevenlabs_voice(test_text, elevenlabs_key, "professional", test_gender)
+                    else:
+                        create_instant_browser_voice(test_text, "professional", test_gender)
                 
                 st.subheader("🎭 Avatar Animation Test")
                 if st.button("🎬 Test Avatar Animation"):
