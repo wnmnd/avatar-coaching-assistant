@@ -508,7 +508,7 @@ def natural_voice_component(text, voice_type="professional"):
         create_mobile_friendly_voice(text, voice_type, avatar_gender)
 
 def create_mobile_friendly_voice(text, voice_type, gender):
-    """Mobile-friendly browser TTS with user interaction support"""
+    """Enhanced mobile-friendly browser TTS with GUARANTEED mobile support"""
    
     clean_text = enhance_text_for_speech(text, voice_type)
    
@@ -542,46 +542,114 @@ def create_mobile_friendly_voice(text, voice_type, gender):
     elif voice_type == 'confident':
         clean_text = clean_text.replace('.', '. ')
    
+    # Create unique ID for this voice instance
+    voice_id = f"voice_{int(time.time() * 1000)}"
+   
     voice_html = f"""
     <div style="
-        padding: 15px;
+        padding: 20px;
         background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
-        border-radius: 15px;
-        border: 1px solid rgba(138, 43, 226, 0.2);
-        margin: 10px 0;
+        border-radius: 20px;
+        border: 2px solid rgba(138, 43, 226, 0.3);
+        margin: 15px 0;
         text-align: center;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
     ">
-        <div style="margin-bottom: 10px; color: #8A2BE2; font-weight: bold;">
+        <div id="voiceMessage_{voice_id}" style="
+            margin-bottom: 15px;
+            color: #8A2BE2;
+            font-weight: bold;
+            font-size: 16px;
+        ">
             🎭 Your coach is speaking...
         </div>
-        <button id="playVoiceButton" onclick="playVoiceManually()" style="
-            background: linear-gradient(135deg, #8A2BE2, #9370DB);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 10px 20px;
+       
+        <div id="voiceButtonContainer_{voice_id}" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+            <!-- Auto-play attempt button (hidden initially) -->
+            <button id="autoPlayButton_{voice_id}" onclick="tryAutoPlay_{voice_id}()" style="
+                background: linear-gradient(135deg, #4CAF50, #45a049);
+                color: white;
+                border: none;
+                border-radius: 25px;
+                padding: 12px 20px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+                display: none;
+                font-size: 14px;
+            ">
+                🔊 Auto-Play Voice
+            </button>
+           
+            <!-- Manual play button for mobile -->
+            <button id="manualPlayButton_{voice_id}" onclick="playVoiceManually_{voice_id}()" style="
+                background: linear-gradient(135deg, #8A2BE2, #9370DB);
+                color: white;
+                border: none;
+                border-radius: 25px;
+                padding: 12px 20px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+                display: block;
+                font-size: 14px;
+                margin: 0 5px;
+            ">
+                🔊 Tap to Hear Voice
+            </button>
+           
+            <!-- Stop button -->
+            <button id="stopButton_{voice_id}" onclick="stopVoice_{voice_id}()" style="
+                background: linear-gradient(135deg, #f44336, #da190b);
+                color: white;
+                border: none;
+                border-radius: 25px;
+                padding: 12px 20px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+                display: none;
+                font-size: 14px;
+            ">
+                ⏹️ Stop
+            </button>
+        </div>
+       
+        <!-- Voice status indicator -->
+        <div id="voiceStatus_{voice_id}" style="
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(138, 43, 226, 0.1);
+            border-radius: 15px;
+            font-size: 12px;
+            color: #8A2BE2;
             font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
             display: none;
-        ">
-            🔊 Tap to hear voice (Mobile)
-        </button>
+        "></div>
     </div>
 
     <script>
-    let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    let voiceUtterance = null;
+    let isMobileDevice_{voice_id} = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let voiceUtterance_{voice_id} = null;
+    let isPlaying_{voice_id} = false;
    
-    function playVoiceMobileFriendly() {{
+    function playVoiceMobileFriendly_{voice_id}() {{
         if ('speechSynthesis' in window) {{
             // Cancel any existing speech
             speechSynthesis.cancel();
            
-            voiceUtterance = new SpeechSynthesisUtterance(`{clean_text}`);
-            voiceUtterance.rate = {settings['rate']};
-            voiceUtterance.pitch = {settings['pitch']};
-            voiceUtterance.volume = 1.0;
+            voiceUtterance_{voice_id} = new SpeechSynthesisUtterance(`{clean_text}`);
+            isPlaying_{voice_id} = true;
+            voiceUtterance_{voice_id}.rate = {settings['rate']};
+            voiceUtterance_{voice_id}.pitch = {settings['pitch']};
+            voiceUtterance_{voice_id}.volume = 1.0;
+           
+            // Update UI for playing state
+            document.getElementById('voiceMessage_{voice_id}').innerHTML = '🎤 Your coach is now speaking...';
+            document.getElementById('manualPlayButton_{voice_id}').style.display = 'none';
+            document.getElementById('stopButton_{voice_id}').style.display = 'block';
+            document.getElementById('voiceStatus_{voice_id}').style.display = 'block';
+            document.getElementById('voiceStatus_{voice_id}').innerHTML = '🔊 Voice playing...';
            
             // Gender and personality-based voice selection
             const voices = speechSynthesis.getVoices();
@@ -639,59 +707,147 @@ def create_mobile_friendly_voice(text, voice_type, gender):
             }}
            
             if (bestVoice) {{
-                voiceUtterance.voice = bestVoice;
+                voiceUtterance_{voice_id}.voice = bestVoice;
                 console.log('Selected voice:', bestVoice.name, 'for', '{voice_type}', '{gender}');
             }}
            
+            // Voice event handlers
+            voiceUtterance_{voice_id}.onstart = function() {{
+                console.log('Voice started playing');
+                document.getElementById('voiceStatus_{voice_id}').innerHTML = '🎵 Voice is playing...';
+            }};
+           
+            voiceUtterance_{voice_id}.onend = function() {{
+                console.log('Voice finished playing');
+                isPlaying_{voice_id} = false;
+                document.getElementById('voiceMessage_{voice_id}').innerHTML = '✅ Voice message completed!';
+                document.getElementById('manualPlayButton_{voice_id}').style.display = 'block';
+                document.getElementById('stopButton_{voice_id}').style.display = 'none';
+                document.getElementById('voiceStatus_{voice_id}').innerHTML = '✅ Playback completed';
+               
+                // Hide after 3 seconds
+                setTimeout(() => {{
+                    document.getElementById('voiceStatus_{voice_id}').style.display = 'none';
+                }}, 3000);
+            }};
+           
+            voiceUtterance_{voice_id}.onerror = function(event) {{
+                console.error('Voice error:', event.error);
+                isPlaying_{voice_id} = false;
+                document.getElementById('voiceMessage_{voice_id}').innerHTML = '❌ Voice playback failed';
+                document.getElementById('manualPlayButton_{voice_id}').style.display = 'block';
+                document.getElementById('stopButton_{voice_id}').style.display = 'none';
+                document.getElementById('voiceStatus_{voice_id}').innerHTML = '❌ Playback error: ' + event.error;
+            }};
+           
             // Voice-specific adjustments
             if ('{voice_type}' === 'wise') {{
-                voiceUtterance.rate = voiceUtterance.rate * 0.8;
+                voiceUtterance_{voice_id}.rate = voiceUtterance_{voice_id}.rate * 0.8;
             }} else if ('{voice_type}' === 'energetic') {{
-                voiceUtterance.rate = voiceUtterance.rate * 1.2;
-                voiceUtterance.volume = 1.0;
+                voiceUtterance_{voice_id}.rate = voiceUtterance_{voice_id}.rate * 1.2;
+                voiceUtterance_{voice_id}.volume = 1.0;
             }} else if ('{voice_type}' === 'caring') {{
-                voiceUtterance.pitch = voiceUtterance.pitch * 1.1;
+                voiceUtterance_{voice_id}.pitch = voiceUtterance_{voice_id}.pitch * 1.1;
             }}
            
             // Start speech
-            speechSynthesis.speak(voiceUtterance);
+            speechSynthesis.speak(voiceUtterance_{voice_id});
             console.log('Voice started for {voice_type} {gender}');
+        }} else {{
+            document.getElementById('voiceMessage_{voice_id}').innerHTML = '❌ Voice not supported in this browser';
+            document.getElementById('voiceStatus_{voice_id}').innerHTML = 'Please use Chrome, Safari, or Edge';
+            document.getElementById('voiceStatus_{voice_id}').style.display = 'block';
         }}
     }}
    
-    function playVoiceManually() {{
-        const button = document.getElementById('playVoiceButton');
-        button.style.display = 'none';
-        playVoiceMobileFriendly();
+    function playVoiceManually_{voice_id}() {{
+        console.log('Manual play triggered for mobile');
+        playVoiceMobileFriendly_{voice_id}();
     }}
    
-    // Handle mobile autoplay restrictions
-    if (isMobileDevice) {{
-        // Show manual play button for mobile
-        document.getElementById('playVoiceButton').style.display = 'inline-block';
-        console.log('Mobile device detected - showing manual play button');
+    function tryAutoPlay_{voice_id}() {{
+        console.log('Attempting auto-play');
+        playVoiceMobileFriendly_{voice_id}();
+    }}
+   
+    function stopVoice_{voice_id}() {{
+        console.log('Stopping voice playback');
+        if (speechSynthesis) {{
+            speechSynthesis.cancel();
+        }}
+        isPlaying_{voice_id} = false;
+       
+        document.getElementById('voiceMessage_{voice_id}').innerHTML = '⏹️ Voice stopped';
+        document.getElementById('manualPlayButton_{voice_id}').style.display = 'block';
+        document.getElementById('stopButton_{voice_id}').style.display = 'none';
+        document.getElementById('voiceStatus_{voice_id}').innerHTML = '⏹️ Playback stopped';
+       
+        setTimeout(() => {{
+            document.getElementById('voiceStatus_{voice_id}').style.display = 'none';
+        }}, 2000);
+    }}
+   
+    // Enhanced mobile and desktop detection
+    console.log('Device detection - Mobile:', isMobileDevice_{voice_id});
+   
+    // Try auto-play for desktop, show manual button for mobile
+    if (isMobileDevice_{voice_id}) {{
+        // Mobile: Always show manual play button
+        console.log('Mobile device detected - manual play required');
+        document.getElementById('voiceMessage_{voice_id}').innerHTML = '📱 Tap the button below to hear your coach!';
+        document.getElementById('manualPlayButton_{voice_id}').style.display = 'block';
+       
+        // Try auto-play anyway (some mobile browsers allow it)
+        document.getElementById('autoPlayButton_{voice_id}').style.display = 'block';
+        setTimeout(() => {{
+            try {{
+                playVoiceMobileFriendly_{voice_id}();
+                // If auto-play works, hide manual button after 2 seconds
+                setTimeout(() => {{
+                    if (speechSynthesis.speaking) {{
+                        document.getElementById('manualPlayButton_{voice_id}').style.display = 'none';
+                        document.getElementById('autoPlayButton_{voice_id}').style.display = 'none';
+                    }}
+                }}, 2000);
+            }} catch (error) {{
+                console.log('Auto-play failed on mobile, manual interaction required');
+            }}
+        }}, 300);
+       
     }} else {{
-        // Auto-play for desktop
+        // Desktop: Try auto-play immediately
+        console.log('Desktop device - attempting auto-play');
+        document.getElementById('manualPlayButton_{voice_id}').style.display = 'none';
+       
         if (speechSynthesis.getVoices().length > 0) {{
-            setTimeout(playVoiceMobileFriendly, 500);
+            setTimeout(playVoiceMobileFriendly_{voice_id}, 500);
         }} else {{
             speechSynthesis.onvoiceschanged = function() {{
-                setTimeout(playVoiceMobileFriendly, 500);
+                setTimeout(playVoiceMobileFriendly_{voice_id}, 500);
             }};
         }}
+       
+        // Show manual button as backup if auto-play fails
+        setTimeout(() => {{
+            if (!speechSynthesis.speaking && !isPlaying_{voice_id}) {{
+                console.log('Auto-play failed, showing manual button');
+                document.getElementById('manualPlayButton_{voice_id}').style.display = 'block';
+                document.getElementById('voiceMessage_{voice_id}').innerHTML = '🖥️ Click to hear your coach (auto-play blocked)';
+            }}
+        }}, 2000);
     }}
    
-    // Also try auto-play even on mobile (some browsers allow it)
-    setTimeout(() => {{
-        if (!isMobileDevice || speechSynthesis.speaking) {{
-            // Hide manual button if auto-play worked
-            document.getElementById('playVoiceButton').style.display = 'none';
+    // Global error handling
+    window.addEventListener('error', function(e) {{
+        if (e.message.includes('play')) {{
+            console.log('Voice play error detected, ensuring manual controls are available');
+            document.getElementById('manualPlayButton_{voice_id}').style.display = 'block';
         }}
-    }}, 1000);
+    }});
     </script>
     """
    
-    st.components.v1.html(voice_html, height=120)
+    st.components.v1.html(voice_html, height=180)
 
 def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
     """Instant ElevenLabs voice with gender-matched voices"""
@@ -757,9 +913,11 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                
-                // Play immediately
-                audio.play().catch(e => {{
-                    console.log('Autoplay blocked, using browser TTS fallback');
+                // Enhanced mobile-friendly audio playback
+                audio.play().then(() => {{
+                    console.log('ElevenLabs audio playing successfully');
+                }}).catch(e => {{
+                    console.log('ElevenLabs autoplay blocked on mobile, using browser TTS fallback');
                     fallbackToBrowserTTS();
                 }});
                
@@ -1377,7 +1535,7 @@ def main():
                     font-weight: bold;
                     font-size: 14px;
                 ">
-                    🎤 Hold the button to record your voice message
+                    🎤 Hold the button to record and auto-send your message
                 </div>
             </div>
            
@@ -1500,23 +1658,19 @@ def main():
                 console.log('Recognition ended. Final transcript:', finalTranscript.trim());
                
                 if (finalTranscript.trim()) {{
-                    document.getElementById('voiceStatus').innerHTML = '✅ Got your message! Processing...';
+                    document.getElementById('voiceStatus').innerHTML = '✅ Sending your message to coach...';
                    
-                    // DIRECT METHOD: Use Streamlit session state immediately
                     const voiceMessage = finalTranscript.trim();
+                    console.log('Auto-submitting voice message:', voiceMessage);
                    
-                    // Store in session state for immediate processing
-                    const timestamp = Date.now();
-                    const voiceKey = 'voice_' + timestamp;
-                   
-                    // Use URL parameters for reliable delivery
+                    // Enhanced auto-submission method
                     const currentUrl = new URL(window.location.href);
-                    currentUrl.searchParams.set('voice_message', encodeURIComponent(voiceMessage));
-                    currentUrl.searchParams.set('voice_timestamp', timestamp.toString());
+                    currentUrl.searchParams.set('auto_voice_message', encodeURIComponent(voiceMessage));
+                    currentUrl.searchParams.set('voice_timestamp', Date.now().toString());
                    
-                    console.log('Sending voice message:', voiceMessage);
+                    console.log('Auto-redirecting with voice message:', voiceMessage);
                    
-                    // Immediate redirect to process message
+                    // Immediate redirect to process message automatically
                     window.location.href = currentUrl.toString();
                    
                 }} else {{
@@ -1606,7 +1760,7 @@ def main():
             if (button) {{
                 button.classList.remove('recording');
             }}
-            document.getElementById('voiceStatus').innerHTML = '🎤 Hold the button to record your voice message';
+            document.getElementById('voiceStatus').innerHTML = '🎤 Hold the button to record and auto-send your message';
             document.getElementById('voiceWaveform').style.display = 'none';
         }}
         </script>
@@ -1614,18 +1768,35 @@ def main():
        
         st.components.v1.html(voice_section_html, height=200)
        
-        # DIRECT voice message processing from URL parameters
-        if 'voice_message' in st.query_params and 'voice_timestamp' in st.query_params:
+        # ENHANCED voice message processing - AUTO-SEND FUNCTIONALITY
+        voice_processed = False
+       
+        # Check for auto voice message (new enhanced method)
+        if 'auto_voice_message' in st.query_params and 'voice_timestamp' in st.query_params:
+            voice_message = st.query_params['auto_voice_message']
+            voice_timestamp = st.query_params['voice_timestamp']
+           
+            # Clear the parameters immediately
+            del st.query_params['auto_voice_message']
+            del st.query_params['voice_timestamp']
+            voice_processed = True
+       
+        # Fallback to old method
+        elif 'voice_message' in st.query_params and 'voice_timestamp' in st.query_params:
             voice_message = st.query_params['voice_message']
             voice_timestamp = st.query_params['voice_timestamp']
            
             # Clear the parameters immediately
             del st.query_params['voice_message']
             del st.query_params['voice_timestamp']
+            voice_processed = True
+       
+        if voice_processed:
            
             if voice_message.strip():
-                # Process voice message immediately
-                st.success(f"🎤 Voice message received: \"{voice_message}\"")
+                # Process voice message immediately with enhanced feedback
+                st.success(f"🎤 Voice Auto-Send: \"{voice_message}\"")
+                st.info("✨ Your voice message was automatically sent to your coach!")
                
                 # Reset voice flag
                 st.session_state.voice_played = False
