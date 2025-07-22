@@ -42,13 +42,6 @@ def load_css():
         box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
     }
     
-    .avatar-video {
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
-        border: 3px solid #8A2BE2;
-    }
-    
     .avatar-status {
         margin-top: 15px;
         padding: 8px 16px;
@@ -58,22 +51,6 @@ def load_css():
         font-weight: bold;
         color: #8A2BE2;
         text-align: center;
-    }
-    
-    .avatar {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        border: 5px solid #8A2BE2;
-        animation: pulse 2s infinite;
-        background: linear-gradient(45deg, #DDA0DD, #9370DB);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3rem;
-        color: white;
-        text-shadow: 2px 2px 4px rgba(74, 21, 75, 0.3);
-        box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
     }
     
     /* WhatsApp Voice Note Styling */
@@ -127,38 +104,6 @@ def load_css():
         0% { transform: scale(1); }
         50% { transform: scale(1.1); }
         100% { transform: scale(1); }
-    }
-    
-    @keyframes pulse {
-        0% { 
-            transform: scale(1); 
-            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
-        }
-        50% { 
-            transform: scale(1.05); 
-            box-shadow: 0 12px 35px rgba(138, 43, 226, 0.6);
-        }
-        100% { 
-            transform: scale(1); 
-            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
-        }
-    }
-    
-    .speaking {
-        animation: bounce 0.5s infinite alternate;
-        border-color: #DA70D6 !important;
-        background: linear-gradient(45deg, #DA70D6, #BA55D3) !important;
-    }
-    
-    @keyframes bounce {
-        0% { 
-            transform: scale(1);
-            box-shadow: 0 8px 25px rgba(218, 112, 214, 0.5);
-        }
-        100% { 
-            transform: scale(1.1);
-            box-shadow: 0 15px 40px rgba(218, 112, 214, 0.7);
-        }
     }
     
     .chat-container {
@@ -240,8 +185,6 @@ def init_session_state():
         st.session_state.is_speaking = False
     if 'user_profile' not in st.session_state:
         st.session_state.user_profile = {}
-    if 'avatar_video_url' not in st.session_state:
-        st.session_state.avatar_video_url = None
 
 # Configure APIs
 def setup_gemini():
@@ -271,130 +214,163 @@ def setup_gemini():
         st.stop()
 
 def setup_heygen():
-    """Setup HeyGen API for real avatars"""
+    """Setup HeyGen API (kept for compatibility)"""
     return st.secrets.get("HEYGEN_API_KEY") or os.getenv("HEYGEN_API_KEY")
 
 def setup_elevenlabs():
     """Setup ElevenLabs for natural voice"""
     return st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
 
-def get_available_heygen_avatars(api_key):
-    """Fetch current available HeyGen avatars"""
-    try:
-        url = "https://api.heygen.com/v2/avatars"
-        headers = {
-            "Accept": "application/json",
-            "X-API-KEY": api_key
-        }
-        
-        response = requests.get(url, headers=headers, timeout=10)
-        
-        if response.status_code == 200:
-            data = response.json()
-            avatars = data.get("data", {}).get("avatars", [])
-            
-            # Filter for available avatars and separate by gender
-            female_avatars = []
-            male_avatars = []
-            
-            for avatar in avatars:
-                if avatar.get("gender") == "female":
-                    female_avatars.append(avatar)
-                elif avatar.get("gender") == "male":
-                    male_avatars.append(avatar)
-            
-            return {
-                "female": female_avatars[:3],  # Get first 3 female
-                "male": male_avatars[:3]       # Get first 3 male
-            }
-        else:
-            st.error(f"❌ Failed to fetch avatars: {response.status_code}")
-            return None
-            
-    except Exception as e:
-        st.error(f"❌ Error fetching avatars: {str(e)}")
-        return None
-
-def setup_heygen():
-    """Setup HeyGen API (kept for compatibility)"""
-    return st.secrets.get("HEYGEN_API_KEY") or os.getenv("HEYGEN_API_KEY")
-
-# Enhanced Avatar Component with HeyGen
+# Enhanced Avatar Component - INSTANT COMMUNICATION
 def avatar_component(is_speaking=False, latest_response=""):
-    """Display real talking avatar or fallback emoji"""
+    """Display instant-response animated avatar with real-time voice"""
     
-    # Get avatar selection from profile
     profile = st.session_state.user_profile
     avatar_choice = profile.get('avatar', 'sophia')
     
-    # Debug info to see what's happening
-    if is_speaking:
-        st.write(f"🔍 **Debug**: is_speaking={is_speaking}, has_response={bool(latest_response)}, heygen_key={bool(setup_heygen())}")
-    
-    # Try to generate real avatar if speaking and we have response
-    if is_speaking and latest_response and setup_heygen():
-        st.info(f"🎬 Attempting to create {avatar_choice} avatar video...")
-        
-        # Always show generation details for now
-        with st.expander("🔍 Avatar Generation Log", expanded=True):
-            video_url = generate_avatar_video(latest_response, avatar_choice, debug_mode=True)
-            
-        if video_url:
-            # Display real talking avatar
-            avatar_html = f"""
-            <div class="avatar-container">
-                <div class="avatar-video">
-                    <video width="350" height="350" autoplay muted controls style="border-radius: 15px;">
-                        <source src="{video_url}" type="video/mp4">
-                        Your browser does not support video.
-                    </video>
-                </div>
-                <div class="avatar-status">
-                    ✅ Real HeyGen avatar speaking!
-                </div>
-            </div>
-            """
-            st.markdown(avatar_html, unsafe_allow_html=True)
-            st.session_state.is_speaking = False  # Reset speaking state
-            return
-        else:
-            st.error("❌ **DETAILED ERROR**: Avatar generation returned None - check logs above")
-    elif is_speaking and latest_response:
-        st.warning("⚠️ HeyGen API key not configured - using emoji fallback")
-    elif is_speaking:
-        st.warning("⚠️ No response text available for avatar generation")
-    
-    # If we get here, show emoji fallback message
-    if is_speaking:
-        st.warning("⚠️ Avatar generation failed, using emoji fallback")
-    
-    # Fallback to emoji avatar
-    emoji_mapping = {
-        'sophia': '👩‍💼',
-        'marcus': '👨‍💼', 
-        'elena': '👩‍⚕️',
-        'david': '👨‍🎓',
-        'maya': '👩‍🏫',
-        'james': '👨‍💻'
+    # Avatar selection with personality
+    avatar_configs = {
+        'sophia': {'emoji': '👩‍💼', 'name': 'Sophia', 'voice_type': 'professional'},
+        'marcus': {'emoji': '👨‍💼', 'name': 'Marcus', 'voice_type': 'confident'}, 
+        'elena': {'emoji': '👩‍⚕️', 'name': 'Elena', 'voice_type': 'caring'},
+        'david': {'emoji': '👨‍🎓', 'name': 'David', 'voice_type': 'wise'},
+        'maya': {'emoji': '👩‍🏫', 'name': 'Maya', 'voice_type': 'energetic'},
+        'james': {'emoji': '👨‍💻', 'name': 'James', 'voice_type': 'executive'}
     }
     
-    avatar_emoji = emoji_mapping.get(avatar_choice, '👩‍💼')
-    avatar_class = "avatar speaking" if is_speaking else "avatar"
+    config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
+    avatar_emoji = config['emoji']
+    avatar_name = config['name']
+    voice_type = config['voice_type']
     
-    status_text = "🎤 Speaking..." if is_speaking else "💭 Ready to help..."
-    
+    # Enhanced Real-time Avatar with Instant Voice
     avatar_html = f"""
     <div class="avatar-container">
-        <div class="{avatar_class}">
-            {avatar_emoji}
+        <div class="enhanced-avatar" id="avatarContainer">
+            <div class="avatar-face" id="avatarFace">{avatar_emoji}</div>
+            <div class="avatar-name">{avatar_name}</div>
+            <div class="voice-visualizer" id="voiceVisualizer">
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+            </div>
         </div>
-        <div class="avatar-status">
-            {status_text}
+        <div class="avatar-status" id="avatarStatus">
+            💭 Ready to help you...
         </div>
     </div>
+
+    <style>
+    .enhanced-avatar {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+    }}
+    
+    .avatar-face {{
+        font-size: 120px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }}
+    
+    .avatar-name {{
+        font-size: 18px;
+        font-weight: bold;
+        color: #8A2BE2;
+        margin-bottom: 15px;
+    }}
+    
+    .voice-visualizer {{
+        display: flex;
+        gap: 4px;
+        align-items: end;
+        height: 40px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }}
+    
+    .voice-bar {{
+        width: 6px;
+        height: 10px;
+        background: linear-gradient(45deg, #8A2BE2, #9370DB);
+        border-radius: 3px;
+        animation: voice-wave 0.8s ease-in-out infinite;
+    }}
+    
+    .voice-bar:nth-child(1) {{ animation-delay: 0s; }}
+    .voice-bar:nth-child(2) {{ animation-delay: 0.1s; }}
+    .voice-bar:nth-child(3) {{ animation-delay: 0.2s; }}
+    .voice-bar:nth-child(4) {{ animation-delay: 0.3s; }}
+    .voice-bar:nth-child(5) {{ animation-delay: 0.4s; }}
+    
+    @keyframes voice-wave {{
+        0%, 100% {{ height: 10px; }}
+        50% {{ height: 35px; }}
+    }}
+    
+    .speaking .avatar-face {{
+        animation: talking 0.5s ease-in-out infinite alternate;
+        transform: scale(1.1);
+    }}
+    
+    .speaking .voice-visualizer {{
+        opacity: 1;
+    }}
+    
+    @keyframes talking {{
+        0% {{ transform: scale(1.1) rotate(-1deg); }}
+        100% {{ transform: scale(1.15) rotate(1deg); }}
+    }}
+    </style>
+    
+    <script>
+    // Instant avatar response system
+    let isCurrentlySpeaking = false;
+    
+    function startSpeaking() {{
+        const container = document.getElementById('avatarContainer');
+        const status = document.getElementById('avatarStatus');
+        
+        if (container && status) {{
+            container.classList.add('speaking');
+            status.innerHTML = '🎤 {avatar_name} is speaking...';
+            isCurrentlySpeaking = true;
+        }}
+    }}
+    
+    function stopSpeaking() {{
+        const container = document.getElementById('avatarContainer');
+        const status = document.getElementById('avatarStatus');
+        
+        if (container && status) {{
+            container.classList.remove('speaking');
+            status.innerHTML = '💭 Ready to help you...';
+            isCurrentlySpeaking = false;
+        }}
+    }}
+    
+    // Auto-start speaking animation when avatar responds
+    if ({str(is_speaking).lower()}) {{
+        setTimeout(startSpeaking, 100);
+        
+        // Stop animation after reasonable time (based on text length)
+        const textLength = {len(latest_response) if latest_response else 0};
+        const speakingDuration = Math.max(3000, textLength * 100); // Min 3 seconds
+        setTimeout(stopSpeaking, speakingDuration);
+    }}
+    </script>
     """
     
     st.markdown(avatar_html, unsafe_allow_html=True)
+    
+    # INSTANT VOICE RESPONSE - No waiting!
+    if is_speaking and latest_response:
+        # Play voice immediately with ElevenLabs or enhanced browser TTS
+        natural_voice_component(latest_response, voice_type)
+        st.session_state.is_speaking = False  # Reset immediately
 
 # WhatsApp-style Voice Note Component
 def whatsapp_voice_note():
@@ -547,66 +523,45 @@ def whatsapp_voice_note():
         # This would integrate with the JavaScript voice input
         st.info("Voice input integration ready. Hold the microphone button to record.")
 
-# Enhanced Natural Text-to-Speech
-def natural_voice_component(text):
-    """Enhanced natural voice with ElevenLabs or improved browser TTS"""
+# Enhanced Natural Voice with Instant Playback
+def natural_voice_component(text, voice_type="professional"):
+    """Instant voice playback with enhanced quality"""
     if not text:
         return
     
     elevenlabs_key = setup_elevenlabs()
-    voice_type = st.session_state.user_profile.get('voice_type', 'caring')
     
-    if elevenlabs_key:
-        # Use ElevenLabs for premium natural voice
-        create_elevenlabs_voice(text, elevenlabs_key, voice_type)
+    if elevenlabs_key and elevenlabs_key != "your_elevenlabs_api_key_here":
+        # Premium ElevenLabs voice with instant playback
+        create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type)
     else:
-        # Enhanced browser TTS
-        create_enhanced_browser_voice(text, voice_type)
+        # Enhanced browser TTS with instant playback
+        create_instant_browser_voice(text, voice_type)
 
-def create_elevenlabs_voice(text, api_key, avatar_choice):
-    """Create ultra-natural voice using ElevenLabs with proper male/female voices"""
+def create_instant_elevenlabs_voice(text, api_key, voice_type):
+    """Instant ElevenLabs voice - no delays"""
     
-    # Updated ElevenLabs voice IDs for each avatar
-    avatar_voices = {
-        'sophia': {
-            'voice_id': 'EXAVITQu4vr4xnSDxMaL',  # Bella - Professional Female
-            'name': 'Sophia (Professional Female)'
-        },
-        'marcus': {
-            'voice_id': 'onwK4e9ZLuTAKqWW03F9',  # Daniel - Deep Male
-            'name': 'Marcus (Professional Male)'
-        },
-        'elena': {
-            'voice_id': '21m00Tcm4TlvDq8ikWAM',  # Rachel - Warm Female  
-            'name': 'Elena (Caring Female)'
-        },
-        'david': {
-            'voice_id': 'TxGEqnHWrfWFTfGW9XjX',  # Josh - Wise Male
-            'name': 'David (Wise Male)'
-        },
-        'maya': {
-            'voice_id': 'AZnzlk1XvdvUeBnXmlld',  # Domi - Energetic Female
-            'name': 'Maya (Energetic Female)'
-        },
-        'james': {
-            'voice_id': 'VR6AewLTigWG4xSOukaG',  # Arnold - Executive Male
-            'name': 'James (Executive Male)'
-        }
+    # Voice selection based on avatar personality
+    voice_configs = {
+        'professional': {'voice_id': 'EXAVITQu4vr4xnSDxMaL', 'name': 'Professional'},
+        'confident': {'voice_id': 'onwK4e9ZLuTAKqWW03F9', 'name': 'Confident'},
+        'caring': {'voice_id': '21m00Tcm4TlvDq8ikWAM', 'name': 'Caring'},
+        'wise': {'voice_id': 'TxGEqnHWrfWFTfGW9XjX', 'name': 'Wise'},
+        'energetic': {'voice_id': 'AZnzlk1XvdvUeBnXmlld', 'name': 'Energetic'},
+        'executive': {'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'Executive'}
     }
     
-    voice_config = avatar_voices.get(avatar_choice, avatar_voices['sophia'])
+    voice_config = voice_configs.get(voice_type, voice_configs['professional'])
     voice_id = voice_config['voice_id']
-    voice_name = voice_config['name']
     
-    # Enhance text for more natural speech
-    enhanced_text = enhance_text_for_speech(text, avatar_choice)
+    # Clean text for speech
+    clean_text = enhance_text_for_speech(text, voice_type)
     
-    tts_html = f"""
+    # Instant voice generation and playback
+    voice_html = f"""
     <script>
-    async function speakWithElevenLabs() {{
+    async function playInstantVoice() {{
         try {{
-            document.getElementById('speakButton').innerHTML = '🔄 Generating {voice_name}...';
-            
             const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
                 method: 'POST',
                 headers: {{
@@ -615,12 +570,12 @@ def create_elevenlabs_voice(text, api_key, avatar_choice):
                     'xi-api-key': '{api_key}'
                 }},
                 body: JSON.stringify({{
-                    text: `{enhanced_text}`,
+                    text: `{clean_text}`,
                     model_id: 'eleven_monolingual_v1',
                     voice_settings: {{
                         stability: 0.8,
                         similarity_boost: 0.9,
-                        style: 0.7,
+                        style: 0.8,
                         use_speaker_boost: true
                     }}
                 }})
@@ -631,233 +586,98 @@ def create_elevenlabs_voice(text, api_key, avatar_choice):
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 
-                document.getElementById('speakButton').innerHTML = '🔇 Stop {voice_name}';
-                document.getElementById('speakButton').style.background = 'linear-gradient(45deg, #ff4757, #ff3742)';
-                
-                audio.play();
-                
-                audio.onended = function() {{
-                    document.getElementById('speakButton').innerHTML = '🔊 Play {voice_name}';
-                    document.getElementById('speakButton').style.background = 'linear-gradient(45deg, #9370DB, #8A2BE2)';
-                }};
-                
-                document.getElementById('speakButton').onclick = function() {{
-                    audio.pause();
-                    audio.currentTime = 0;
-                    document.getElementById('speakButton').innerHTML = '🔊 Play {voice_name}';
-                    document.getElementById('speakButton').style.background = 'linear-gradient(45deg, #9370DB, #8A2BE2)';
-                    document.getElementById('speakButton').onclick = speakWithElevenLabs;
-                }};
+                // Play immediately - no user interaction needed
+                audio.play().catch(e => {{
+                    console.log('Autoplay blocked, using browser TTS fallback');
+                    fallbackToBrowserTTS();
+                }});
                 
             }} else {{
-                throw new Error('ElevenLabs API error: ' + response.status);
+                console.log('ElevenLabs failed, using browser TTS');
+                fallbackToBrowserTTS();
             }}
         }} catch (error) {{
-            console.error('ElevenLabs error:', error);
-            document.getElementById('speakButton').innerHTML = '🔊 Use Enhanced Voice (Fallback)';
-            enhancedBrowserVoice(); // Fallback
+            console.log('Voice error, using browser TTS');
+            fallbackToBrowserTTS();
         }}
     }}
     
-    // Auto-play if enabled
-    setTimeout(speakWithElevenLabs, 1000);
-    </script>
-    
-    <div style="text-align: center; margin: 15px 0;">
-        <button id="speakButton" onclick="speakWithElevenLabs()" style="
-            background: linear-gradient(45deg, #9370DB, #8A2BE2);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(147, 112, 219, 0.4);
-        ">
-            🔊 Play {voice_name}
-        </button>
-    </div>
-    """
-    
-    st.components.v1.html(tts_html, height=80)
-
-def create_enhanced_browser_voice(text, avatar_choice):
-    """Enhanced browser TTS with proper male/female voice selection"""
-    
-    enhanced_text = enhance_text_for_speech(text, avatar_choice)
-    voice_speed = st.session_state.user_profile.get('voice_speed', 0.9)
-    voice_pitch = st.session_state.user_profile.get('voice_pitch', 1.0)
-    
-    # Avatar-specific voice preferences
-    avatar_voice_prefs = {
-        'sophia': {
-            'gender': 'female',
-            'type': 'professional',
-            'pitch': 1.0,
-            'name': 'Professional Female Voice'
-        },
-        'marcus': {
-            'gender': 'male', 
-            'type': 'professional',
-            'pitch': 0.8,
-            'name': 'Professional Male Voice'
-        },
-        'elena': {
-            'gender': 'female',
-            'type': 'caring',
-            'pitch': 1.1,
-            'name': 'Caring Female Voice'
-        },
-        'david': {
-            'gender': 'male',
-            'type': 'wise', 
-            'pitch': 0.7,
-            'name': 'Wise Male Voice'
-        },
-        'maya': {
-            'gender': 'female',
-            'type': 'energetic',
-            'pitch': 1.2,
-            'name': 'Energetic Female Voice'
-        },
-        'james': {
-            'gender': 'male',
-            'type': 'executive',
-            'pitch': 0.9,
-            'name': 'Executive Male Voice'
-        }
-    }
-    
-    voice_pref = avatar_voice_prefs.get(avatar_choice, avatar_voice_prefs['sophia'])
-    adjusted_pitch = voice_pref['pitch']
-    voice_name = voice_pref['name']
-    
-    tts_html = f"""
-    <script>
-    function enhancedBrowserVoice() {{
+    function fallbackToBrowserTTS() {{
         if ('speechSynthesis' in window) {{
-            speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance(`{enhanced_text}`);
-            utterance.rate = {voice_speed * 0.95};
-            utterance.pitch = {adjusted_pitch};
+            const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
             utterance.volume = 1.0;
             
-            let voices = speechSynthesis.getVoices();
-            if (voices.length === 0) {{
-                setTimeout(() => {{
-                    voices = speechSynthesis.getVoices();
-                    selectVoiceForAvatar();
-                }}, 100);
-            }} else {{
-                selectVoiceForAvatar();
-            }}
+            // Find best voice for personality
+            const voices = speechSynthesis.getVoices();
+            const bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
+            if (bestVoice) utterance.voice = bestVoice;
             
-            function selectVoiceForAvatar() {{
-                let selectedVoice = null;
-                const gender = '{voice_pref["gender"]}';
-                const type = '{voice_pref["type"]}';
-                
-                console.log('Available voices:', voices.map(v => v.name + ' (' + v.gender + ')'));
-                
-                if (gender === 'female') {{
-                    // Find best female voice
-                    selectedVoice = voices.find(voice => 
-                        voice.lang.startsWith('en-') && 
-                        (voice.name.toLowerCase().includes('female') ||
-                         voice.name.toLowerCase().includes('woman') ||
-                         voice.name.includes('Samantha') ||
-                         voice.name.includes('Karen') ||
-                         voice.name.includes('Susan') ||
-                         voice.name.includes('Victoria') ||
-                         voice.name.includes('Zira'))
-                    );
-                    
-                    // Fallback for female
-                    if (!selectedVoice) {{
-                        selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('en-') && 
-                            !voice.name.toLowerCase().includes('male') &&
-                            !voice.name.toLowerCase().includes('man')
-                        );
-                    }}
-                    
-                }} else if (gender === 'male') {{
-                    // Find best male voice
-                    selectedVoice = voices.find(voice => 
-                        voice.lang.startsWith('en-') && 
-                        (voice.name.toLowerCase().includes('male') ||
-                         voice.name.toLowerCase().includes('man') ||
-                         voice.name.includes('David') ||
-                         voice.name.includes('Mark') ||
-                         voice.name.includes('Daniel') ||
-                         voice.name.includes('Alex') ||
-                         voice.name.includes('Bruce') ||
-                         voice.name.includes('James'))
-                    );
-                    
-                    // Fallback for male - look for deeper voices
-                    if (!selectedVoice) {{
-                        selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('en-') && 
-                            (voice.name.includes('Google') || voice.localService === true)
-                        );
-                    }}
-                }}
-                
-                // Final fallback
-                if (!selectedVoice) {{
-                    selectedVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
-                }}
-                
-                if (selectedVoice) {{
-                    utterance.voice = selectedVoice;
-                    console.log('Selected voice:', selectedVoice.name, 'for', gender, type);
-                }}
-                
-                utterance.onstart = function() {{
-                    document.getElementById('speakButton').innerHTML = '🔇 Stop {voice_name}';
-                }};
-                
-                utterance.onend = function() {{
-                    document.getElementById('speakButton').innerHTML = '🔊 Play {voice_name}';
-                }};
-                
-                utterance.onerror = function(event) {{
-                    console.error('Speech error:', event.error);
-                    document.getElementById('speakButton').innerHTML = '🔊 Try Again';
-                }};
-                
-                speechSynthesis.speak(utterance);
-            }}
+            speechSynthesis.speak(utterance);
         }}
     }}
     
-    // Auto-play
-    setTimeout(enhancedBrowserVoice, 1000);
+    // Start playing immediately
+    playInstantVoice();
     </script>
-    
-    <div style="text-align: center; margin: 15px 0;">
-        <button id="speakButton" onclick="enhancedBrowserVoice()" style="
-            background: linear-gradient(45deg, #9370DB, #8A2BE2);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(147, 112, 219, 0.4);
-        ">
-            🔊 Play {voice_name}
-        </button>
-    </div>
     """
     
-    st.components.v1.html(tts_html, height=80)
+    st.components.v1.html(voice_html, height=0)  # Hidden component
+
+def create_instant_browser_voice(text, voice_type):
+    """Instant browser TTS with personality matching"""
+    
+    clean_text = enhance_text_for_speech(text, voice_type)
+    
+    # Voice personality settings
+    voice_settings = {
+        'professional': {'rate': 0.9, 'pitch': 1.0},
+        'confident': {'rate': 1.0, 'pitch': 0.9},
+        'caring': {'rate': 0.85, 'pitch': 1.1},
+        'wise': {'rate': 0.8, 'pitch': 0.8},
+        'energetic': {'rate': 1.1, 'pitch': 1.2},
+        'executive': {'rate': 0.95, 'pitch': 0.9}
+    }
+    
+    settings = voice_settings.get(voice_type, voice_settings['professional'])
+    
+    voice_html = f"""
+    <script>
+    function playInstantBrowserVoice() {{
+        if ('speechSynthesis' in window) {{
+            speechSynthesis.cancel(); // Clear any previous speech
+            
+            const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
+            utterance.rate = {settings['rate']};
+            utterance.pitch = {settings['pitch']};
+            utterance.volume = 1.0;
+            
+            // Auto-select best voice
+            const voices = speechSynthesis.getVoices();
+            let bestVoice = voices.find(v => v.lang.startsWith('en-') && v.localService) || 
+                          voices.find(v => v.lang.startsWith('en-')) || 
+                          voices[0];
+            
+            if (bestVoice) {{
+                utterance.voice = bestVoice;
+            }}
+            
+            // Play immediately
+            speechSynthesis.speak(utterance);
+        }}
+    }}
+    
+    // Handle voice loading
+    if (speechSynthesis.getVoices().length > 0) {{
+        playInstantBrowserVoice();
+    }} else {{
+        speechSynthesis.onvoiceschanged = playInstantBrowserVoice;
+    }}
+    </script>
+    """
+    
+    st.components.v1.html(voice_html, height=0)  # Hidden component
 
 def enhance_text_for_speech(text, voice_type):
     """Make text more natural and human-like for speech"""
@@ -972,7 +792,7 @@ def chat_interface():
         
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Enhanced user profile sidebar with new D-ID avatars
+# Enhanced user profile sidebar with new avatars
 def user_profile_sidebar():
     with st.sidebar:
         st.header("👤 Your Coach Settings")
@@ -1039,7 +859,7 @@ def main():
     st.markdown("""
     <div class="main-header">
         <h1>🎯 Avatar Success Coach</h1>
-        <p>Your AI-powered success mentor with realistic HeyGen talking avatars</p>
+        <p>Your AI-powered success mentor with instant talking avatars</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1126,7 +946,9 @@ def main():
             if latest_message['role'] == 'coach':
                 st.markdown("### 🔊 Coach Response")
                 st.info(latest_message['content'])
-                natural_voice_component(latest_message['content'])
+                # Use voice type from user profile
+                voice_type = st.session_state.user_profile.get('voice_type', 'professional')
+                natural_voice_component(latest_message['content'], voice_type)
         
         # Debug and test section - MOVED TO BOTTOM
         st.markdown("---")
@@ -1144,10 +966,19 @@ def main():
                 
                 st.subheader("🎭 Avatar Animation Test")
                 if st.button("🎬 Test Avatar Animation"):
-                    st.info("Avatar animation test - check the avatar above!")
-                    # Trigger speaking animation
-                    st.session_state.is_speaking = True
-                    st.rerun()
+                    st.info("Testing avatar animation - check the avatar above!")
+                    # Test instant avatar animation
+                    st.markdown("""
+                    <script>
+                    const container = document.getElementById('avatarContainer');
+                    if (container) {
+                        container.classList.add('speaking');
+                        setTimeout(() => {
+                            container.classList.remove('speaking');
+                        }, 3000);
+                    }
+                    </script>
+                    """, unsafe_allow_html=True)
             
             with col_debug2:
                 st.subheader("🔧 System Status")
@@ -1162,14 +993,15 @@ def main():
                 st.write(f"Chat Messages: {len(st.session_state.chat_history)}")
             
             # Show current settings
-            st.subheader("⚙️ Current Settings")
+            st.subheader("⚙️ Full Settings")
             st.json({
                 'avatar_choice': st.session_state.user_profile.get('avatar', 'none'),
                 'heygen_key_set': bool(setup_heygen() and setup_heygen() != "your_heygen_api_key_here"),
                 'elevenlabs_key_set': bool(setup_elevenlabs() and setup_elevenlabs() != "your_elevenlabs_api_key_here"),
                 'gemini_key_set': bool(st.secrets.get("GEMINI_API_KEY")),
                 'chat_history_length': len(st.session_state.chat_history),
-                'is_speaking': st.session_state.is_speaking
+                'is_speaking': st.session_state.is_speaking,
+                'instant_avatar_mode': True
             })
 
 if __name__ == "__main__":
