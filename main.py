@@ -274,6 +274,15 @@ def setup_did():
     """Setup D-ID API for real avatars"""
     return st.secrets.get("DID_API_KEY") or os.getenv("DID_API_KEY")
 
+def encode_did_credentials(api_key):
+    """Properly encode D-ID API credentials for Basic Auth"""
+    import base64
+    # D-ID API key format is username:password, encode to base64
+    if api_key and ":" in api_key:
+        encoded_bytes = base64.b64encode(api_key.encode('utf-8'))
+        return encoded_bytes.decode('utf-8')
+    return api_key
+
 def setup_elevenlabs():
     """Setup ElevenLabs for natural voice"""
     return st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
@@ -291,68 +300,77 @@ def generate_avatar_video(text, avatar_choice):
         
         # D-ID API endpoint
         url = "https://api.d-id.com/talks"
+        
+        # Properly encode the API key for Basic Auth
+        encoded_key = encode_did_credentials(did_key)
+        
         headers = {
-            "Authorization": f"Basic {did_key}",
-            "Content-Type": "application/json"
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": f"Basic {encoded_key}"
         }
         
-        # D-ID Avatar configurations with realistic human presenters
+        # D-ID Avatar configurations with working public images
         avatar_configs = {
             'sophia': {
-                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/alice.jpg',
-                'voice_id': 'microsoft:en-US-AriaNeural',
+                'source_url': 'https://create-images-results.d-id.com/google-oauth2%7C111157914468936986363/upl_l_xfClJbj8xkPD7QBGDxJ/image.jpeg',
+                'voice_id': 'en-US-AriaNeural',
                 'name': 'Sophia - Professional Female Coach'
             },
             'marcus': {
-                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/or-roman.jpg', 
-                'voice_id': 'microsoft:en-US-GuyNeural',
+                'source_url': 'https://create-images-results.d-id.com/DefaultPresenter_Male/image.jpeg', 
+                'voice_id': 'en-US-GuyNeural',
                 'name': 'Marcus - Business Mentor'
             },
             'elena': {
-                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/amy.jpg',
-                'voice_id': 'microsoft:en-US-JennyNeural',
+                'source_url': 'https://create-images-results.d-id.com/api%7CFluentBusiness_Female_1/image.png',
+                'voice_id': 'en-US-JennyNeural',
                 'name': 'Elena - Caring Guide'
             },
             'david': {
-                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/david.jpg',
-                'voice_id': 'microsoft:en-US-DavisNeural', 
+                'source_url': 'https://create-images-results.d-id.com/DefaultPresenter_Male_2/image.jpeg',
+                'voice_id': 'en-US-DavisNeural', 
                 'name': 'David - Wise Advisor'
             },
             'maya': {
-                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/maya.jpg',
-                'voice_id': 'microsoft:en-US-SaraNeural',
+                'source_url': 'https://create-images-results.d-id.com/api%7CFluentBusiness_Female_2/image.png',
+                'voice_id': 'en-US-SaraNeural',
                 'name': 'Maya - Success Coach'
             },
             'james': {
-                'source_url': 'https://d-id-public-bucket.s3.amazonaws.com/james.jpg',
-                'voice_id': 'microsoft:en-US-JasonNeural',
+                'source_url': 'https://create-images-results.d-id.com/api%7CFluentBusiness_Male_1/image.png',
+                'voice_id': 'en-US-JasonNeural',
                 'name': 'James - Executive Coach'
             }
         }
         
         config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
         
-        # D-ID request payload
+        # Clean and limit text input
+        clean_text = text.strip()[:300]  # D-ID has character limits
+        clean_text = re.sub(r'[^\w\s\.\,\!\?\;\:]', '', clean_text)  # Remove special chars
+        
+        # D-ID request payload with correct structure
         payload = {
             "source_url": config['source_url'],
             "script": {
                 "type": "text",
-                "subtitles": "false",
+                "input": clean_text,
                 "provider": {
                     "type": "microsoft",
                     "voice_id": config['voice_id']
-                },
-                "ssml": "false",
-                "input": text[:500]  # D-ID has character limits
+                }
             },
             "config": {
                 "fluent": "false",
                 "pad_audio": "0.0",
-                "stitch": "true"
+                "stitch": "true",
+                "result_format": "mp4"
             }
         }
         
         st.write(f"🔍 Creating avatar: {config['name']}")
+        st.write(f"📝 Text: {clean_text[:50]}...")
         
         response = requests.post(url, headers=headers, json=payload, timeout=30)
         
@@ -365,22 +383,38 @@ def generate_avatar_video(text, avatar_choice):
             talk_id = result.get("id")
             if talk_id:
                 st.success(f"✅ Talk ID received: {talk_id}")
-                return poll_did_video_status(talk_id, did_key)
+                return poll_did_video_status(talk_id, encoded_key)
             else:
                 st.error("❌ No talk ID in response")
                 return None
         else:
-            error_details = response.json() if response.headers.get('content-type') == 'application/json' else response.text
+            try:
+                error_details = response.json()
+            except:
+                error_details = response.text
             st.error(f"❌ D-ID API Error {response.status_code}: {error_details}")
+            
+            # Provide helpful error messages
+            if response.status_code == 401:
+                st.error("🔑 Authentication failed. Please check your D-ID API key format.")
+                st.info("💡 D-ID API key should be in format 'username:password'")
+            elif response.status_code == 402:
+                st.error("💳 Insufficient credits. Please check your D-ID account balance.")
+            elif response.status_code == 429:
+                st.error("⏰ Rate limit exceeded. Please wait and try again.")
+            
             return None
         
     except Exception as e:
         st.error(f"❌ Avatar generation error: {str(e)}")
         return None
 
-def poll_did_video_status(talk_id, api_key, max_attempts=30):
+def poll_did_video_status(talk_id, encoded_api_key, max_attempts=30):
     """Poll D-ID for video completion"""
-    headers = {"Authorization": f"Basic {api_key}"}
+    headers = {
+        "Authorization": f"Basic {encoded_api_key}",
+        "Accept": "application/json"
+    }
     
     progress_placeholder = st.empty()
     
@@ -403,20 +437,28 @@ def poll_did_video_status(talk_id, api_key, max_attempts=30):
                 
                 if status == "done":
                     video_url = result.get("result_url")
-                    progress_placeholder.success("✅ Avatar video ready!")
-                    return video_url
+                    if video_url:
+                        progress_placeholder.success("✅ Avatar video ready!")
+                        return video_url
+                    else:
+                        st.error("❌ No video URL in completed response")
+                        return None
                 elif status == "error":
-                    error_msg = result.get("error", {}).get("description", "Unknown error")
-                    progress_placeholder.error(f"❌ Video generation failed: {error_msg}")
+                    error_msg = result.get("error", {})
+                    if isinstance(error_msg, dict):
+                        error_description = error_msg.get("description", "Unknown error")
+                    else:
+                        error_description = str(error_msg)
+                    progress_placeholder.error(f"❌ Video generation failed: {error_description}")
                     return None
                 elif status in ["created", "started"]:
                     time.sleep(4)  # D-ID processing time
                     continue
                 else:
-                    st.write(f"🔄 Unknown status: {status}")
+                    st.write(f"🔄 Status: {status} - continuing...")
                     time.sleep(4)
             else:
-                st.error(f"❌ Status check failed: {response.status_code}")
+                st.error(f"❌ Status check failed: {response.status_code} - {response.text}")
                 time.sleep(4)
                 
         except Exception as e:
