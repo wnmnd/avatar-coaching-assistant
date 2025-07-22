@@ -243,34 +243,29 @@ def load_css():
         background: rgba(221, 160, 221, 0.3) !important;
     }
     
-    /* Slider labels - FORCE back to original theme colors */
+    /* Slider labels - FORCE back to default theme colors */
     .stSlider > label,
     .stSlider label,
     .stSlider > div > label,
     div[data-testid="stSlider"] label,
     .stSlider label[data-testid="stWidgetLabel"],
-    .css-1d391kg .stSlider label {
+    .css-1d391kg .stSlider label,
+    .css-1d391kg .stSlider > label {
         color: inherit !important;
-        color: var(--text-color) !important;
+        color: unset !important;
         font-weight: 600 !important;
     }
     
-    /* Specific override for Speaking Speed and Voice Pitch labels */
-    .stSlider label:contains("Speaking Speed"),
-    .stSlider label:contains("Voice Pitch") {
-        color: rgba(250, 250, 250, 1) !important;
+    /* Nuclear option - remove ALL purple from slider labels */
+    .css-1d391kg .stSlider label[style*="color"] {
+        color: rgba(250, 250, 250, 0.87) !important;
     }
     
-    /* Remove any purple coloring from slider labels */
-    .stSlider label[style*="color: #4A154B"],
-    .stSlider label[style*="color: #8A2BE2"],
-    .stSlider label[style*="color: purple"] {
-        color: rgba(250, 250, 250, 1) !important;
-    }
-    
-    /* Ensure slider labels use default theme styling */
-    .css-1d391kg .stSlider > label {
-        color: unset !important;
+    /* Specific selectors for Speaking Speed and Voice Pitch */
+    label:contains("Speaking Speed"),
+    label:contains("Voice Pitch"),
+    .stSlider label:first-child {
+        color: rgba(250, 250, 250, 0.87) !important;
     }
     
     /* Exception - keep slider VALUES purple but labels normal */
