@@ -40,6 +40,68 @@ def load_css():
         border-radius: 20px;
         margin-bottom: 2rem;
         box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
+        min-height: 300px;
+    }
+    
+    .avatar-display {
+        text-align: center;
+    }
+    
+    .avatar-emoji {
+        font-size: 120px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+        display: block;
+    }
+    
+    .avatar-name {
+        font-size: 18px;
+        font-weight: bold;
+        color: #8A2BE2;
+        margin-bottom: 15px;
+    }
+    
+    .voice-visualizer {
+        display: flex;
+        gap: 4px;
+        align-items: end;
+        height: 40px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        justify-content: center;
+    }
+    
+    .voice-bar {
+        width: 6px;
+        height: 10px;
+        background: linear-gradient(45deg, #8A2BE2, #9370DB);
+        border-radius: 3px;
+        animation: voice-wave 0.8s ease-in-out infinite;
+    }
+    
+    .voice-bar:nth-child(1) { animation-delay: 0s; }
+    .voice-bar:nth-child(2) { animation-delay: 0.1s; }
+    .voice-bar:nth-child(3) { animation-delay: 0.2s; }
+    .voice-bar:nth-child(4) { animation-delay: 0.3s; }
+    .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+    
+    @keyframes voice-wave {
+        0%, 100% { height: 10px; }
+        50% { height: 35px; }
+    }
+    
+    .avatar-speaking .avatar-emoji {
+        animation: talking 0.5s ease-in-out infinite alternate;
+        transform: scale(1.1);
+    }
+    
+    .avatar-speaking .voice-visualizer {
+        opacity: 1;
+    }
+    
+    @keyframes talking {
+        0% { transform: scale(1.1) rotate(-1deg); }
+        100% { transform: scale(1.15) rotate(1deg); }
     }
     
     .avatar-status {
@@ -53,7 +115,6 @@ def load_css():
         text-align: center;
     }
     
-    /* WhatsApp Voice Note Styling */
     .voice-note-container {
         padding: 20px;
         background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
@@ -114,7 +175,6 @@ def load_css():
         border-radius: 10px;
     }
     
-    /* Custom Purple Button Styling */
     .stButton > button {
         background: linear-gradient(135deg, #8A2BE2, #9932CC) !important;
         color: white !important;
@@ -133,7 +193,6 @@ def load_css():
         box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4) !important;
     }
     
-    /* Form Submit Button Styling */
     .stFormSubmitButton > button {
         background: linear-gradient(135deg, #4A154B, #6A1B9A) !important;
         color: white !important;
@@ -185,6 +244,8 @@ def init_session_state():
         st.session_state.is_speaking = False
     if 'user_profile' not in st.session_state:
         st.session_state.user_profile = {}
+    if 'voice_played' not in st.session_state:
+        st.session_state.voice_played = False
 
 # Configure APIs
 def setup_gemini():
@@ -221,9 +282,9 @@ def setup_elevenlabs():
     """Setup ElevenLabs for natural voice"""
     return st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
 
-# Enhanced Avatar Component - INSTANT COMMUNICATION
-def avatar_component(is_speaking=False, latest_response=""):
-    """Display instant-response animated avatar with real-time voice"""
+# Fixed Avatar Component
+def avatar_component(is_speaking=False):
+    """Display fixed avatar with proper rendering"""
     
     profile = st.session_state.user_profile
     avatar_choice = profile.get('avatar', 'sophia')
@@ -241,15 +302,17 @@ def avatar_component(is_speaking=False, latest_response=""):
     config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
     avatar_emoji = config['emoji']
     avatar_name = config['name']
-    voice_type = config['voice_type']
     
-    # Enhanced Real-time Avatar with Instant Voice
+    # Simplified but effective avatar display
+    speaking_class = "avatar-speaking" if is_speaking else ""
+    status_text = f"🎤 {avatar_name} is speaking..." if is_speaking else f"💭 {avatar_name} is ready to help"
+    
     avatar_html = f"""
     <div class="avatar-container">
-        <div class="enhanced-avatar" id="avatarContainer">
-            <div class="avatar-face" id="avatarFace">{avatar_emoji}</div>
+        <div class="avatar-display {speaking_class}" id="avatarDisplay">
+            <div class="avatar-emoji">{avatar_emoji}</div>
             <div class="avatar-name">{avatar_name}</div>
-            <div class="voice-visualizer" id="voiceVisualizer">
+            <div class="voice-visualizer">
                 <div class="voice-bar"></div>
                 <div class="voice-bar"></div>
                 <div class="voice-bar"></div>
@@ -257,120 +320,11 @@ def avatar_component(is_speaking=False, latest_response=""):
                 <div class="voice-bar"></div>
             </div>
         </div>
-        <div class="avatar-status" id="avatarStatus">
-            💭 Ready to help you...
-        </div>
+        <div class="avatar-status">{status_text}</div>
     </div>
-
-    <style>
-    .enhanced-avatar {{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-    }}
-    
-    .avatar-face {{
-        font-size: 120px;
-        margin-bottom: 10px;
-        transition: all 0.3s ease;
-    }}
-    
-    .avatar-name {{
-        font-size: 18px;
-        font-weight: bold;
-        color: #8A2BE2;
-        margin-bottom: 15px;
-    }}
-    
-    .voice-visualizer {{
-        display: flex;
-        gap: 4px;
-        align-items: end;
-        height: 40px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }}
-    
-    .voice-bar {{
-        width: 6px;
-        height: 10px;
-        background: linear-gradient(45deg, #8A2BE2, #9370DB);
-        border-radius: 3px;
-        animation: voice-wave 0.8s ease-in-out infinite;
-    }}
-    
-    .voice-bar:nth-child(1) {{ animation-delay: 0s; }}
-    .voice-bar:nth-child(2) {{ animation-delay: 0.1s; }}
-    .voice-bar:nth-child(3) {{ animation-delay: 0.2s; }}
-    .voice-bar:nth-child(4) {{ animation-delay: 0.3s; }}
-    .voice-bar:nth-child(5) {{ animation-delay: 0.4s; }}
-    
-    @keyframes voice-wave {{
-        0%, 100% {{ height: 10px; }}
-        50% {{ height: 35px; }}
-    }}
-    
-    .speaking .avatar-face {{
-        animation: talking 0.5s ease-in-out infinite alternate;
-        transform: scale(1.1);
-    }}
-    
-    .speaking .voice-visualizer {{
-        opacity: 1;
-    }}
-    
-    @keyframes talking {{
-        0% {{ transform: scale(1.1) rotate(-1deg); }}
-        100% {{ transform: scale(1.15) rotate(1deg); }}
-    }}
-    </style>
-    
-    <script>
-    // Instant avatar response system
-    let isCurrentlySpeaking = false;
-    
-    function startSpeaking() {{
-        const container = document.getElementById('avatarContainer');
-        const status = document.getElementById('avatarStatus');
-        
-        if (container && status) {{
-            container.classList.add('speaking');
-            status.innerHTML = '🎤 {avatar_name} is speaking...';
-            isCurrentlySpeaking = true;
-        }}
-    }}
-    
-    function stopSpeaking() {{
-        const container = document.getElementById('avatarContainer');
-        const status = document.getElementById('avatarStatus');
-        
-        if (container && status) {{
-            container.classList.remove('speaking');
-            status.innerHTML = '💭 Ready to help you...';
-            isCurrentlySpeaking = false;
-        }}
-    }}
-    
-    // Auto-start speaking animation when avatar responds
-    if ({str(is_speaking).lower()}) {{
-        setTimeout(startSpeaking, 100);
-        
-        // Stop animation after reasonable time (based on text length)
-        const textLength = {len(latest_response) if latest_response else 0};
-        const speakingDuration = Math.max(3000, textLength * 100); // Min 3 seconds
-        setTimeout(stopSpeaking, speakingDuration);
-    }}
-    </script>
     """
     
     st.markdown(avatar_html, unsafe_allow_html=True)
-    
-    # INSTANT VOICE RESPONSE - No waiting!
-    if is_speaking and latest_response:
-        # Play voice immediately with ElevenLabs or enhanced browser TTS
-        natural_voice_component(latest_response, voice_type)
-        st.session_state.is_speaking = False  # Reset immediately
 
 # WhatsApp-style Voice Note Component
 def whatsapp_voice_note():
@@ -520,14 +474,16 @@ def whatsapp_voice_note():
     
     # Check for voice input
     if st.button("🔄 Check for Voice Input", key="voice_check"):
-        # This would integrate with the JavaScript voice input
         st.info("Voice input integration ready. Hold the microphone button to record.")
 
-# Enhanced Natural Voice with Instant Playback
+# Fixed Natural Voice with NO DOUBLE PLAYBACK
 def natural_voice_component(text, voice_type="professional"):
-    """Instant voice playback with enhanced quality"""
-    if not text:
+    """Single voice playback - prevents doubles"""
+    if not text or st.session_state.get('voice_played', False):
         return
+    
+    # Mark voice as played to prevent doubles
+    st.session_state.voice_played = True
     
     elevenlabs_key = setup_elevenlabs()
     
@@ -560,6 +516,11 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type):
     # Instant voice generation and playback
     voice_html = f"""
     <script>
+    // Prevent multiple simultaneous voices
+    if (window.speechSynthesis) {{
+        window.speechSynthesis.cancel();
+    }}
+    
     async function playInstantVoice() {{
         try {{
             const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
@@ -586,7 +547,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type):
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 
-                // Play immediately - no user interaction needed
+                // Play immediately
                 audio.play().catch(e => {{
                     console.log('Autoplay blocked, using browser TTS fallback');
                     fallbackToBrowserTTS();
@@ -604,6 +565,8 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type):
     
     function fallbackToBrowserTTS() {{
         if ('speechSynthesis' in window) {{
+            window.speechSynthesis.cancel(); // Stop any existing speech
+            
             const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
             utterance.rate = 0.9;
             utterance.pitch = 1.0;
@@ -623,7 +586,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type):
     </script>
     """
     
-    st.components.v1.html(voice_html, height=0)  # Hidden component
+    st.components.v1.html(voice_html, height=0)
 
 def create_instant_browser_voice(text, voice_type):
     """Instant browser TTS with personality matching"""
@@ -677,7 +640,7 @@ def create_instant_browser_voice(text, voice_type):
     </script>
     """
     
-    st.components.v1.html(voice_html, height=0)  # Hidden component
+    st.components.v1.html(voice_html, height=0)
 
 def enhance_text_for_speech(text, voice_type):
     """Make text more natural and human-like for speech"""
@@ -689,19 +652,16 @@ def enhance_text_for_speech(text, voice_type):
     text = text.replace('\n', ' ').strip()
     
     # Add natural speech patterns
-    text = re.sub(r'([.!?])', r'\1 ', text)  # Natural pauses
-    text = re.sub(r'([,:])', r'\1 ', text)   # Slight pauses
+    text = re.sub(r'([.!?])', r'\1 ', text)
+    text = re.sub(r'([,:])', r'\1 ', text)
     
     # Personality-based enhancements
     if voice_type == 'caring':
         text = re.sub(r'\byou\b', 'you', text, flags=re.IGNORECASE)
-        text = re.sub(r'!', '!', text)  # Keep excitement but not overwhelming
     elif voice_type == 'energetic':
         text = re.sub(r'\bgreat\b', 'absolutely amazing', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bgood\b', 'fantastic', text, flags=re.IGNORECASE)
     elif voice_type == 'wise':
         text = re.sub(r'\bremember\b', 'keep in mind', text, flags=re.IGNORECASE)
-        text = text.replace('.', '. Take a moment to consider this.')[:1] + text[1:]  # Add wisdom pause
     
     # Escape for JavaScript
     text = text.replace('"', '\\"').replace("'", "\\'")
@@ -792,7 +752,7 @@ def chat_interface():
         
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Enhanced user profile sidebar with new avatars
+# Enhanced user profile sidebar
 def user_profile_sidebar():
     with st.sidebar:
         st.header("👤 Your Coach Settings")
@@ -801,7 +761,7 @@ def user_profile_sidebar():
         name = st.text_input("Your Name", value=st.session_state.user_profile.get('name', ''))
         goals = st.text_area("Your Goals", value=st.session_state.user_profile.get('goals', ''))
         
-        # Enhanced avatar choices (6 realistic options)
+        # Enhanced avatar choices
         st.subheader("🎭 Choose Your AI Coach")
         avatar_options = {
             "sophia": "👩‍💼 Sophia - Professional Female Coach",
@@ -844,8 +804,8 @@ def user_profile_sidebar():
                 'goals': goals,
                 'avatar': avatar_choice,
                 'voice_type': voice_type,
-                'voice_speed': 0.9,  # Default natural speed
-                'voice_pitch': 1.0   # Default pitch
+                'voice_speed': 0.9,
+                'voice_pitch': 1.0
             }
             st.success("✅ Settings saved!")
             st.rerun()
@@ -854,6 +814,15 @@ def user_profile_sidebar():
 def main():
     load_css()
     init_session_state()
+    
+    # Reset voice played flag on new interaction
+    if 'last_chat_length' not in st.session_state:
+        st.session_state.last_chat_length = 0
+    
+    current_chat_length = len(st.session_state.chat_history)
+    if current_chat_length > st.session_state.last_chat_length:
+        st.session_state.voice_played = False
+        st.session_state.last_chat_length = current_chat_length
     
     # Header
     st.markdown("""
@@ -884,14 +853,22 @@ def main():
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        # Real avatar display
-        latest_response = ""
-        if st.session_state.chat_history:
-            latest_msg = st.session_state.chat_history[-1]
-            if latest_msg['role'] == 'coach':
-                latest_response = latest_msg['content']
+        # Fixed avatar display
+        avatar_component(st.session_state.is_speaking)
         
-        avatar_component(st.session_state.is_speaking, latest_response)
+        # ONLY play voice for NEW coach messages
+        if (st.session_state.chat_history and 
+            st.session_state.chat_history[-1]['role'] == 'coach' and 
+            st.session_state.is_speaking and 
+            not st.session_state.voice_played):
+            
+            latest_response = st.session_state.chat_history[-1]['content']
+            voice_type = st.session_state.user_profile.get('voice_type', 'professional')
+            natural_voice_component(latest_response, voice_type)
+        
+        # Reset speaking state after voice plays
+        if st.session_state.is_speaking:
+            st.session_state.is_speaking = False
         
         # WhatsApp voice input
         whatsapp_voice_note()
@@ -913,6 +890,9 @@ def main():
             submitted = st.form_submit_button("Send Message", type="primary")
             
             if submitted and user_input.strip():
+                # Reset voice flag for new conversation
+                st.session_state.voice_played = False
+                
                 # Add user message
                 st.session_state.chat_history.append({
                     'role': 'user',
@@ -938,19 +918,10 @@ def main():
         if st.button("🗑️ Clear Chat"):
             st.session_state.chat_history = []
             st.session_state.is_speaking = False
+            st.session_state.voice_played = False
             st.rerun()
         
-        # Show latest response with natural voice
-        if st.session_state.chat_history:
-            latest_message = st.session_state.chat_history[-1]
-            if latest_message['role'] == 'coach':
-                st.markdown("### 🔊 Coach Response")
-                st.info(latest_message['content'])
-                # Use voice type from user profile
-                voice_type = st.session_state.user_profile.get('voice_type', 'professional')
-                natural_voice_component(latest_message['content'], voice_type)
-        
-        # Debug and test section - MOVED TO BOTTOM
+        # Debug section
         st.markdown("---")
         st.markdown("### 🔧 Debug & API Tests")
         
@@ -960,6 +931,7 @@ def main():
             with col_debug1:
                 st.subheader("🎤 Voice Test")
                 if st.button("🔊 Test Voice System"):
+                    st.session_state.voice_played = False  # Reset for test
                     avatar_choice = st.session_state.user_profile.get('avatar', 'sophia')
                     st.write(f"Testing voice for: {avatar_choice}")
                     natural_voice_component("Hello, this is a voice test for the avatar coaching system.", "professional")
@@ -967,18 +939,8 @@ def main():
                 st.subheader("🎭 Avatar Animation Test")
                 if st.button("🎬 Test Avatar Animation"):
                     st.info("Testing avatar animation - check the avatar above!")
-                    # Test instant avatar animation
-                    st.markdown("""
-                    <script>
-                    const container = document.getElementById('avatarContainer');
-                    if (container) {
-                        container.classList.add('speaking');
-                        setTimeout(() => {
-                            container.classList.remove('speaking');
-                        }, 3000);
-                    }
-                    </script>
-                    """, unsafe_allow_html=True)
+                    st.session_state.is_speaking = True
+                    st.rerun()
             
             with col_debug2:
                 st.subheader("🔧 System Status")
@@ -991,18 +953,8 @@ def main():
                 st.write(f"Avatar: {st.session_state.user_profile.get('avatar', 'sophia')}")
                 st.write(f"Voice Type: {st.session_state.user_profile.get('voice_type', 'caring')}")
                 st.write(f"Chat Messages: {len(st.session_state.chat_history)}")
-            
-            # Show current settings
-            st.subheader("⚙️ Full Settings")
-            st.json({
-                'avatar_choice': st.session_state.user_profile.get('avatar', 'none'),
-                'heygen_key_set': bool(setup_heygen() and setup_heygen() != "your_heygen_api_key_here"),
-                'elevenlabs_key_set': bool(setup_elevenlabs() and setup_elevenlabs() != "your_elevenlabs_api_key_here"),
-                'gemini_key_set': bool(st.secrets.get("GEMINI_API_KEY")),
-                'chat_history_length': len(st.session_state.chat_history),
-                'is_speaking': st.session_state.is_speaking,
-                'instant_avatar_mode': True
-            })
+                st.write(f"Voice Played: {st.session_state.voice_played}")
+                st.write(f"Is Speaking: {st.session_state.is_speaking}")
 
 if __name__ == "__main__":
     main()
