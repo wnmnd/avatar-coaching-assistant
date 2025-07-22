@@ -924,6 +924,47 @@ def get_coach_response(user_input, chat_history):
         name = st.session_state.user_profile.get('name', 'there')
         return f"I'm still here for you, {name}. Could you share that with me again?"
 
+# Voice Input Processing Functions (moved after get_coach_response)
+def check_for_pending_voice_message():
+    """Check for voice messages in URL parameters"""
+    # Simple method: check query params
+    if 'voice_msg' in st.query_params:
+        voice_message = st.query_params['voice_msg']
+        # Clear the query param immediately
+        del st.query_params['voice_msg']
+        return voice_message
+    
+    return None
+
+def process_voice_message(voice_input):
+    """Process voice message automatically"""
+    if not voice_input or not voice_input.strip():
+        return
+    
+    # Reset voice flag for new conversation
+    st.session_state.voice_played = False
+    
+    # Add user message
+    st.session_state.chat_history.append({
+        'role': 'user',
+        'content': voice_input,
+        'timestamp': datetime.now()
+    })
+    
+    # Get coach response
+    with st.spinner("Your coach is responding to your voice message..."):
+        coach_response = get_coach_response(voice_input, st.session_state.chat_history)
+    
+    # Add coach response
+    st.session_state.chat_history.append({
+        'role': 'coach',
+        'content': coach_response,
+        'timestamp': datetime.now()
+    })
+    
+    st.session_state.is_speaking = True
+    st.rerun()
+
 # Chat interface
 def chat_interface():
     st.markdown("### 💬 Conversation")
@@ -1274,29 +1315,7 @@ def main():
         
         # Process voice message if found
         if voice_message:
-            # Reset voice flag for new conversation
-            st.session_state.voice_played = False
-            
-            # Add user message
-            st.session_state.chat_history.append({
-                'role': 'user',
-                'content': voice_message,
-                'timestamp': datetime.now()
-            })
-            
-            # Get coach response
-            with st.spinner("Your coach is responding to your voice message..."):
-                coach_response = get_coach_response(voice_message, st.session_state.chat_history)
-            
-            # Add coach response
-            st.session_state.chat_history.append({
-                'role': 'coach',
-                'content': coach_response,
-                'timestamp': datetime.now()
-            })
-            
-            st.session_state.is_speaking = True
-            st.rerun()
+            process_voice_message(voice_message)
 
         # Regular text input form with shorter button
         with st.form("message_form", clear_on_submit=True):
