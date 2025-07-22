@@ -556,11 +556,16 @@ def avatar_component(is_speaking=False, latest_response=""):
     profile = st.session_state.user_profile
     avatar_choice = profile.get('avatar', 'sophia')
     
+    # Debug info to see what's happening
+    if is_speaking:
+        st.write(f"🔍 **Debug**: is_speaking={is_speaking}, has_response={bool(latest_response)}, heygen_key={bool(setup_heygen())}")
+    
     # Try to generate real avatar if speaking and we have response
     if is_speaking and latest_response and setup_heygen():
-        # Show what's happening during generation
-        with st.expander("🔍 Avatar Generation Details", expanded=True):
-            st.info(f"🎬 Creating {avatar_choice} avatar video...")
+        st.info(f"🎬 Attempting to create {avatar_choice} avatar video...")
+        
+        # Always show generation details for now
+        with st.expander("🔍 Avatar Generation Log", expanded=True):
             video_url = generate_avatar_video(latest_response, avatar_choice, debug_mode=True)
             
         if video_url:
@@ -582,7 +587,15 @@ def avatar_component(is_speaking=False, latest_response=""):
             st.session_state.is_speaking = False  # Reset speaking state
             return
         else:
-            st.warning("⚠️ Avatar generation failed, using emoji fallback")
+            st.error("❌ **DETAILED ERROR**: Avatar generation returned None - check logs above")
+    elif is_speaking and latest_response:
+        st.warning("⚠️ HeyGen API key not configured - using emoji fallback")
+    elif is_speaking:
+        st.warning("⚠️ No response text available for avatar generation")
+    
+    # If we get here, show emoji fallback message
+    if is_speaking:
+        st.warning("⚠️ Avatar generation failed, using emoji fallback")
     
     # Fallback to emoji avatar
     emoji_mapping = {
