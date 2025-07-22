@@ -289,7 +289,7 @@ def setup_elevenlabs():
 
 # D-ID Avatar Integration
 def generate_avatar_video(text, avatar_choice):
-    """Generate real talking avatar video using D-ID"""
+    """Generate real talking avatar video using D-ID with minimal payload"""
     did_key = setup_did()
     if not did_key or did_key == "your_did_api_key_here":
         st.warning("⚠️ D-ID API key not set. Using emoji avatar.")
@@ -310,67 +310,34 @@ def generate_avatar_video(text, avatar_choice):
             "Authorization": f"Basic {encoded_key}"
         }
         
-        # D-ID Avatar configurations with working public images
-        avatar_configs = {
-            'sophia': {
-                'source_url': 'https://create-images-results.d-id.com/google-oauth2%7C111157914468936986363/upl_l_xfClJbj8xkPD7QBGDxJ/image.jpeg',
-                'voice_id': 'en-US-AriaNeural',
-                'name': 'Sophia - Professional Female Coach'
-            },
-            'marcus': {
-                'source_url': 'https://create-images-results.d-id.com/DefaultPresenter_Male/image.jpeg', 
-                'voice_id': 'en-US-GuyNeural',
-                'name': 'Marcus - Business Mentor'
-            },
-            'elena': {
-                'source_url': 'https://create-images-results.d-id.com/api%7CFluentBusiness_Female_1/image.png',
-                'voice_id': 'en-US-JennyNeural',
-                'name': 'Elena - Caring Guide'
-            },
-            'david': {
-                'source_url': 'https://create-images-results.d-id.com/DefaultPresenter_Male_2/image.jpeg',
-                'voice_id': 'en-US-DavisNeural', 
-                'name': 'David - Wise Advisor'
-            },
-            'maya': {
-                'source_url': 'https://create-images-results.d-id.com/api%7CFluentBusiness_Female_2/image.png',
-                'voice_id': 'en-US-SaraNeural',
-                'name': 'Maya - Success Coach'
-            },
-            'james': {
-                'source_url': 'https://create-images-results.d-id.com/api%7CFluentBusiness_Male_1/image.png',
-                'voice_id': 'en-US-JasonNeural',
-                'name': 'James - Executive Coach'
-            }
+        # Use simple, reliable image URLs that work with D-ID
+        avatar_images = {
+            'sophia': 'https://create-images-results.d-id.com/DefaultPresenter_Female/image.jpeg',
+            'marcus': 'https://create-images-results.d-id.com/DefaultPresenter_Male/image.jpeg', 
+            'elena': 'https://create-images-results.d-id.com/api%7CFluentBusiness_Female_1/image.png',
+            'david': 'https://create-images-results.d-id.com/api%7CFluentBusiness_Male_1/image.png',
+            'maya': 'https://create-images-results.d-id.com/DefaultPresenter_Female_2/image.jpeg',
+            'james': 'https://create-images-results.d-id.com/DefaultPresenter_Male_2/image.jpeg'
         }
         
-        config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
+        # Clean and limit text - keep it very simple
+        clean_text = text.strip()[:100]  # Much shorter limit
+        clean_text = re.sub(r'[^a-zA-Z0-9\s\.\,\!\?]', '', clean_text)  # Only basic chars
+        if not clean_text:
+            clean_text = "Hello, how can I help you today?"
         
-        # Clean and limit text input
-        clean_text = text.strip()[:300]  # D-ID has character limits
-        clean_text = re.sub(r'[^\w\s\.\,\!\?\;\:]', '', clean_text)  # Remove special chars
-        
-        # D-ID request payload with correct structure
+        # MINIMAL payload structure - following working examples
         payload = {
-            "source_url": config['source_url'],
+            "source_url": avatar_images.get(avatar_choice, avatar_images['sophia']),
             "script": {
                 "type": "text",
-                "input": clean_text,
-                "provider": {
-                    "type": "microsoft",
-                    "voice_id": config['voice_id']
-                }
-            },
-            "config": {
-                "fluent": "false",
-                "pad_audio": "0.0",
-                "stitch": "true",
-                "result_format": "mp4"
+                "input": clean_text
             }
         }
         
-        st.write(f"🔍 Creating avatar: {config['name']}")
-        st.write(f"📝 Text: {clean_text[:50]}...")
+        st.write(f"🔍 Creating avatar with minimal payload")
+        st.write(f"📝 Text: {clean_text}")
+        st.write(f"🖼️ Image: {payload['source_url']}")
         
         response = requests.post(url, headers=headers, json=payload, timeout=30)
         
@@ -392,16 +359,20 @@ def generate_avatar_video(text, avatar_choice):
                 error_details = response.json()
             except:
                 error_details = response.text
+            
             st.error(f"❌ D-ID API Error {response.status_code}: {error_details}")
             
             # Provide helpful error messages
             if response.status_code == 401:
                 st.error("🔑 Authentication failed. Please check your D-ID API key format.")
-                st.info("💡 D-ID API key should be in format 'username:password'")
+                st.info("💡 API key should be in format 'username:password' (with colon)")
             elif response.status_code == 402:
                 st.error("💳 Insufficient credits. Please check your D-ID account balance.")
             elif response.status_code == 429:
                 st.error("⏰ Rate limit exceeded. Please wait and try again.")
+            elif response.status_code == 500:
+                st.error("🔧 Server error. Try with simpler text or different avatar.")
+                st.info("💡 Suggestion: Try text like 'Hello there' first")
             
             return None
         
@@ -1276,13 +1247,45 @@ def main():
                 if st.button("🎬 Test D-ID API"):
                     did_key = setup_did()
                     if did_key and did_key != "your_did_api_key_here":
-                        st.info("Testing D-ID with sample text...")
-                        test_video = generate_avatar_video("Hello, this is a test message!", 'sophia')
-                        if test_video:
-                            st.success("✅ D-ID API working!")
-                            st.video(test_video)
-                        else:
-                            st.error("❌ D-ID API test failed")
+                        st.info("Testing D-ID with minimal payload...")
+                        
+                        # Test with absolute minimal request
+                        url = "https://api.d-id.com/talks"
+                        encoded_key = encode_did_credentials(did_key)
+                        headers = {
+                            "Accept": "application/json",
+                            "Content-Type": "application/json", 
+                            "Authorization": f"Basic {encoded_key}"
+                        }
+                        
+                        test_payload = {
+                            "source_url": "https://create-images-results.d-id.com/DefaultPresenter_Female/image.jpeg",
+                            "script": {
+                                "type": "text",
+                                "input": "Hello there"
+                            }
+                        }
+                        
+                        try:
+                            response = requests.post(url, headers=headers, json=test_payload, timeout=15)
+                            st.write(f"Response code: {response.status_code}")
+                            
+                            if response.status_code == 201:
+                                result = response.json()
+                                st.success("✅ D-ID API working!")
+                                st.json(result)
+                                
+                                # Try to get the video
+                                talk_id = result.get("id")
+                                if talk_id:
+                                    video_url = poll_did_video_status(talk_id, encoded_key)
+                                    if video_url:
+                                        st.video(video_url)
+                            else:
+                                st.error(f"❌ Error: {response.status_code}")
+                                st.write(response.text)
+                        except Exception as e:
+                            st.error(f"❌ Request failed: {str(e)}")
                     else:
                         st.error("❌ D-ID API key not set")
             
