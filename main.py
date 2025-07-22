@@ -330,7 +330,7 @@ def avatar_component(is_speaking=False):
 def whatsapp_voice_note():
     """WhatsApp-style voice recording interface"""
    
-    st.markdown("### 🎤 Voice Message")
+    st.markdown("### Voice Message")
    
     # Voice note container
     voice_html = """
