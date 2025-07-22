@@ -557,10 +557,11 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                     text: `{clean_text}`,
                     model_id: 'eleven_monolingual_v1',
                     voice_settings: {{
-                        stability: 0.8,
-                        similarity_boost: 0.9,
-                        style: 0.8,
-                        use_speaker_boost: true
+                        stability: {0.9 if voice_type == 'wise' else 0.7 if voice_type == 'professional' else 0.5},
+                        similarity_boost: {0.9 if voice_type == 'professional' else 0.8 if voice_type == 'wise' else 0.6},
+                        style: {0.2 if voice_type == 'caring' else 0.8 if voice_type == 'energetic' else 0.5},
+                        use_speaker_boost: {str(voice_type in ['confident', 'executive', 'energetic']).lower()},
+                        speed: {0.8 if voice_type == 'wise' else 1.2 if voice_type == 'energetic' else 1.0}
                     }}
                 }})
             }});
@@ -591,8 +592,28 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
             window.speechSynthesis.cancel(); // Stop any existing speech
             
             const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
-            utterance.rate = 0.9;
-            utterance.pitch = {1.0 if gender == 'female' else 0.7};
+            
+            // Personality-specific settings for fallback
+            if ('{voice_type}' === 'wise') {{
+                utterance.rate = 0.6;
+                utterance.pitch = {0.5 if gender == 'male' else 0.8};
+            }} else if ('{voice_type}' === 'energetic') {{
+                utterance.rate = 1.3;
+                utterance.pitch = {0.7 if gender == 'male' else 1.5};
+            }} else if ('{voice_type}' === 'caring') {{
+                utterance.rate = 0.75;
+                utterance.pitch = {0.6 if gender == 'male' else 1.3};
+            }} else if ('{voice_type}' === 'confident') {{
+                utterance.rate = 1.0;
+                utterance.pitch = {0.4 if gender == 'male' else 0.9};
+            }} else if ('{voice_type}' === 'professional') {{
+                utterance.rate = 0.85;
+                utterance.pitch = {0.6 if gender == 'male' else 1.0};
+            }} else {{
+                utterance.rate = 0.9;
+                utterance.pitch = {0.6 if gender == 'male' else 1.0};
+            }}
+            
             utterance.volume = 1.0;
             
             // Gender-based voice selection for fallback
@@ -632,27 +653,39 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
     st.components.v1.html(voice_html, height=0)
 
 def create_instant_browser_voice(text, voice_type, gender):
-    """Instant browser TTS with gender and personality matching"""
+    """Instant browser TTS with DISTINCT gender and personality matching"""
     
     clean_text = enhance_text_for_speech(text, voice_type)
     
-    # Voice personality settings
+    # MUCH MORE DISTINCT voice personality settings
     voice_settings = {
-        'professional': {'rate': 0.9, 'pitch': 1.0},
-        'confident': {'rate': 1.0, 'pitch': 0.9},
-        'caring': {'rate': 0.85, 'pitch': 1.1},
-        'wise': {'rate': 0.8, 'pitch': 0.8},
-        'energetic': {'rate': 1.1, 'pitch': 1.2},
-        'executive': {'rate': 0.95, 'pitch': 0.9}
+        'professional': {'rate': 0.85, 'pitch': 1.0, 'emphasis': 'neutral'},
+        'confident': {'rate': 1.1, 'pitch': 0.8, 'emphasis': 'strong'},
+        'caring': {'rate': 0.75, 'pitch': 1.3, 'emphasis': 'gentle'},
+        'wise': {'rate': 0.65, 'pitch': 0.7, 'emphasis': 'thoughtful'},
+        'energetic': {'rate': 1.25, 'pitch': 1.4, 'emphasis': 'excited'},
+        'executive': {'rate': 0.9, 'pitch': 0.85, 'emphasis': 'authoritative'}
     }
     
     settings = voice_settings.get(voice_type, voice_settings['professional'])
     
-    # Adjust pitch for gender
+    # Strong gender adjustments
     if gender == 'male':
-        settings['pitch'] = max(0.5, settings['pitch'] - 0.3)  # Lower pitch for males
+        settings['pitch'] = max(0.4, settings['pitch'] - 0.4)  # Much deeper for males
     else:
-        settings['pitch'] = min(1.5, settings['pitch'] + 0.1)  # Slightly higher pitch for females
+        settings['pitch'] = min(1.6, settings['pitch'] + 0.2)  # Higher for females
+    
+    # Add personality-specific pauses and emphasis
+    if voice_type == 'wise':
+        clean_text = clean_text.replace('.', '... ')  # Thoughtful pauses
+        clean_text = clean_text.replace(',', ', ')    # More deliberate
+    elif voice_type == 'energetic':
+        clean_text = clean_text.replace('!', '! ')    # Excitement bursts
+        clean_text = clean_text.replace('.', '! ')    # Turn periods to exclamation
+    elif voice_type == 'caring':
+        clean_text = clean_text.replace('you', 'you... ')  # Gentle emphasis
+    elif voice_type == 'confident':
+        clean_text = clean_text.replace('.', '. ')    # Firm statements
     
     voice_html = f"""
     <script>
@@ -665,30 +698,58 @@ def create_instant_browser_voice(text, voice_type, gender):
             utterance.pitch = {settings['pitch']};
             utterance.volume = 1.0;
             
-            // Gender-based voice selection
+            // Personality-specific voice selection
             const voices = speechSynthesis.getVoices();
             let bestVoice;
             
             if ('{gender}' === 'male') {{
-                // Prefer male voices
-                bestVoice = voices.find(v => 
-                    v.lang.startsWith('en-') && 
-                    (v.name.toLowerCase().includes('male') || 
-                     v.name.toLowerCase().includes('david') ||
-                     v.name.toLowerCase().includes('mark') ||
-                     v.name.toLowerCase().includes('alex') ||
-                     v.name.toLowerCase().includes('daniel'))
-                ) || voices.find(v => v.lang.startsWith('en-') && v.localService);
+                // Male voice selection with personality matching
+                if ('{voice_type}' === 'wise') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('daniel') ||
+                         v.name.toLowerCase().includes('alex') ||
+                         v.name.toLowerCase().includes('male'))
+                    );
+                }} else if ('{voice_type}' === 'confident' || '{voice_type}' === 'executive') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('david') ||
+                         v.name.toLowerCase().includes('mark') ||
+                         v.name.toLowerCase().includes('male'))
+                    );
+                }}
+                
+                // Fallback to any male voice
+                if (!bestVoice) {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        v.name.toLowerCase().includes('male')
+                    );
+                }}
             }} else {{
-                // Prefer female voices  
-                bestVoice = voices.find(v => 
-                    v.lang.startsWith('en-') && 
-                    (v.name.toLowerCase().includes('female') || 
-                     v.name.toLowerCase().includes('samantha') ||
-                     v.name.toLowerCase().includes('victoria') ||
-                     v.name.toLowerCase().includes('susan') ||
-                     v.name.toLowerCase().includes('karen'))
-                ) || voices.find(v => v.lang.startsWith('en-') && v.localService);
+                // Female voice selection with personality matching  
+                if ('{voice_type}' === 'caring') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('samantha') ||
+                         v.name.toLowerCase().includes('susan') ||
+                         v.name.toLowerCase().includes('female'))
+                    );
+                }} else if ('{voice_type}' === 'energetic') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('victoria') ||
+                         v.name.toLowerCase().includes('karen') ||
+                         v.name.toLowerCase().includes('female'))
+                    );
+                }} else if ('{voice_type}' === 'professional') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('alex') ||
+                         v.name.toLowerCase().includes('female'))
+                    );
+                }}
             }}
             
             // Fallback to any English voice
@@ -698,7 +759,17 @@ def create_instant_browser_voice(text, voice_type, gender):
             
             if (bestVoice) {{
                 utterance.voice = bestVoice;
-                console.log('Selected voice:', bestVoice.name, 'for gender:', '{gender}');
+                console.log('Selected voice:', bestVoice.name, 'for', '{voice_type}', '{gender}');
+            }}
+            
+            // Personality-specific speech adjustments
+            if ('{voice_type}' === 'wise') {{
+                utterance.rate = utterance.rate * 0.8;  // Even slower for wisdom
+            }} else if ('{voice_type}' === 'energetic') {{
+                utterance.rate = utterance.rate * 1.2;  // Even faster for energy
+                utterance.volume = 1.0;  // Full volume for excitement
+            }} else if ('{voice_type}' === 'caring') {{
+                utterance.pitch = utterance.pitch * 1.1;  // Softer, higher for caring
             }}
             
             // Play immediately
@@ -718,7 +789,7 @@ def create_instant_browser_voice(text, voice_type, gender):
     st.components.v1.html(voice_html, height=0)
 
 def enhance_text_for_speech(text, voice_type):
-    """Make text more natural and human-like for speech"""
+    """Make text MUCH more distinct for each personality type"""
     
     # Remove markdown and clean
     text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
@@ -726,17 +797,59 @@ def enhance_text_for_speech(text, voice_type):
     text = re.sub(r'#{1,6}\s', '', text)
     text = text.replace('\n', ' ').strip()
     
-    # Add natural speech patterns
+    # DRAMATIC personality-based enhancements
+    if voice_type == 'caring':
+        # Gentle, nurturing speech patterns
+        text = re.sub(r'\byou\b', 'you, dear', text, flags=re.IGNORECASE, count=1)
+        text = re.sub(r'\.', '. Take your time with this.', text, count=1)
+        text = re.sub(r'!', '. This is wonderful!', text)
+        text = text.replace(' can ', ' absolutely can ')
+        text = text.replace(' will ', ' will surely ')
+        
+    elif voice_type == 'energetic':
+        # Excited, fast, motivational speech
+        text = re.sub(r'\bgreat\b', 'absolutely AMAZING', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bgood\b', 'fantastic', text, flags=re.IGNORECASE)
+        text = re.sub(r'\.', '! Let\'s do this!', text, count=1)
+        text = re.sub(r'\byes\b', 'YES! Absolutely!', text, flags=re.IGNORECASE)
+        text = text.replace(' can ', ' can totally ')
+        text = text.replace(' will ', ' will definitely ')
+        text += ' I\'m SO excited for you!'
+        
+    elif voice_type == 'wise':
+        # Slow, thoughtful, philosophical speech
+        text = re.sub(r'\bremember\b', 'always keep in mind', text, flags=re.IGNORECASE)
+        text = re.sub(r'\.', '... Consider this carefully.', text, count=1)
+        text = re.sub(r'\bthink\b', 'reflect deeply', text, flags=re.IGNORECASE)
+        text = 'Hmm... ' + text
+        text = text.replace(' is ', ' truly is ')
+        text = text.replace(' can ', ' may indeed ')
+        
+    elif voice_type == 'professional':
+        # Clear, direct, business-like speech
+        text = re.sub(r'\.', '. Let me be clear on this point.', text, count=1)
+        text = re.sub(r'\bI think\b', 'Based on my analysis', text, flags=re.IGNORECASE)
+        text = text.replace(' should ', ' must strategically ')
+        text = text.replace(' can ', ' should systematically ')
+        
+    elif voice_type == 'confident':
+        # Strong, assertive, powerful speech
+        text = re.sub(r'\.', '. I\'m absolutely certain of this.', text, count=1)
+        text = re.sub(r'\bI believe\b', 'I KNOW', text, flags=re.IGNORECASE)
+        text = text.replace(' might ', ' WILL ')
+        text = text.replace(' could ', ' WILL ')
+        text = 'Listen up! ' + text
+        
+    elif voice_type == 'executive':
+        # Authoritative, commanding, leadership speech
+        text = re.sub(r'\.', '. This is exactly what successful leaders do.', text, count=1)
+        text = re.sub(r'\bwe should\b', 'we MUST execute', text, flags=re.IGNORECASE)
+        text = text.replace(' need to ', ' must immediately ')
+        text = 'Here\'s the strategic approach: ' + text
+    
+    # Add natural speech patterns with MORE dramatic pauses
     text = re.sub(r'([.!?])', r'\1 ', text)
     text = re.sub(r'([,:])', r'\1 ', text)
-    
-    # Personality-based enhancements
-    if voice_type == 'caring':
-        text = re.sub(r'\byou\b', 'you', text, flags=re.IGNORECASE)
-    elif voice_type == 'energetic':
-        text = re.sub(r'\bgreat\b', 'absolutely amazing', text, flags=re.IGNORECASE)
-    elif voice_type == 'wise':
-        text = re.sub(r'\bremember\b', 'keep in mind', text, flags=re.IGNORECASE)
     
     # Escape for JavaScript
     text = text.replace('"', '\\"').replace("'", "\\'")
@@ -1008,7 +1121,9 @@ def main():
                 if st.button("🔊 Test Voice System"):
                     st.session_state.voice_played = False  # Reset for test
                     avatar_choice = st.session_state.user_profile.get('avatar', 'sophia')
-                    st.write(f"Testing voice for: {avatar_choice}")
+                    voice_type = st.session_state.user_profile.get('voice_type', 'caring')
+                    
+                    st.write(f"Testing {voice_type} voice for: {avatar_choice}")
                     
                     # Get avatar gender for test
                     avatar_configs = {
@@ -1020,14 +1135,47 @@ def main():
                         'james': {'gender': 'male'}
                     }
                     test_gender = avatar_configs.get(avatar_choice, {}).get('gender', 'female')
-                    test_text = f"Hello, this is a voice test for {avatar_choice}, your {test_gender} avatar coach."
                     
-                    # Test with actual gender
+                    # Personality-specific test messages
+                    test_messages = {
+                        'caring': "I really care about your success. You can absolutely achieve your goals, dear.",
+                        'professional': "Based on my analysis, you should strategically focus on your objectives.",
+                        'energetic': "This is absolutely AMAZING! I'm SO excited for your success! Let's do this!",
+                        'wise': "Hmm... Always keep in mind that true success comes from within. Consider this carefully.",
+                        'confident': "Listen up! I KNOW you will achieve greatness. I'm absolutely certain of this.",
+                        'executive': "Here's the strategic approach: we MUST execute your plan immediately."
+                    }
+                    
+                    test_text = test_messages.get(voice_type, "Hello, this is a voice test.")
+                    
+                    # Test with actual personality
                     elevenlabs_key = setup_elevenlabs()
                     if elevenlabs_key and elevenlabs_key != "your_elevenlabs_api_key_here":
-                        create_instant_elevenlabs_voice(test_text, elevenlabs_key, "professional", test_gender)
+                        create_instant_elevenlabs_voice(test_text, elevenlabs_key, voice_type, test_gender)
                     else:
-                        create_instant_browser_voice(test_text, "professional", test_gender)
+                        create_instant_browser_voice(test_text, voice_type, test_gender)
+                
+                # Test ALL personalities button
+                if st.button("🎭 Test All Personalities"):
+                    st.session_state.voice_played = False
+                    st.write("Testing all voice personalities...")
+                    
+                    personalities = ['caring', 'professional', 'energetic', 'wise', 'confident', 'executive']
+                    test_messages = {
+                        'caring': "💝 Caring: I really care about you, dear.",
+                        'professional': "💼 Professional: Based on analysis, focus strategically.",
+                        'energetic': "⚡ Energetic: This is AMAZING! Let's do this!",
+                        'wise': "🧙‍♂️ Wise: Hmm... Consider this carefully.",
+                        'confident': "💪 Confident: Listen up! I KNOW you'll succeed!",
+                        'executive': "👔 Executive: Here's the strategic approach."
+                    }
+                    
+                    for i, personality in enumerate(personalities):
+                        st.write(f"{i+1}. {test_messages[personality]}")
+                        
+                        # Brief pause between personalities  
+                        if i < len(personalities) - 1:
+                            st.write("---")
                 
                 st.subheader("🎭 Avatar Animation Test")
                 if st.button("🎬 Test Avatar Animation"):
