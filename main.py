@@ -473,12 +473,13 @@ def generate_avatar_video(text, avatar_choice, debug_mode=False):
             st.error(f"❌ Avatar generation error: {str(e)}")
         return None
 
-def poll_heygen_video_status(video_id, api_key, debug_mode=False, max_attempts=20):
-    """Poll HeyGen for video completion"""
+def poll_heygen_video_status(video_id, api_key, debug_mode=False, max_attempts=40):
+    """Poll HeyGen for video completion with longer timeout"""
     headers = {"X-API-KEY": api_key}
     
     if debug_mode:
         progress_placeholder = st.empty()
+        st.write(f"🔄 **Polling video status for ID**: {video_id}")
     
     for attempt in range(max_attempts):
         try:
@@ -486,11 +487,11 @@ def poll_heygen_video_status(video_id, api_key, debug_mode=False, max_attempts=2
             response = requests.get(
                 f"https://api.heygen.com/v1/video_status.get?video_id={video_id}",
                 headers=headers,
-                timeout=10
+                timeout=15
             )
             
             if debug_mode:
-                progress_placeholder.info(f"🎬 Generating avatar video... {attempt + 1}/{max_attempts}")
+                progress_placeholder.info(f"🎬 Generating avatar video... {attempt + 1}/{max_attempts} (waiting for completion)")
             
             if response.status_code == 200:
                 result = response.json()
@@ -498,17 +499,19 @@ def poll_heygen_video_status(video_id, api_key, debug_mode=False, max_attempts=2
                 status = data.get("status", "")
                 
                 if debug_mode:
-                    st.write(f"📊 Status: {status}")
+                    st.write(f"📊 **Attempt {attempt + 1}**: Status = `{status}`")
                 
                 if status == "completed":
                     video_url = data.get("video_url")
                     if video_url:
                         if debug_mode:
                             progress_placeholder.success("✅ Avatar video ready!")
+                            st.write(f"🎥 **Video URL**: {video_url}")
                         return video_url
                     else:
                         if debug_mode:
                             st.error("❌ No video URL in completed response")
+                            st.write(f"📋 **Full response**: {data}")
                         return None
                 elif status == "failed":
                     error_info = data.get("error", {})
@@ -517,6 +520,8 @@ def poll_heygen_video_status(video_id, api_key, debug_mode=False, max_attempts=2
                     
                     if debug_mode:
                         progress_placeholder.error(f"❌ Video generation failed: {error_msg}")
+                        st.write(f"🚨 **Error Code**: {error_code}")
+                        st.write(f"📋 **Full error data**: {error_info}")
                         
                         # Provide specific help for common errors
                         if "RESOLUTION_NOT_ALLOWED" in error_code:
@@ -528,24 +533,28 @@ def poll_heygen_video_status(video_id, api_key, debug_mode=False, max_attempts=2
                     
                     return None
                 elif status in ["pending", "processing", "waiting"]:
-                    time.sleep(3)  # Wait 3 seconds
+                    if debug_mode and attempt % 5 == 0:  # Show progress every 5 attempts
+                        st.write(f"⏳ **Still processing** (attempt {attempt + 1}/{max_attempts})...")
+                    time.sleep(5)  # Wait 5 seconds (increased from 3)
                     continue
                 else:
                     if debug_mode:
-                        st.write(f"🔄 Status: {status} - continuing...")
-                    time.sleep(3)
+                        st.write(f"🔄 **Unknown status**: `{status}` - continuing...")
+                    time.sleep(5)
             else:
                 if debug_mode:
                     st.error(f"❌ Status check failed: {response.status_code}")
-                time.sleep(3)
+                    st.write(f"📋 **Response**: {response.text}")
+                time.sleep(5)
                 
         except Exception as e:
             if debug_mode:
                 st.error(f"❌ Polling error: {str(e)}")
-            time.sleep(3)
+            time.sleep(5)
     
     if debug_mode:
-        progress_placeholder.error("⏰ Avatar generation timed out")
+        progress_placeholder.error(f"⏰ Avatar generation timed out after {max_attempts} attempts ({max_attempts * 5} seconds)")
+        st.write(f"🔗 **Try checking video status manually**: https://app.heygen.com/")
     return None
 
 # Enhanced Avatar Component with HeyGen
