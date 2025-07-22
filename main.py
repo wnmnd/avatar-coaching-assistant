@@ -316,22 +316,24 @@ def get_available_heygen_avatars(api_key):
         return None
 
 # HeyGen Avatar Integration  
-def generate_avatar_video(text, avatar_choice):
+def generate_avatar_video(text, avatar_choice, debug_mode=False):
     """Generate real talking avatar video using HeyGen with dynamic avatar selection"""
     heygen_key = setup_heygen()
     if not heygen_key or heygen_key == "your_heygen_api_key_here":
-        st.warning("⚠️ HeyGen API key not set. Using emoji avatar.")
+        if debug_mode:
+            st.warning("⚠️ HeyGen API key not set. Using emoji avatar.")
         return None
     
     try:
-        st.info(f"🎬 Generating {avatar_choice} avatar video with HeyGen...")
+        # First, get available avatars (quiet mode unless debug)
+        if debug_mode:
+            st.info("📋 Fetching available avatars...")
         
-        # First, get available avatars
-        st.info("📋 Fetching available avatars...")
         available_avatars = get_available_heygen_avatars(heygen_key)
         
         if not available_avatars:
-            st.error("❌ Could not fetch available avatars")
+            if debug_mode:
+                st.error("❌ Could not fetch available avatars")
             return None
         
         # Map our avatar choices to available avatars
@@ -366,15 +368,17 @@ def generate_avatar_video(text, avatar_choice):
             if all_avatars:
                 selected_avatar = all_avatars[0]
             else:
-                st.error("❌ No avatars available")
+                if debug_mode:
+                    st.error("❌ No avatars available")
                 return None
         
         avatar_id = selected_avatar.get("avatar_id")
         avatar_name = selected_avatar.get("avatar_name", "Unknown")
         
-        st.success(f"✅ Using avatar: {avatar_name} (ID: {avatar_id})")
+        if debug_mode:
+            st.success(f"✅ Using avatar: {avatar_name} (ID: {avatar_id})")
         
-        # Get available voices
+        # Get available voices (quiet unless debug)
         voices_url = "https://api.heygen.com/v2/voices"
         voices_response = requests.get(voices_url, headers={"Accept": "application/json", "X-API-KEY": heygen_key})
         
@@ -394,6 +398,9 @@ def generate_avatar_video(text, avatar_choice):
         clean_text = re.sub(r'[^\w\s\.\,\!\?\;\:\-]', '', clean_text)  # Clean special chars
         if not clean_text:
             clean_text = "Hello, how can I help you today?"
+        
+        if debug_mode:
+            st.write(f"📝 Text: {clean_text}")
         
         # HeyGen API endpoint
         url = "https://api.heygen.com/v2/video/generate"
@@ -423,50 +430,55 @@ def generate_avatar_video(text, avatar_choice):
             "aspect_ratio": "1:1"
         }
         
-        st.write(f"📝 Text: {clean_text}")
-        
         response = requests.post(url, headers=headers, json=payload, timeout=30)
         
-        st.write(f"📡 HeyGen API Response: {response.status_code}")
+        if debug_mode:
+            st.write(f"📡 HeyGen API Response: {response.status_code}")
         
         if response.status_code == 200:
             result = response.json()
-            st.write(f"📋 Response data: {result}")
+            if debug_mode:
+                st.write(f"📋 Response data: {result}")
             
             video_id = result.get("data", {}).get("video_id")
             if video_id:
-                st.success(f"✅ Video ID received: {video_id}")
-                return poll_heygen_video_status(video_id, heygen_key)
+                if debug_mode:
+                    st.success(f"✅ Video ID received: {video_id}")
+                return poll_heygen_video_status(video_id, heygen_key, debug_mode)
             else:
-                st.error("❌ No video ID in response")
+                if debug_mode:
+                    st.error("❌ No video ID in response")
                 return None
         else:
-            try:
-                error_details = response.json()
-            except:
-                error_details = response.text
-            
-            st.error(f"❌ HeyGen API Error {response.status_code}: {error_details}")
-            
-            # Provide helpful error messages
-            if response.status_code == 401:
-                st.error("🔑 Authentication failed. Please check your HeyGen API key.")
-            elif response.status_code == 402:
-                st.error("💳 Insufficient credits. Please check your HeyGen account balance.")
-            elif response.status_code == 429:
-                st.error("⏰ Rate limit exceeded. Please wait and try again.")
+            if debug_mode:
+                try:
+                    error_details = response.json()
+                except:
+                    error_details = response.text
+                
+                st.error(f"❌ HeyGen API Error {response.status_code}: {error_details}")
+                
+                # Provide helpful error messages
+                if response.status_code == 401:
+                    st.error("🔑 Authentication failed. Please check your HeyGen API key.")
+                elif response.status_code == 402:
+                    st.error("💳 Insufficient credits. Please check your HeyGen account balance.")
+                elif response.status_code == 429:
+                    st.error("⏰ Rate limit exceeded. Please wait and try again.")
             
             return None
         
     except Exception as e:
-        st.error(f"❌ Avatar generation error: {str(e)}")
+        if debug_mode:
+            st.error(f"❌ Avatar generation error: {str(e)}")
         return None
 
-def poll_heygen_video_status(video_id, api_key, max_attempts=20):
+def poll_heygen_video_status(video_id, api_key, debug_mode=False, max_attempts=20):
     """Poll HeyGen for video completion"""
     headers = {"X-API-KEY": api_key}
     
-    progress_placeholder = st.empty()
+    if debug_mode:
+        progress_placeholder = st.empty()
     
     for attempt in range(max_attempts):
         try:
@@ -477,54 +489,63 @@ def poll_heygen_video_status(video_id, api_key, max_attempts=20):
                 timeout=10
             )
             
-            progress_placeholder.info(f"🎬 Generating avatar video... {attempt + 1}/{max_attempts}")
+            if debug_mode:
+                progress_placeholder.info(f"🎬 Generating avatar video... {attempt + 1}/{max_attempts}")
             
             if response.status_code == 200:
                 result = response.json()
                 data = result.get("data", {})
                 status = data.get("status", "")
                 
-                st.write(f"📊 Status: {status}")
+                if debug_mode:
+                    st.write(f"📊 Status: {status}")
                 
                 if status == "completed":
                     video_url = data.get("video_url")
                     if video_url:
-                        progress_placeholder.success("✅ Avatar video ready!")
+                        if debug_mode:
+                            progress_placeholder.success("✅ Avatar video ready!")
                         return video_url
                     else:
-                        st.error("❌ No video URL in completed response")
+                        if debug_mode:
+                            st.error("❌ No video URL in completed response")
                         return None
                 elif status == "failed":
                     error_info = data.get("error", {})
                     error_code = error_info.get("code", "Unknown")
                     error_msg = error_info.get("message", "Unknown error")
                     
-                    progress_placeholder.error(f"❌ Video generation failed: {error_msg}")
-                    
-                    # Provide specific help for common errors
-                    if "RESOLUTION_NOT_ALLOWED" in error_code:
-                        st.info("💡 Try upgrading your HeyGen plan for higher resolution videos")
-                    elif "AVATAR_NOT_ALLOWED" in error_code:
-                        st.info("💡 This avatar requires a higher plan subscription")
-                    elif "CREDIT" in error_code.upper():
-                        st.info("💡 Please check your HeyGen account credits")
+                    if debug_mode:
+                        progress_placeholder.error(f"❌ Video generation failed: {error_msg}")
+                        
+                        # Provide specific help for common errors
+                        if "RESOLUTION_NOT_ALLOWED" in error_code:
+                            st.info("💡 Try upgrading your HeyGen plan for higher resolution videos")
+                        elif "AVATAR_NOT_ALLOWED" in error_code:
+                            st.info("💡 This avatar requires a higher plan subscription")
+                        elif "CREDIT" in error_code.upper():
+                            st.info("💡 Please check your HeyGen account credits")
                     
                     return None
                 elif status in ["pending", "processing", "waiting"]:
                     time.sleep(3)  # Wait 3 seconds
                     continue
                 else:
-                    st.write(f"🔄 Status: {status} - continuing...")
+                    if debug_mode:
+                        st.write(f"🔄 Status: {status} - continuing...")
                     time.sleep(3)
             else:
-                st.error(f"❌ Status check failed: {response.status_code}")
+                if debug_mode:
+                    st.error(f"❌ Status check failed: {response.status_code}")
                 time.sleep(3)
                 
         except Exception as e:
-            st.error(f"❌ Polling error: {str(e)}")
+            if debug_mode:
+                st.error(f"❌ Polling error: {str(e)}")
             time.sleep(3)
     
-    progress_placeholder.error("⏰ Avatar generation timed out")
+    if debug_mode:
+        progress_placeholder.error("⏰ Avatar generation timed out")
     return None
 
 # Enhanced Avatar Component with HeyGen
@@ -537,13 +558,9 @@ def avatar_component(is_speaking=False, latest_response=""):
     
     # Try to generate real avatar if speaking and we have response
     if is_speaking and latest_response and setup_heygen():
-        # Show debug info
-        with st.expander("🔍 Avatar Debug", expanded=True):
-            st.write(f"Avatar choice: {avatar_choice}")
-            st.write(f"HeyGen key set: {bool(setup_heygen())}")
-            st.write(f"Response length: {len(latest_response)} chars")
-        
-        video_url = generate_avatar_video(latest_response, avatar_choice)
+        # Simple loading indicator without debug clutter
+        with st.spinner(f"🎬 Creating {avatar_choice} avatar video..."):
+            video_url = generate_avatar_video(latest_response, avatar_choice)
             
         if video_url:
             # Display real talking avatar
@@ -1326,8 +1343,11 @@ def main():
                 st.info(latest_message['content'])
                 natural_voice_component(latest_message['content'])
         
-        # Debug and test section
-        with st.expander("🔧 Debug & API Tests", expanded=False):
+        # Debug and test section - MOVED TO BOTTOM
+        st.markdown("---")
+        st.markdown("### 🔧 Debug & API Tests")
+        
+        with st.expander("Debug Tools", expanded=False):
             col_debug1, col_debug2 = st.columns(2)
             
             with col_debug1:
@@ -1336,81 +1356,12 @@ def main():
                     heygen_key = setup_heygen()
                     if heygen_key and heygen_key != "your_heygen_api_key_here":
                         st.info("Testing HeyGen with current available avatars...")
-                        
-                        # First get available avatars
-                        available_avatars = get_available_heygen_avatars(heygen_key)
-                        
-                        if available_avatars:
-                            # Use first available avatar
-                            all_avatars = available_avatars.get("female", []) + available_avatars.get("male", [])
-                            if all_avatars:
-                                test_avatar = all_avatars[0]
-                                avatar_id = test_avatar.get("avatar_id")
-                                avatar_name = test_avatar.get("avatar_name")
-                                
-                                st.success(f"✅ Found avatar: {avatar_name}")
-                                
-                                # Get available voices
-                                voices_url = "https://api.heygen.com/v2/voices"
-                                voices_response = requests.get(voices_url, headers={"Accept": "application/json", "X-API-KEY": heygen_key})
-                                
-                                voice_id = "1bd001e7e50f421d891986aad5158bc8"  # Default
-                                if voices_response.status_code == 200:
-                                    voices_data = voices_response.json()
-                                    voices = voices_data.get("data", {}).get("voices", [])
-                                    if voices:
-                                        voice_id = voices[0].get("voice_id", voice_id)
-                                
-                                # Test with real avatar
-                                url = "https://api.heygen.com/v2/video/generate"
-                                headers = {
-                                    "X-API-KEY": heygen_key,
-                                    "Content-Type": "application/json"
-                                }
-                                
-                                test_payload = {
-                                    "video_inputs": [{
-                                        "character": {
-                                            "type": "avatar",
-                                            "avatar_id": avatar_id
-                                        },
-                                        "voice": {
-                                            "type": "text",
-                                            "input_text": "Hello, this is a test message!",
-                                            "voice_id": voice_id
-                                        }
-                                    }],
-                                    "dimension": {
-                                        "width": 256,  # Lower resolution for free plans
-                                        "height": 256
-                                    },
-                                    "aspect_ratio": "1:1"
-                                }
-                                
-                                try:
-                                    response = requests.post(url, headers=headers, json=test_payload, timeout=15)
-                                    st.write(f"Response code: {response.status_code}")
-                                    
-                                    if response.status_code == 200:
-                                        result = response.json()
-                                        st.success("✅ HeyGen API working!")
-                                        st.json(result)
-                                        
-                                        # Try to get the video
-                                        video_id = result.get("data", {}).get("video_id")
-                                        if video_id:
-                                            video_url = poll_heygen_video_status(video_id, heygen_key)
-                                            if video_url:
-                                                st.video(video_url)
-                                    else:
-                                        st.error(f"❌ Error: {response.status_code}")
-                                        st.write(response.text)
-                                except Exception as e:
-                                    st.error(f"❌ Request failed: {str(e)}")
-                            else:
-                                st.error("❌ No avatars available")
+                        test_video = generate_avatar_video("Hello, this is a test message!", 'sophia', debug_mode=True)
+                        if test_video:
+                            st.success("✅ HeyGen API working!")
+                            st.video(test_video)
                         else:
-                            st.error("❌ Could not fetch available avatars")
+                            st.error("❌ HeyGen API test failed")
                     else:
                         st.error("❌ HeyGen API key not set")
             
