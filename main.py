@@ -1523,5 +1523,356 @@ def main():
             st.session_state.voice_played = False
             st.rerun()
 
+    # DEBUG SECTION - Add this at the bottom
+    st.markdown("---")
+    
+    with st.expander("🔧 **DEBUG VOICE ISSUES** - Click to troubleshoot voice problems"):
+        st.markdown("### 🔧 Voice Debug Center")
+        st.info("Use this section to test and fix voice issues")
+        
+        # Test 1: API Key Test
+        st.subheader("1️⃣ API Key Test")
+        
+        # Get API key from secrets or allow manual input
+        current_api_key = setup_elevenlabs()
+        
+        # Let user override for testing
+        test_api_key = st.text_input(
+            "Test with different API Key (optional):", 
+            type="password", 
+            help="Leave empty to use your configured key",
+            placeholder="sk_xxxxxxxxxxxxxxx"
+        )
+        
+        api_key_to_test = test_api_key if test_api_key else current_api_key
+        
+        if api_key_to_test:
+            if api_key_to_test.startswith("sk_"):
+                st.success(f"✅ API key format looks correct: {api_key_to_test[:10]}...{api_key_to_test[-5:]}")
+                
+                # Test API connection
+                if st.button("🔍 Test API Connection", key="test_api_connection"):
+                    try:
+                        import requests
+                        headers = {'xi-api-key': api_key_to_test}
+                        response = requests.get('https://api.elevenlabs.io/v1/voices', headers=headers)
+                        
+                        if response.status_code == 200:
+                            voices = response.json()['voices']
+                            st.success(f"✅ API Connected! Found {len(voices)} voices")
+                            
+                            # Show available voices
+                            st.markdown("**Your Available Voices:**")
+                            for voice in voices:
+                                st.write(f"• **{voice['name']}** - ID: `{voice['voice_id']}`")
+                                
+                        elif response.status_code == 401:
+                            st.error("❌ API Key Invalid - Check your ElevenLabs API key")
+                        elif response.status_code == 403:
+                            st.error("❌ API Key Forbidden - Check your account permissions")
+                        else:
+                            st.error(f"❌ API Error: {response.status_code} - {response.text}")
+                            
+                    except Exception as e:
+                        st.error(f"❌ Connection Error: {str(e)}")
+            else:
+                st.error("❌ API key should start with 'sk_'")
+        else:
+            st.warning("⚠️ No API key found. Please set ELEVENLABS_API_KEY in your secrets.")
+
+        # Test 2: Voice Generation Test
+        st.subheader("2️⃣ Voice Generation Test")
+        
+        if api_key_to_test and api_key_to_test.startswith("sk_"):
+            
+            debug_col1, debug_col2 = st.columns(2)
+            
+            with debug_col1:
+                test_voice_id = st.selectbox("Select Voice ID to Test:", [
+                    "Xb7hH8MSUJpSbSDYk0k2",  # Alice
+                    "9BWtsMINqrJLrRacOk9x",  # Aria  
+                    "pqHfZKP75CvOlQylNhV4",  # Bill
+                    "nPczCjzI2devNBz1zQrb",  # Brian
+                    "IKne3meq5aSn9XLyUdCD",  # Charlie
+                    "LcfcDJNUP1GQjkzn1xUU",  # Emily
+                    "jsCqWAovK2LkecY7zXl4",  # Freya
+                ], key="debug_voice_select")
+            
+            with debug_col2:
+                test_message = st.text_input("Test Message:", 
+                                           value="Hello! This is a debug voice test.", 
+                                           key="debug_message")
+            
+            if st.button("🎤 Generate & Test Voice", key="test_voice_generation"):
+                if test_message.strip():
+                    
+                    # Show detailed debug info
+                    st.markdown("**Debug Info:**")
+                    st.code(f"""
+API Key: {api_key_to_test[:10]}...{api_key_to_test[-5:]}
+Voice ID: {test_voice_id}
+Message: {test_message}
+                    """)
+                    
+                    # Create enhanced debug voice test
+                    voice_debug_html = f"""
+                    <div style="
+                        padding: 20px; 
+                        background: linear-gradient(135deg, #f0f8ff, #e6f3ff); 
+                        border: 2px solid #4169e1; 
+                        border-radius: 15px;
+                        margin: 10px 0;
+                        box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
+                    ">
+                        <h3 style="color: #4169e1;">🎤 Voice Debug Test</h3>
+                        <div id="debugStatus" style="
+                            padding: 10px; 
+                            background: white; 
+                            border-radius: 8px; 
+                            margin: 10px 0;
+                            font-weight: bold;
+                        ">Starting voice test...</div>
+                        
+                        <button id="testBtn" onclick="testVoice()" style="
+                            background: linear-gradient(135deg, #4169e1, #1e90ff); 
+                            color: white; 
+                            border: none; 
+                            padding: 12px 24px; 
+                            border-radius: 25px;
+                            cursor: pointer;
+                            font-weight: bold;
+                            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
+                            margin: 10px 5px;
+                        ">🔄 Test Voice Again</button>
+                        
+                        <button onclick="testBrowserFallback()" style="
+                            background: linear-gradient(135deg, #28a745, #20c997); 
+                            color: white; 
+                            border: none; 
+                            padding: 12px 24px; 
+                            border-radius: 25px;
+                            cursor: pointer;
+                            font-weight: bold;
+                            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                            margin: 10px 5px;
+                        ">🔊 Test Browser Voice</button>
+                        
+                        <div id="debugDetails" style="
+                            margin-top: 15px; 
+                            padding: 15px; 
+                            background: #f8f9fa; 
+                            border-radius: 8px;
+                            font-family: 'Courier New', monospace;
+                            font-size: 12px;
+                            max-height: 300px;
+                            overflow-y: auto;
+                            border: 1px solid #dee2e6;
+                        "></div>
+                    </div>
+
+                    <script>
+                    function updateStatus(message, color = '#4169e1') {{
+                        const statusDiv = document.getElementById('debugStatus');
+                        statusDiv.innerHTML = message;
+                        statusDiv.style.color = color;
+                    }}
+                    
+                    function updateDetails(message) {{
+                        const details = document.getElementById('debugDetails');
+                        const timestamp = new Date().toLocaleTimeString();
+                        details.innerHTML += `[${{timestamp}}] ${{message}}<br>`;
+                        details.scrollTop = details.scrollHeight;
+                    }}
+                    
+                    function testBrowserFallback() {{
+                        updateStatus('🔊 Testing Browser Voice...', '#28a745');
+                        updateDetails('=== BROWSER VOICE TEST ===');
+                        
+                        if ('speechSynthesis' in window) {{
+                            speechSynthesis.cancel();
+                            
+                            const utterance = new SpeechSynthesisUtterance('{test_message}');
+                            utterance.rate = 0.9;
+                            utterance.pitch = 1.0;
+                            utterance.volume = 1.0;
+                            
+                            const voices = speechSynthesis.getVoices();
+                            updateDetails(`Available voices: ${{voices.length}}`);
+                            
+                            if (voices.length > 0) {{
+                                const englishVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
+                                utterance.voice = englishVoice;
+                                updateDetails(`Using voice: ${{englishVoice.name}}`);
+                            }}
+                            
+                            utterance.onstart = function() {{
+                                updateStatus('🎵 Browser voice playing...', '#28a745');
+                                updateDetails('Browser voice started playing');
+                            }};
+                            
+                            utterance.onend = function() {{
+                                updateStatus('✅ Browser voice completed!', '#28a745');
+                                updateDetails('Browser voice playback completed');
+                            }};
+                            
+                            utterance.onerror = function(error) {{
+                                updateStatus('❌ Browser voice error: ' + error.error, '#dc3545');
+                                updateDetails('Browser voice error: ' + error.error);
+                            }};
+                            
+                            speechSynthesis.speak(utterance);
+                            updateDetails('Browser voice command sent');
+                            
+                        }} else {{
+                            updateStatus('❌ Browser voice not supported', '#dc3545');
+                            updateDetails('speechSynthesis not available in this browser');
+                        }}
+                    }}
+                    
+                    async function testVoice() {{
+                        updateStatus('🔄 Testing ElevenLabs voice...', '#4169e1');
+                        updateDetails('=== ELEVENLABS VOICE TEST ===');
+                        updateDetails('API Key: {api_key_to_test[:10]}...{api_key_to_test[-5:]}');
+                        updateDetails('Voice ID: {test_voice_id}');
+                        updateDetails('Message: {test_message}');
+                        
+                        try {{
+                            updateDetails('Making API request to ElevenLabs...');
+                            updateStatus('📡 Connecting to ElevenLabs...', '#4169e1');
+                            
+                            const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{test_voice_id}', {{
+                                method: 'POST',
+                                headers: {{
+                                    'Accept': 'audio/mpeg',
+                                    'Content-Type': 'application/json',
+                                    'xi-api-key': '{api_key_to_test}'
+                                }},
+                                body: JSON.stringify({{
+                                    text: `{test_message}`,
+                                    model_id: 'eleven_monolingual_v1',
+                                    voice_settings: {{
+                                        stability: 0.5,
+                                        similarity_boost: 0.5,
+                                        style: 0.5,
+                                        use_speaker_boost: true,
+                                        speed: 1.0
+                                    }}
+                                }})
+                            }});
+                            
+                            updateDetails('Response received - Status: ' + response.status);
+                            
+                            if (response.ok) {{
+                                updateStatus('✅ API Success! Processing audio...', '#28a745');
+                                updateDetails('Audio blob received, creating audio player...');
+                                
+                                const audioBlob = await response.blob();
+                                updateDetails(`Audio blob size: ${{audioBlob.size}} bytes`);
+                                
+                                const audioUrl = URL.createObjectURL(audioBlob);
+                                const audio = new Audio(audioUrl);
+                                
+                                updateDetails('Attempting to play audio...');
+                                
+                                audio.play().then(() => {{
+                                    updateStatus('🎵 ElevenLabs voice playing successfully!', '#28a745');
+                                    updateDetails('Audio playing successfully!');
+                                }}).catch(error => {{
+                                    updateStatus('❌ Audio play blocked: ' + error.message, '#dc3545');
+                                    updateDetails('Audio play error: ' + error.message);
+                                    updateDetails('This might be due to browser autoplay restrictions');
+                                }});
+                                
+                                audio.onended = function() {{
+                                    URL.revokeObjectURL(audioUrl);
+                                    updateStatus('✅ ElevenLabs voice test completed!', '#28a745');
+                                    updateDetails('Audio playback completed successfully');
+                                }};
+                                
+                                audio.onerror = function(error) {{
+                                    updateStatus('❌ Audio playback error', '#dc3545');
+                                    updateDetails('Audio element error: ' + error);
+                                }};
+                                
+                            }} else {{
+                                const errorText = await response.text();
+                                updateStatus('❌ API Error: ' + response.status, '#dc3545');
+                                updateDetails('API Error Details: ' + errorText);
+                                
+                                if (response.status === 401) {{
+                                    updateDetails('ERROR: Invalid API key - check your ElevenLabs account');
+                                }} else if (response.status === 403) {{
+                                    updateDetails('ERROR: Access forbidden - check API key permissions');
+                                }} else if (response.status === 429) {{
+                                    updateDetails('ERROR: Rate limit exceeded - wait a moment and try again');
+                                }}
+                            }}
+                            
+                        }} catch (error) {{
+                            updateStatus('❌ Network Error: ' + error.message, '#dc3545');
+                            updateDetails('JavaScript/Network Error: ' + error.message);
+                            updateDetails('Check your internet connection and CORS settings');
+                        }}
+                    }}
+                    
+                    // Auto-run the test
+                    setTimeout(testVoice, 1000);
+                    </script>
+                    """
+                    
+                    st.components.v1.html(voice_debug_html, height=500)
+
+        # Test 3: Current Configuration Check
+        st.subheader("3️⃣ Current Configuration Check")
+        
+        config_info = f"""
+**Current Settings:**
+- Avatar: {st.session_state.user_profile.get('avatar', 'Not set')}
+- Voice Type: {st.session_state.user_profile.get('voice_type', 'Not set')}
+- API Key Status: {'✅ Set' if setup_elevenlabs() else '❌ Not set'}
+- Chat History: {len(st.session_state.chat_history)} messages
+- Voice Played Flag: {st.session_state.get('voice_played', 'Not set')}
+        """
+        
+        st.code(config_info)
+        
+        # Test 4: Troubleshooting Guide
+        st.subheader("4️⃣ Common Issues & Solutions")
+        
+        st.markdown("""
+        **🔑 API Key Issues:**
+        - Make sure your API key starts with `sk_`
+        - Check that you have credits in your ElevenLabs account
+        - Verify the API key has access to voice generation
+        
+        **🌐 Browser Issues:**
+        - Use Chrome or Edge (best compatibility)
+        - Check if audio is muted in browser/system
+        - Try refreshing the page completely
+        - Allow audio permissions if prompted
+        
+        **🎤 Voice ID Issues:**
+        - Make sure the voice IDs match exactly from your account
+        - Check if you have access to those specific voices
+        - Try with a different voice ID
+        
+        **📱 Mobile Issues:**
+        - Mobile browsers often block autoplay
+        - User interaction might be required first
+        - Try the manual play button
+        
+        **🔄 Cache Issues:**
+        - Try hard refresh (Ctrl+F5 or Cmd+Shift+R)
+        - Clear browser cache
+        - Try in incognito/private mode
+        """)
+        
+        # Reset function
+        if st.button("🔄 Reset All Voice Settings", key="reset_voice_settings"):
+            st.session_state.voice_played = False
+            st.session_state.is_speaking = False
+            st.success("✅ Voice settings reset! Try voice generation again.")
+            st.rerun()
+
 if __name__ == "__main__":
     main()
