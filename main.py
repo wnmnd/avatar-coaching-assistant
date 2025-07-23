@@ -282,7 +282,14 @@ def setup_heygen():
 
 def setup_elevenlabs():
     """Setup ElevenLabs for natural voice"""
-    return st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
+    # Use the new API key provided by user
+    api_key = st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY") or "sk_3f36a2a57b246f01c2aab04a788b216a1c573a17cfd93af2"
+    
+    # Debug information
+    if api_key and api_key.startswith("sk_"):
+        return api_key
+    else:
+        return None
 
 # Fixed Avatar Component
 def avatar_component(is_speaking=False):
@@ -714,7 +721,7 @@ def natural_voice_component(text, voice_type="professional"):
     
     elevenlabs_key = setup_elevenlabs()
     
-    if elevenlabs_key and elevenlabs_key != "your_elevenlabs_api_key_here":
+    if elevenlabs_key and elevenlabs_key.startswith("sk_"):
         # Premium ElevenLabs voice with enhanced gender matching
         create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type, avatar_gender)
     else:
