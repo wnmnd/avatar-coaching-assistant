@@ -29,7 +29,7 @@ def load_css():
         margin-bottom: 2rem;
         box-shadow: 0 4px 20px rgba(74, 21, 75, 0.3);
     }
-   
+    
     .avatar-container {
         display: flex;
         flex-direction: column;
@@ -42,25 +42,25 @@ def load_css():
         box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
         min-height: 300px;
     }
-   
+    
     .avatar-display {
         text-align: center;
     }
-   
+    
     .avatar-emoji {
         font-size: 120px;
         margin-bottom: 10px;
         transition: all 0.3s ease;
         display: block;
     }
-   
+    
     .avatar-name {
         font-size: 18px;
         font-weight: bold;
         color: #8A2BE2;
         margin-bottom: 15px;
     }
-   
+    
     .voice-visualizer {
         display: flex;
         gap: 4px;
@@ -70,7 +70,7 @@ def load_css():
         transition: opacity 0.3s ease;
         justify-content: center;
     }
-   
+    
     .voice-bar {
         width: 6px;
         height: 10px;
@@ -78,32 +78,32 @@ def load_css():
         border-radius: 3px;
         animation: voice-wave 0.8s ease-in-out infinite;
     }
-   
+    
     .voice-bar:nth-child(1) { animation-delay: 0s; }
     .voice-bar:nth-child(2) { animation-delay: 0.1s; }
     .voice-bar:nth-child(3) { animation-delay: 0.2s; }
     .voice-bar:nth-child(4) { animation-delay: 0.3s; }
     .voice-bar:nth-child(5) { animation-delay: 0.4s; }
-   
+    
     @keyframes voice-wave {
         0%, 100% { height: 10px; }
         50% { height: 35px; }
     }
-   
+    
     .avatar-speaking .avatar-emoji {
         animation: talking 0.5s ease-in-out infinite alternate;
         transform: scale(1.1);
     }
-   
+    
     .avatar-speaking .voice-visualizer {
         opacity: 1;
     }
-   
+    
     @keyframes talking {
         0% { transform: scale(1.1) rotate(-1deg); }
         100% { transform: scale(1.15) rotate(1deg); }
     }
-   
+    
     .avatar-status {
         margin-top: 15px;
         padding: 8px 16px;
@@ -114,7 +114,7 @@ def load_css():
         color: #8A2BE2;
         text-align: center;
     }
-   
+    
     .voice-note-container {
         padding: 20px;
         background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
@@ -122,14 +122,14 @@ def load_css():
         margin: 10px 0;
         border: 2px solid rgba(138, 43, 226, 0.2);
     }
-   
+    
     .voice-controls {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 15px;
     }
-   
+    
     .voice-waveform {
         display: flex;
         justify-content: center;
@@ -137,7 +137,7 @@ def load_css():
         gap: 3px;
         margin-top: 15px;
     }
-   
+    
     .wave-bar {
         width: 4px;
         height: 20px;
@@ -145,28 +145,28 @@ def load_css():
         border-radius: 2px;
         animation: wave 1.5s ease-in-out infinite;
     }
-   
+    
     .wave-bar:nth-child(2) { animation-delay: 0.2s; }
     .wave-bar:nth-child(3) { animation-delay: 0.4s; }
     .wave-bar:nth-child(4) { animation-delay: 0.6s; }
     .wave-bar:nth-child(5) { animation-delay: 0.8s; }
-   
+    
     @keyframes wave {
         0%, 100% { height: 20px; }
         50% { height: 40px; }
     }
-   
+    
     .recording {
         background: linear-gradient(135deg, #ff4757, #ff3742) !important;
         animation: pulse-record 1s ease-in-out infinite !important;
     }
-   
+    
     @keyframes pulse-record {
         0% { transform: scale(1); }
         50% { transform: scale(1.1); }
         100% { transform: scale(1); }
     }
-   
+    
     .chat-container {
         max-height: 400px;
         overflow-y: auto;
@@ -174,7 +174,7 @@ def load_css():
         background: #f8f9fa;
         border-radius: 10px;
     }
-   
+    
     .stButton > button {
         background: linear-gradient(135deg, #8A2BE2, #9932CC) !important;
         color: white !important;
@@ -186,13 +186,13 @@ def load_css():
         box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3) !important;
         border: 1px solid rgba(153, 50, 204, 0.4) !important;
     }
-   
+    
     .stButton > button:hover {
         background: linear-gradient(135deg, #9932CC, #8B008B) !important;
         transform: translateY(-2px) !important;
         box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4) !important;
     }
-   
+    
     .stFormSubmitButton > button {
         background: linear-gradient(135deg, #4A154B, #6A1B9A) !important;
         color: white !important;
@@ -205,13 +205,13 @@ def load_css():
         box-shadow: 0 4px 15px rgba(74, 21, 75, 0.4) !important;
         width: 100% !important;
     }
-   
+    
     .stFormSubmitButton > button:hover {
         background: linear-gradient(135deg, #6A1B9A, #8B008B) !important;
         transform: translateY(-2px) !important;
         box-shadow: 0 6px 20px rgba(74, 21, 75, 0.5) !important;
     }
-   
+    
     .user-message {
         background: linear-gradient(135deg, #E6E6FA, #DDA0DD);
         color: #4A154B;
@@ -222,7 +222,7 @@ def load_css():
         box-shadow: 0 2px 8px rgba(221, 160, 221, 0.3);
         border: 1px solid rgba(221, 160, 221, 0.4);
     }
-   
+    
     .coach-message {
         background: linear-gradient(135deg, #4A154B, #6A1B9A);
         color: white;
@@ -246,6 +246,8 @@ def init_session_state():
         st.session_state.user_profile = {}
     if 'voice_played' not in st.session_state:
         st.session_state.voice_played = False
+    if 'voice_message_ready' not in st.session_state:
+        st.session_state.voice_message_ready = None
 
 # Configure APIs
 def setup_gemini():
@@ -253,11 +255,11 @@ def setup_gemini():
     if not api_key or api_key == "your_gemini_api_key_here":
         st.error("❌ Please set your Gemini API key in .streamlit/secrets.toml")
         st.stop()
-   
+    
     try:
         genai.configure(api_key=api_key)
         model_names = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro']
-       
+        
         for model_name in model_names:
             try:
                 model = genai.GenerativeModel(model_name)
@@ -266,10 +268,10 @@ def setup_gemini():
                     return model, model_name
             except:
                 continue
-       
+        
         st.error("❌ Could not connect to Gemini")
         st.stop()
-               
+                
     except Exception as e:
         st.error(f"❌ Gemini API Error: {str(e)}")
         st.stop()
@@ -285,28 +287,28 @@ def setup_elevenlabs():
 # Fixed Avatar Component
 def avatar_component(is_speaking=False):
     """Display fixed avatar with proper rendering"""
-   
+    
     profile = st.session_state.user_profile
     avatar_choice = profile.get('avatar', 'sophia')
-   
-    # Avatar selection with personality and gender
+    
+    # Avatar selection with personality and gender (enhanced from reference)
     avatar_configs = {
         'sophia': {'emoji': '👩‍💼', 'name': 'Sophia', 'voice_type': 'professional', 'gender': 'female'},
-        'marcus': {'emoji': '👨‍💼', 'name': 'Marcus', 'voice_type': 'confident', 'gender': 'male'},
+        'marcus': {'emoji': '👨‍💼', 'name': 'Marcus', 'voice_type': 'confident', 'gender': 'male'}, 
         'elena': {'emoji': '👩‍⚕️', 'name': 'Elena', 'voice_type': 'caring', 'gender': 'female'},
         'david': {'emoji': '👨‍🎓', 'name': 'David', 'voice_type': 'wise', 'gender': 'male'},
         'maya': {'emoji': '👩‍🏫', 'name': 'Maya', 'voice_type': 'energetic', 'gender': 'female'},
         'james': {'emoji': '👨‍💻', 'name': 'James', 'voice_type': 'executive', 'gender': 'male'}
     }
-   
+    
     config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
     avatar_emoji = config['emoji']
     avatar_name = config['name']
-   
+    
     # Simplified but effective avatar display
     speaking_class = "avatar-speaking" if is_speaking else ""
     status_text = f"🎤 {avatar_name} is speaking..." if is_speaking else f"💭 {avatar_name} is ready to help"
-   
+    
     avatar_html = f"""
     <div class="avatar-container">
         <div class="avatar-display {speaking_class}" id="avatarDisplay">
@@ -323,664 +325,637 @@ def avatar_component(is_speaking=False):
         <div class="avatar-status">{status_text}</div>
     </div>
     """
-   
+    
     st.markdown(avatar_html, unsafe_allow_html=True)
 
-# FIXED Natural Voice with MOBILE SUPPORT and DISTINCT VOICES
+# BIG BUTTON AUTO-SEND VOICE RECORDER - WORKING VERSION!
+def enhanced_voice_recorder():
+    """Big button that auto-detects when you finish speaking and provides easy send"""
+    
+    # Voice recorder HTML with the BIG BUTTON design
+    voice_recorder_html = f"""
+    <div style="
+        padding: 25px;
+        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
+        border-radius: 20px;
+        border: 2px solid rgba(138, 43, 226, 0.2);
+        margin: 10px 0;
+        text-align: center;
+    ">
+        <!-- Status Display -->
+        <div id="voiceStatus" style="
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            color: #8A2BE2;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        ">
+            🎤 Click to start recording
+        </div>
+        
+        <!-- Transcription Display -->
+        <div id="transcriptionBox" style="
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            min-height: 60px;
+            border: 2px dashed #ddd;
+            color: #333;
+            font-size: 16px;
+            display: none;
+        ">
+            Your speech will appear here...
+        </div>
+        
+        <!-- BIG VOICE BUTTON -->
+        <button id="voiceBtn" onclick="handleVoiceClick()" style="
+            background: linear-gradient(135deg, #8A2BE2, #9370DB);
+            border: none;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            color: white;
+            font-size: 48px;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(138, 43, 226, 0.4);
+            transition: all 0.3s ease;
+            margin: 15px;
+        ">🎤</button>
+        
+        <div style="margin-top: 20px; color: #666; font-size: 16px; font-weight: bold;">
+            Click to record • Automatically detects when you finish speaking
+        </div>
+        
+        <!-- Hidden textarea that Streamlit can read -->
+        <textarea id="hiddenVoiceText" style="position: absolute; left: -9999px; opacity: 0;" 
+                  placeholder="voice_transcription_area"></textarea>
+    </div>
+
+    <script>
+    let recognition = null;
+    let isRecording = false;
+    let recordedText = '';
+    let silenceTimer = null;
+    let finalTranscript = '';
+    
+    // Initialize speech recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {{
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        
+        recognition.onstart = function() {{
+            console.log('Recording started');
+            updateStatus('🔴 Listening... Speak your message clearly');
+            showTranscription();
+            finalTranscript = '';
+        }};
+        
+        recognition.onresult = function(event) {{
+            let interimText = '';
+            finalTranscript = '';
+            
+            for (let i = 0; i < event.results.length; i++) {{
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {{
+                    finalTranscript += transcript + ' ';
+                }} else {{
+                    interimText += transcript;
+                }}
+            }}
+            
+            recordedText = (finalTranscript + interimText).trim();
+            document.getElementById('transcriptionBox').innerHTML = '📝 "' + recordedText + '"';
+            
+            // Clear existing silence timer
+            if (silenceTimer) {{
+                clearTimeout(silenceTimer);
+            }}
+            
+            // Set new silence timer - auto-complete after 3 seconds of silence
+            if (finalTranscript.trim()) {{
+                silenceTimer = setTimeout(() => {{
+                    if (isRecording) {{
+                        completeRecording();
+                    }}
+                }}, 3000);
+            }}
+        }};
+        
+        recognition.onend = function() {{
+            console.log('Recognition ended');
+            if (isRecording) {{
+                completeRecording();
+            }}
+        }};
+        
+        recognition.onerror = function(event) {{
+            console.error('Speech error:', event.error);
+            updateStatus('❌ Error: ' + event.error + '. Click to try again.');
+            resetButton();
+        }};
+    }} else {{
+        updateStatus('❌ Voice not supported. Use Chrome/Edge browser.');
+    }}
+    
+    function handleVoiceClick() {{
+        if (!recognition) {{
+            alert('Voice recognition not available. Please use Chrome or Edge browser.');
+            return;
+        }}
+        
+        if (!isRecording) {{
+            startRecording();
+        }} else {{
+            stopRecording();
+        }}
+    }}
+    
+    function startRecording() {{
+        isRecording = true;
+        recordedText = '';
+        finalTranscript = '';
+        
+        const btn = document.getElementById('voiceBtn');
+        btn.style.background = 'linear-gradient(135deg, #ff4757, #ff3742)';
+        btn.innerHTML = '🔴';
+        btn.style.animation = 'pulse 1.5s infinite';
+        
+        try {{
+            recognition.start();
+        }} catch (error) {{
+            console.error('Failed to start recording:', error);
+            updateStatus('❌ Failed to start. Click to try again.');
+            resetButton();
+        }}
+    }}
+    
+    function stopRecording() {{
+        isRecording = false;
+        recognition.stop();
+        
+        if (silenceTimer) {{
+            clearTimeout(silenceTimer);
+        }}
+        
+        completeRecording();
+    }}
+    
+    function completeRecording() {{
+        isRecording = false;
+        recognition.stop();
+        
+        if (silenceTimer) {{
+            clearTimeout(silenceTimer);
+        }}
+        
+        const finalMessage = (finalTranscript || recordedText).trim();
+        
+        if (!finalMessage) {{
+            updateStatus('❌ No speech detected. Click to try again.');
+            resetButton();
+            return;
+        }}
+        
+        updateStatus('✅ Recorded: "' + finalMessage + '" - Message ready to send!');
+        
+        // Put the text in the hidden textarea
+        const hiddenTextArea = document.getElementById('hiddenVoiceText');
+        hiddenTextArea.value = finalMessage;
+        
+        // Change button to indicate ready to send
+        const btn = document.getElementById('voiceBtn');
+        btn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+        btn.innerHTML = '✅';
+        btn.style.animation = 'none';
+        
+        // Show message is ready
+        document.getElementById('transcriptionBox').innerHTML = '✅ Ready: "' + finalMessage + '"<br><small>Message captured! Use the send button below.</small>';
+    }}
+    
+    function updateStatus(message) {{
+        document.getElementById('voiceStatus').innerHTML = message;
+    }}
+    
+    function showTranscription() {{
+        document.getElementById('transcriptionBox').style.display = 'block';
+    }}
+    
+    function resetButton() {{
+        isRecording = false;
+        const btn = document.getElementById('voiceBtn');
+        btn.style.background = 'linear-gradient(135deg, #8A2BE2, #9370DB)';
+        btn.innerHTML = '🎤';
+        btn.style.animation = 'none';
+        updateStatus('🎤 Click to start recording');
+        document.getElementById('transcriptionBox').style.display = 'none';
+        recordedText = '';
+        finalTranscript = '';
+        
+        if (silenceTimer) {{
+            clearTimeout(silenceTimer);
+        }}
+        
+        // Clear the hidden textarea
+        const hiddenTextArea = document.getElementById('hiddenVoiceText');
+        hiddenTextArea.value = '';
+    }}
+    
+    // CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {{
+            0% {{ transform: scale(1); box-shadow: 0 8px 30px rgba(255, 71, 87, 0.4); }}
+            50% {{ transform: scale(1.05); box-shadow: 0 12px 40px rgba(255, 71, 87, 0.8); }}
+            100% {{ transform: scale(1); box-shadow: 0 8px 30px rgba(255, 71, 87, 0.4); }}
+        }}
+    `;
+    document.head.appendChild(style);
+    </script>
+    """
+    
+    st.components.v1.html(voice_recorder_html, height=450)
+    
+    # Check if there's voice text captured and provide send button
+    voice_message_script = """
+    <script>
+    const hiddenTextArea = document.getElementById('hiddenVoiceText');
+    if (hiddenTextArea && hiddenTextArea.value.trim()) {
+        // Voice message is ready
+        console.log('Voice message ready:', hiddenTextArea.value);
+    }
+    </script>
+    """
+    st.components.v1.html(voice_message_script, height=0)
+    
+    # Simple send button that appears when voice is captured
+    send_col1, send_col2, send_col3 = st.columns([1, 2, 1])
+    with send_col2:
+        if st.button("📤 Send Voice Message", key="send_voice_btn", type="primary", 
+                    help="Send the voice message you just recorded"):
+            
+            # Get voice message from JavaScript using a simple approach
+            get_voice_script = """
+            <script>
+            const hiddenTextArea = document.getElementById('hiddenVoiceText');
+            if (hiddenTextArea && hiddenTextArea.value.trim()) {
+                // Signal that we have a message ready
+                sessionStorage.setItem('voice_ready_to_send', hiddenTextArea.value);
+                console.log('Voice message ready for sending:', hiddenTextArea.value);
+            } else {
+                alert('No voice message recorded yet. Please record a message first.');
+            }
+            </script>
+            """
+            st.components.v1.html(get_voice_script, height=0)
+            
+            # Check session storage for the message
+            check_voice_script = """
+            <script>
+            const voiceMessage = sessionStorage.getItem('voice_ready_to_send');
+            if (voiceMessage) {
+                // Clear it from storage
+                sessionStorage.removeItem('voice_ready_to_send');
+                
+                // Use URL parameter to send the message
+                const url = new URL(window.location.href);
+                url.searchParams.set('voice_input', encodeURIComponent(voiceMessage));
+                url.searchParams.set('timestamp', Date.now().toString());
+                
+                console.log('Sending voice message:', voiceMessage);
+                window.location.href = url.toString();
+            } else {
+                console.log('No voice message found in storage');
+            }
+            </script>
+            """
+            st.components.v1.html(check_voice_script, height=0)
+
+# Voice Message Checker
+def check_voice_message():
+    """Check for new voice messages from sessionStorage"""
+    
+    voice_check_html = """
+    <script>
+    // Check for voice messages in sessionStorage
+    function checkForVoiceMessage() {
+        try {
+            const voiceDataStr = sessionStorage.getItem('voice_message_data');
+            if (voiceDataStr) {
+                const voiceData = JSON.parse(voiceDataStr);
+                if (!voiceData.processed) {
+                    console.log('Found unprocessed voice message:', voiceData.message);
+                    // Mark as processed
+                    voiceData.processed = true;
+                    sessionStorage.setItem('voice_message_data', JSON.stringify(voiceData));
+                    // Return the message
+                    return voiceData.message;
+                }
+            }
+        } catch (error) {
+            console.error('Error checking voice message:', error);
+        }
+        return null;
+    }
+    
+    // Expose function globally
+    window.checkForVoiceMessage = checkForVoiceMessage;
+    </script>
+    """
+    
+    st.components.v1.html(voice_check_html, height=0)
+    
+    # Check if there's a voice message ready
+    if st.button("🔄 Check for Voice Message", key=f"voice_check_{int(time.time())}", help="Click to process any recorded voice message"):
+        # Use JavaScript to check sessionStorage
+        voice_check_script = """
+        <script>
+        const voiceMessage = window.checkForVoiceMessage ? window.checkForVoiceMessage() : null;
+        if (voiceMessage) {
+            // Store in a way Streamlit can access
+            const url = new URL(window.location.href);
+            url.searchParams.set('voice_input', encodeURIComponent(voiceMessage));
+            url.searchParams.set('timestamp', Date.now().toString());
+            window.location.href = url.toString();
+        } else {
+            console.log('No voice message found');
+        }
+        </script>
+        """
+        st.components.v1.html(voice_check_script, height=0)
+
+# Natural Voice with MOBILE SUPPORT
 def natural_voice_component(text, voice_type="professional"):
-    """Enhanced voice playback with distinct personalities and mobile support"""
+    """Enhanced voice playback with improved personality matching (from reference code)"""
     if not text or st.session_state.get('voice_played', False):
         return
-   
+    
     # Mark voice as played to prevent doubles
     st.session_state.voice_played = True
-   
-    # Get avatar gender for proper voice selection
+    
+    # Get avatar gender for proper voice selection (enhanced)
     profile = st.session_state.user_profile
     avatar_choice = profile.get('avatar', 'sophia')
     avatar_configs = {
         'sophia': {'gender': 'female', 'voice_type': 'professional'},
-        'marcus': {'gender': 'male', 'voice_type': 'confident'},
+        'marcus': {'gender': 'male', 'voice_type': 'confident'}, 
         'elena': {'gender': 'female', 'voice_type': 'caring'},
         'david': {'gender': 'male', 'voice_type': 'wise'},
         'maya': {'gender': 'female', 'voice_type': 'energetic'},
         'james': {'gender': 'male', 'voice_type': 'executive'}
     }
     avatar_gender = avatar_configs.get(avatar_choice, {}).get('gender', 'female')
-   
+    
     elevenlabs_key = setup_elevenlabs()
-   
+    
     if elevenlabs_key and elevenlabs_key != "your_elevenlabs_api_key_here":
-        # Premium ElevenLabs voice with gender matching
-        create_enhanced_elevenlabs_voice(text, elevenlabs_key, voice_type, avatar_gender)
+        # Premium ElevenLabs voice with enhanced gender matching
+        create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type, avatar_gender)
     else:
-        # Enhanced browser TTS with DISTINCT personalities
-        create_enhanced_mobile_voice(text, voice_type, avatar_gender)
+        # Enhanced browser TTS with improved personality settings
+        create_mobile_friendly_voice(text, voice_type, avatar_gender)
 
-def create_enhanced_mobile_voice(text, voice_type, gender):
-    """ENHANCED mobile-friendly browser TTS with DISTINCT voices and personalities"""
-   
+def create_mobile_friendly_voice(text, voice_type, gender):
+    """Mobile-friendly browser TTS with enhanced personality settings"""
+    
     clean_text = enhance_text_for_speech(text, voice_type)
-   
-    # ENHANCED Voice personality settings with MUCH better male voice control
+    
+    # MUCH MORE DISTINCT voice personality settings (from reference code)
     voice_settings = {
-        'professional': {'rate': 0.9, 'pitch': 1.0, 'volume': 1.0},
-        'confident': {'rate': 1.0, 'pitch': 0.8, 'volume': 1.0},
-        'caring': {'rate': 0.8, 'pitch': 1.2, 'volume': 0.9},
-        'wise': {'rate': 0.7, 'pitch': 0.8, 'volume': 0.9},
-        'energetic': {'rate': 1.15, 'pitch': 1.3, 'volume': 1.0},
-        'executive': {'rate': 0.95, 'pitch': 0.9, 'volume': 1.0}
+        'professional': {'rate': 0.85, 'pitch': 1.0, 'emphasis': 'neutral'},
+        'confident': {'rate': 1.1, 'pitch': 0.8, 'emphasis': 'strong'},
+        'caring': {'rate': 0.75, 'pitch': 1.3, 'emphasis': 'gentle'},
+        'wise': {'rate': 0.65, 'pitch': 0.7, 'emphasis': 'thoughtful'},
+        'energetic': {'rate': 1.25, 'pitch': 1.4, 'emphasis': 'excited'},
+        'executive': {'rate': 0.9, 'pitch': 0.85, 'emphasis': 'authoritative'}
     }
-   
+    
     settings = voice_settings.get(voice_type, voice_settings['professional'])
-   
-    # DRAMATICALLY IMPROVED gender and personality adjustments
+    
+    # Strong gender adjustments
     if gender == 'male':
-        if voice_type == 'energetic':
-            # SUPER ENERGETIC MALES - completely different approach
-            settings['rate'] = 1.4   # MUCH faster
-            settings['pitch'] = 0.8  # Not too deep, more youthful energy
-            settings['volume'] = 1.0 # Full volume for excitement
-        elif voice_type == 'confident':
-            settings['rate'] = 1.1   # Assertive pace
-            settings['pitch'] = 0.4  # Deep and commanding
-            settings['volume'] = 1.0
-        elif voice_type == 'wise':
-            settings['rate'] = 0.65  # Very slow and thoughtful
-            settings['pitch'] = 0.3  # Very deep and wise
-            settings['volume'] = 0.9
-        elif voice_type == 'executive':
-            settings['rate'] = 0.9   # Measured and authoritative
-            settings['pitch'] = 0.35 # Deep executive voice
-            settings['volume'] = 1.0
-        elif voice_type == 'caring':
-            settings['rate'] = 0.8   # Gentle pace
-            settings['pitch'] = 0.6  # Warmer, not too deep
-            settings['volume'] = 0.9
-        else:  # professional
-            settings['rate'] = 0.85  # Professional pace
-            settings['pitch'] = 0.5  # Professional depth
-            settings['volume'] = 1.0
-    else:  # female
-        if voice_type == 'energetic':
-            settings['rate'] = 1.2   # Fast but controlled
-            settings['pitch'] = 1.5  # High and excited
-            settings['volume'] = 1.0
-        elif voice_type == 'confident':
-            settings['rate'] = 1.0   # Strong pace
-            settings['pitch'] = 1.1  # Confident but not too high
-            settings['volume'] = 1.0
-        elif voice_type == 'wise':
-            settings['rate'] = 0.75  # Thoughtful pace
-            settings['pitch'] = 1.0  # Balanced wisdom
-            settings['volume'] = 0.9
-        elif voice_type == 'executive':
-            settings['rate'] = 0.9   # Executive pace
-            settings['pitch'] = 1.0  # Professional female voice
-            settings['volume'] = 1.0
-        elif voice_type == 'caring':
-            settings['rate'] = 0.8   # Gentle pace
-            settings['pitch'] = 1.3  # Warm and caring
-            settings['volume'] = 0.9
-        else:  # professional
-            settings['rate'] = 0.9   # Professional pace
-            settings['pitch'] = 1.1  # Clear and professional
-            settings['volume'] = 1.0
-   
-    # Create unique ID for this voice instance
-    voice_id = f"voice_{int(time.time() * 1000)}"
-   
-    voice_html = f"""
-    <div style="
-        padding: 20px;
-        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
-        border-radius: 20px;
-        border: 2px solid rgba(138, 43, 226, 0.3);
-        margin: 15px 0;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
-    ">
-        <div id="voiceMessage_{voice_id}" style="
-            margin-bottom: 15px;
-            color: #8A2BE2;
-            font-weight: bold;
-            font-size: 16px;
-        ">
-            🎭 Your {voice_type} {gender} coach is speaking...
-        </div>
-       
-        <div id="voiceButtonContainer_{voice_id}" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-            <!-- Manual play button for mobile -->
-            <button id="manualPlayButton_{voice_id}" onclick="playVoiceManually_{voice_id}()" style="
-                background: linear-gradient(135deg, #8A2BE2, #9370DB);
-                color: white;
-                border: none;
-                border-radius: 25px;
-                padding: 12px 20px;
-                font-weight: bold;
-                cursor: pointer;
-                box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
-                display: block;
-                font-size: 14px;
-                margin: 0 5px;
-            ">
-                🔊 Tap to Hear Voice
-            </button>
-           
-            <!-- Stop button -->
-            <button id="stopButton_{voice_id}" onclick="stopVoice_{voice_id}()" style="
-                background: linear-gradient(135deg, #f44336, #da190b);
-                color: white;
-                border: none;
-                border-radius: 25px;
-                padding: 12px 20px;
-                font-weight: bold;
-                cursor: pointer;
-                box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
-                display: none;
-                font-size: 14px;
-            ">
-                ⏹️ Stop
-            </button>
-        </div>
-       
-        <!-- Voice status indicator -->
-        <div id="voiceStatus_{voice_id}" style="
-            margin-top: 10px;
-            padding: 8px 12px;
-            background: rgba(138, 43, 226, 0.1);
-            border-radius: 15px;
-            font-size: 12px;
-            color: #8A2BE2;
-            font-weight: bold;
-            display: none;
-        "></div>
-    </div>
-
-    <script>
-    let isMobileDevice_{voice_id} = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    let voiceUtterance_{voice_id} = null;
-    let isPlaying_{voice_id} = false;
-   
-    function playVoiceEnhanced_{voice_id}() {{
-        if ('speechSynthesis' in window) {{
-            // Cancel any existing speech
-            speechSynthesis.cancel();
-           
-            voiceUtterance_{voice_id} = new SpeechSynthesisUtterance(`{clean_text}`);
-            isPlaying_{voice_id} = true;
-            voiceUtterance_{voice_id}.rate = {settings['rate']};
-            voiceUtterance_{voice_id}.pitch = {settings['pitch']};
-            voiceUtterance_{voice_id}.volume = 1.0;
-           
-            // Update UI for playing state
-            document.getElementById('voiceMessage_{voice_id}').innerHTML = '🎤 Your {voice_type} {gender} coach is speaking...';
-            document.getElementById('manualPlayButton_{voice_id}').style.display = 'none';
-            document.getElementById('stopButton_{voice_id}').style.display = 'block';
-            document.getElementById('voiceStatus_{voice_id}').style.display = 'block';
-            document.getElementById('voiceStatus_{voice_id}').innerHTML = '🔊 Playing {voice_type} {gender} voice...';
-           
-            // COMPLETELY REDESIGNED voice selection for MAXIMUM variation and quality
-            const voices = speechSynthesis.getVoices();
-            let bestVoice = null;
-           
-            console.log('🎭 Available voices:', voices.map(v => `${{v.name}} (${{v.lang}}) [${{v.voiceURI}}]`));
-            console.log('🎯 Looking for: {gender} {voice_type} voice');
-           
-            if ('{gender}' === 'male') {{
-                // REVOLUTIONARY Male voice selection - each personality gets VERY different voices
-                let voiceSelectionTiers = [];
-                
-                if ('{voice_type}' === 'wise') {{
-                    // Tier 1: Premium deep, wise voices
-                    voiceSelectionTiers = [
-                        ['Microsoft David Desktop', 'Alex', 'Daniel'],
-                        ['Google UK English Male', 'Chrome OS UK English Male'],
-                        ['com.apple.speech.synthesis.voice.Alex', 'com.apple.speech.synthesis.voice.Daniel'],
-                        ['David', 'Fred']  // Fallback
-                    ];
-                }} else if ('{voice_type}' === 'confident') {{
-                    // Tier 1: Strong, commanding business voices
-                    voiceSelectionTiers = [
-                        ['Microsoft Mark', 'Microsoft Ravi', 'Google US English'],
-                        ['Chrome OS US English Male', 'Microsoft James'],
-                        ['Mark', 'Ravi', 'James'],
-                        ['Alex', 'David']  // Fallback
-                    ];
-                }} else if ('{voice_type}' === 'executive') {{
-                    // Tier 1: Authoritative executive voices
-                    voiceSelectionTiers = [
-                        ['Microsoft Mark', 'Microsoft James', 'Microsoft Ravi'],
-                        ['Google UK English Male', 'Chrome OS UK English Male'],
-                        ['Mark', 'James', 'Ravi'],
-                        ['David', 'Alex']  // Fallback
-                    ];
-                }} else if ('{voice_type}' === 'energetic') {{
-                    // Tier 1: YOUNG, DYNAMIC, HIGH-ENERGY male voices
-                    voiceSelectionTiers = [
-                        ['Microsoft Mark', 'Google US English', 'Chrome OS US English Male'],
-                        ['Microsoft James', 'Fred', 'Jorge'],
-                        ['Mark', 'James', 'Jorge', 'Fred'],
-                        ['Google US English', 'Alex']  // Fallback
-                    ];
-                }} else if ('{voice_type}' === 'caring') {{
-                    // Tier 1: Warm, gentle male voices
-                    voiceSelectionTiers = [
-                        ['Microsoft David Desktop', 'Alex', 'Google UK English Male'],
-                        ['Daniel', 'David', 'Chrome OS UK English Male'],
-                        ['Alex', 'David', 'Daniel'],
-                        ['Google US English']  // Fallback
-                    ];
-                }} else {{ // professional
-                    // Tier 1: Clear, professional male voices
-                    voiceSelectionTiers = [
-                        ['Microsoft Ravi', 'Microsoft James', 'Google US English'],
-                        ['Microsoft Mark', 'Chrome OS US English Male'],
-                        ['Ravi', 'James', 'Mark'],
-                        ['Alex', 'David']  // Fallback
-                    ];
-                }}
-                
-                // Try each tier until we find a voice
-                for (let tier of voiceSelectionTiers) {{
-                    for (let voiceName of tier) {{
-                        bestVoice = voices.find(v => 
-                            v.lang.startsWith('en-') && 
-                            (v.name.includes(voiceName) || v.voiceURI.includes(voiceName))
-                        );
-                        if (bestVoice) {{
-                            console.log(`🎯 MALE {voice_type}: Found ${{bestVoice.name}} from tier ${{voiceSelectionTiers.indexOf(tier) + 1}}`);
-                            break;
-                        }}
-                    }}
-                    if (bestVoice) break;
-                }}
-                
-            }} else {{
-                // REVOLUTIONARY Female voice selection - each personality gets DISTINCT voices
-                let voiceSelectionTiers = [];
-                
-                if ('{voice_type}' === 'caring') {{
-                    // Tier 1: Soft, warm, nurturing female voices
-                    voiceSelectionTiers = [
-                        ['Microsoft Zira Desktop', 'Samantha', 'Susan'],
-                        ['Microsoft Hazel', 'Google UK English Female'],
-                        ['com.apple.speech.synthesis.voice.Samantha', 'Zira', 'Hazel'],
-                        ['Susan', 'Fiona']  // Fallback
-                    ];
-                }} else if ('{voice_type}' === 'energetic') {{
-                    // Tier 1: Bright, enthusiastic, high-energy female voices
-                    voiceSelectionTiers = [
-                        ['Victoria', 'Karen', 'Microsoft Aria', 'Tessa'],
-                        ['Google US English Female', 'Chrome OS US English Female'],
-                        ['Microsoft Zira Desktop', 'Aria', 'Tessa'],
-                        ['Victoria', 'Karen']  // Fallback
-                    ];
-                }} else if ('{voice_type}' === 'confident') {{
-                    // Tier 1: Strong, assertive female voices
-                    voiceSelectionTiers = [
-                        ['Microsoft Aria', 'Victoria', 'Microsoft Hazel'],
-                        ['Google US English Female', 'Chrome OS US English Female'],
-                        ['Aria', 'Victoria', 'Hazel'],
-                        ['Karen', 'Samantha']  // Fallback
-                    ];
-                }} else if ('{voice_type}' === 'wise') {{
-                    // Tier 1: Mature, thoughtful female voices
-                    voiceSelectionTiers = [
-                        ['Microsoft Hazel', 'Fiona', 'Moira'],
-                        ['Google UK English Female', 'Chrome OS UK English Female'],
-                        ['Hazel', 'Fiona', 'Moira'],
-                        ['Susan', 'Samantha']  // Fallback
-                    ];
-                }} else if ('{voice_type}' === 'executive') {{
-                    // Tier 1: Professional, authoritative female voices
-                    voiceSelectionTiers = [
-                        ['Microsoft Aria', 'Microsoft Hazel', 'Google US English Female'],
-                        ['Chrome OS US English Female', 'Victoria'],
-                        ['Aria', 'Hazel', 'Victoria'],
-                        ['Karen', 'Fiona']  // Fallback
-                    ];
-                }} else {{ // professional
-                    // Tier 1: Clear, business-like female voices
-                    voiceSelectionTiers = [
-                        ['Microsoft Aria', 'Google US English Female', 'Microsoft Hazel'],
-                        ['Chrome OS US English Female', 'Victoria'],
-                        ['Aria', 'Hazel', 'Victoria'],
-                        ['Samantha', 'Karen']  // Fallback
-                    ];
-                }}
-                
-                // Try each tier until we find a voice
-                for (let tier of voiceSelectionTiers) {{
-                    for (let voiceName of tier) {{
-                        bestVoice = voices.find(v => 
-                            v.lang.startsWith('en-') && 
-                            (v.name.includes(voiceName) || v.voiceURI.includes(voiceName))
-                        );
-                        if (bestVoice) {{
-                            console.log(`🎯 FEMALE {voice_type}: Found ${{bestVoice.name}} from tier ${{voiceSelectionTiers.indexOf(tier) + 1}}`);
-                            break;
-                        }}
-                    }}
-                    if (bestVoice) break;
-                }}
-            }}
-           
-            // ENHANCED fallback strategy
-            if (!bestVoice) {{
-                console.log('❌ No personality-specific voice found, using enhanced fallback');
-                if ('{gender}' === 'male') {{
-                    // Male fallback priority list
-                    const maleFallbacks = ['Alex', 'David', 'Daniel', 'Mark', 'James', 'Ravi'];
-                    for (let name of maleFallbacks) {{
-                        bestVoice = voices.find(v => v.lang.startsWith('en-') && v.name.includes(name));
-                        if (bestVoice) break;
-                    }}
-                }} else {{
-                    // Female fallback priority list  
-                    const femaleFallbacks = ['Samantha', 'Victoria', 'Aria', 'Hazel', 'Zira', 'Karen'];
-                    for (let name of femaleFallbacks) {{
-                        bestVoice = voices.find(v => v.lang.startsWith('en-') && v.name.includes(name));
-                        if (bestVoice) break;
-                    }}
-                }}
-            }}
-            
-            // Final emergency fallback
-            if (!bestVoice) {{
-                bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
-                console.log('⚠️ Using emergency fallback voice:', bestVoice?.name);
-            }}
-           
-            if (bestVoice) {{
-                voiceUtterance_{voice_id}.voice = bestVoice;
-                console.log('Selected voice:', bestVoice.name, 'for', '{voice_type}', '{gender}');
-            }}
-           
-            // REVOLUTIONARY personality-specific voice adjustments
-            if ('{voice_type}' === 'wise') {{
-                if ('{gender}' === 'male') {{
-                    voiceUtterance_{voice_id}.rate = 0.65;  // Very slow and thoughtful
-                    voiceUtterance_{voice_id}.pitch = 0.3;  // VERY deep for wisdom
-                }} else {{
-                    voiceUtterance_{voice_id}.rate = 0.75;  // Thoughtful pace
-                    voiceUtterance_{voice_id}.pitch = 1.0;  // Balanced wisdom
-                }}
-            }} else if ('{voice_type}' === 'energetic') {{
-                if ('{gender}' === 'male') {{
-                    // SUPER ENERGETIC MALES - complete transformation
-                    voiceUtterance_{voice_id}.rate = 1.5;   // VERY fast - maximum energy
-                    voiceUtterance_{voice_id}.pitch = 0.8;  // Not too deep - youthful energy
-                    voiceUtterance_{voice_id}.volume = 1.0; // Full volume
-                    console.log('🚀 ENERGETIC MALE: Rate=1.5, Pitch=0.8 - Maximum energy!');
-                }} else {{
-                    voiceUtterance_{voice_id}.rate = 1.2;   // Fast but controlled
-                    voiceUtterance_{voice_id}.pitch = 1.5;  // High and excited
-                    voiceUtterance_{voice_id}.volume = 1.0;
-                    console.log('⚡ ENERGETIC FEMALE: Rate=1.2, Pitch=1.5');
-                }}
-            }} else if ('{voice_type}' === 'confident') {{
-                if ('{gender}' === 'male') {{
-                    voiceUtterance_{voice_id}.rate = 1.1;   // Assertive pace
-                    voiceUtterance_{voice_id}.pitch = 0.4;  // Deep and commanding
-                    voiceUtterance_{voice_id}.volume = 1.0;
-                    console.log('💪 CONFIDENT MALE: Rate=1.1, Pitch=0.4 - Deep authority');
-                }} else {{
-                    voiceUtterance_{voice_id}.rate = 1.0;   // Strong pace
-                    voiceUtterance_{voice_id}.pitch = 1.1;  // Confident but not too high
-                    voiceUtterance_{voice_id}.volume = 1.0;
-                }}
-            }} else if ('{voice_type}' === 'executive') {{
-                if ('{gender}' === 'male') {{
-                    voiceUtterance_{voice_id}.rate = 0.9;   // Measured and authoritative
-                    voiceUtterance_{voice_id}.pitch = 0.35; // Deep executive voice
-                    voiceUtterance_{voice_id}.volume = 1.0;
-                    console.log('👔 EXECUTIVE MALE: Rate=0.9, Pitch=0.35 - Deep authority');
-                }} else {{
-                    voiceUtterance_{voice_id}.rate = 0.9;   // Executive pace
-                    voiceUtterance_{voice_id}.pitch = 1.0;  // Professional female voice
-                    voiceUtterance_{voice_id}.volume = 1.0;
-                }}
-            }} else if ('{voice_type}' === 'caring') {{
-                if ('{gender}' === 'male') {{
-                    voiceUtterance_{voice_id}.rate = 0.8;   // Gentle pace
-                    voiceUtterance_{voice_id}.pitch = 0.6;  // Warmer, not too deep
-                    voiceUtterance_{voice_id}.volume = 0.9;
-                    console.log('💝 CARING MALE: Rate=0.8, Pitch=0.6 - Gentle warmth');
-                }} else {{
-                    voiceUtterance_{voice_id}.rate = 0.8;   // Gentle pace
-                    voiceUtterance_{voice_id}.pitch = 1.3;  // Warm and caring
-                    voiceUtterance_{voice_id}.volume = 0.9;
-                }}
-            }} else {{ // professional
-                if ('{gender}' === 'male') {{
-                    voiceUtterance_{voice_id}.rate = 0.85;  // Professional pace
-                    voiceUtterance_{voice_id}.pitch = 0.5;  // Professional depth
-                    voiceUtterance_{voice_id}.volume = 1.0;
-                    console.log('💼 PROFESSIONAL MALE: Rate=0.85, Pitch=0.5');
-                }} else {{
-                    voiceUtterance_{voice_id}.rate = 0.9;   // Professional pace
-                    voiceUtterance_{voice_id}.pitch = 1.1;  // Clear and professional
-                    voiceUtterance_{voice_id}.volume = 1.0;
-                }}
-            }}
-           
-            // Voice event handlers
-            voiceUtterance_{voice_id}.onstart = function() {{
-                console.log('Enhanced voice started playing:', '{voice_type}', '{gender}');
-                document.getElementById('voiceStatus_{voice_id}').innerHTML = '🎵 Playing {voice_type} {gender} voice...';
-            }};
-           
-            voiceUtterance_{voice_id}.onend = function() {{
-                console.log('Enhanced voice finished playing');
-                isPlaying_{voice_id} = false;
-                document.getElementById('voiceMessage_{voice_id}').innerHTML = '✅ Voice message completed!';
-                document.getElementById('manualPlayButton_{voice_id}').style.display = 'block';
-                document.getElementById('stopButton_{voice_id}').style.display = 'none';
-                document.getElementById('voiceStatus_{voice_id}').innerHTML = '✅ Playback completed';
-               
-                // Hide after 3 seconds
-                setTimeout(() => {{
-                    document.getElementById('voiceStatus_{voice_id}').style.display = 'none';
-                }}, 3000);
-            }};
-           
-            voiceUtterance_{voice_id}.onerror = function(event) {{
-                console.error('Enhanced voice error:', event.error);
-                isPlaying_{voice_id} = false;
-                document.getElementById('voiceMessage_{voice_id}').innerHTML = '❌ Voice playback failed';
-                document.getElementById('manualPlayButton_{voice_id}').style.display = 'block';
-                document.getElementById('stopButton_{voice_id}').style.display = 'none';
-                document.getElementById('voiceStatus_{voice_id}').innerHTML = '❌ Playback error: ' + event.error;
-            }};
-           
-            // Start speech with mobile compatibility
-            try {{
-                speechSynthesis.speak(voiceUtterance_{voice_id});
-                console.log('Enhanced voice started for {voice_type} {gender}');
-            }} catch (error) {{
-                console.error('Speech synthesis error:', error);
-                document.getElementById('voiceStatus_{voice_id}').innerHTML = '❌ Voice playback failed';
-            }}
-        }} else {{
-            document.getElementById('voiceMessage_{voice_id}').innerHTML = '❌ Voice not supported in this browser';
-            document.getElementById('voiceStatus_{voice_id}').innerHTML = 'Please use Chrome, Safari, or Edge';
-            document.getElementById('voiceStatus_{voice_id}').style.display = 'block';
-        }}
-    }}
-   
-    function playVoiceManually_{voice_id}() {{
-        console.log('Manual play triggered for enhanced mobile voice');
-        playVoiceEnhanced_{voice_id}();
-    }}
-   
-    function stopVoice_{voice_id}() {{
-        console.log('Stopping enhanced voice playback');
-        if (speechSynthesis) {{
-            speechSynthesis.cancel();
-        }}
-        isPlaying_{voice_id} = false;
-       
-        document.getElementById('voiceMessage_{voice_id}').innerHTML = '⏹️ Voice stopped';
-        document.getElementById('manualPlayButton_{voice_id}').style.display = 'block';
-        document.getElementById('stopButton_{voice_id}').style.display = 'none';
-        document.getElementById('voiceStatus_{voice_id}').innerHTML = '⏹️ Playback stopped';
-       
-        setTimeout(() => {{
-            document.getElementById('voiceStatus_{voice_id}').style.display = 'none';
-        }}, 2000);
-    }}
-   
-    // Enhanced mobile and desktop detection with better autoplay
-    console.log('Enhanced device detection - Mobile:', isMobileDevice_{voice_id});
-   
-    // MOBILE-FIRST approach with better autoplay handling
-    if (isMobileDevice_{voice_id}) {{
-        // Mobile: Try autoplay first, then show manual button
-        console.log('Mobile device detected - attempting smart autoplay');
-        document.getElementById('voiceMessage_{voice_id}').innerHTML = '📱 Starting voice for mobile device...';
-       
-        // Try autoplay after a small delay to let the page settle
-        setTimeout(() => {{
-            try {{
-                playVoiceEnhanced_{voice_id}();
-                // If autoplay works on mobile, great! If not, user can tap button
-            }} catch (error) {{
-                console.log('Mobile autoplay failed (expected), manual button available');
-                document.getElementById('voiceMessage_{voice_id}').innerHTML = '📱 Tap button to hear your coach!';
-            }}
-        }}, 500);
-       
-    }} else {{
-        // Desktop: More aggressive autoplay
-        console.log('Desktop device - attempting enhanced autoplay');
-        document.getElementById('manualPlayButton_{voice_id}').style.display = 'none';
-       
-        // Wait for voices to load, then auto-play
-        if (speechSynthesis.getVoices().length > 0) {{
-            setTimeout(playVoiceEnhanced_{voice_id}, 800);
-        }} else {{
-            speechSynthesis.onvoiceschanged = function() {{
-                setTimeout(playVoiceEnhanced_{voice_id}, 800);
-            }};
-        }}
-       
-        // Show manual button as backup if auto-play fails
-        setTimeout(() => {{
-            if (!speechSynthesis.speaking && !isPlaying_{voice_id}) {{
-                console.log('Desktop auto-play failed, showing manual button');
-                document.getElementById('manualPlayButton_{voice_id}').style.display = 'block';
-                document.getElementById('voiceMessage_{voice_id}').innerHTML = '🖥️ Click to hear your coach (autoplay was blocked)';
-            }}
-        }}, 3000);
-    }}
-    </script>
-    """
-   
-    st.components.v1.html(voice_html, height=180)
-
-def create_enhanced_elevenlabs_voice(text, api_key, voice_type, gender):
-    """Enhanced ElevenLabs voice with better voice selection and mobile support"""
-   
-    # REVOLUTIONARY Voice selection with DISTINCT voice IDs for maximum variation
-    if gender == 'male':
-        voice_configs = {
-            'professional': {
-                'voice_id': 'TxGEqnHWrfWFTfGW9XjX', 'name': 'Professional Male - Josh', 
-                'stability': 0.9, 'similarity': 0.9, 'style': 0.4
-            },
-            'confident': {
-                'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'Confident Male - Antoni', 
-                'stability': 0.8, 'similarity': 0.8, 'style': 0.7
-            },
-            'caring': {
-                'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Caring Male - Charlie', 
-                'stability': 0.9, 'similarity': 0.9, 'style': 0.3
-            },
-            'wise': {
-                'voice_id': 'onwK4e9ZLuTAKqWW03F9', 'name': 'Wise Male - Thomas', 
-                'stability': 0.95, 'similarity': 0.9, 'style': 0.2
-            },
-            'energetic': {
-                'voice_id': 'pNInz6obpgDQGcFmaJgB', 'name': 'Energetic Male - Adam', 
-                'stability': 0.5, 'similarity': 0.7, 'style': 0.9
-            },
-            'executive': {
-                'voice_id': 'Yko7PKHZNXotIFUBG7I9', 'name': 'Executive Male - Sam', 
-                'stability': 0.85, 'similarity': 0.85, 'style': 0.6
-            }
-        }
-    else:  # female
-        voice_configs = {
-            'professional': {
-                'voice_id': 'EXAVITQu4vr4xnSDxMaL', 'name': 'Professional Female - Bella', 
-                'stability': 0.9, 'similarity': 0.9, 'style': 0.4
-            },
-            'confident': {
-                'voice_id': 'ThT5KcBeYPX3keUQqHPh', 'name': 'Confident Female - Dorothy', 
-                'stability': 0.8, 'similarity': 0.8, 'style': 0.7
-            },
-            'caring': {
-                'voice_id': '21m00Tcm4TlvDq8ikWAM', 'name': 'Caring Female - Rachel', 
-                'stability': 0.9, 'similarity': 0.9, 'style': 0.3
-            },
-            'wise': {
-                'voice_id': 'XrExE9yKIg1WjnnlVkGX', 'name': 'Wise Female - Domi', 
-                'stability': 0.95, 'similarity': 0.9, 'style': 0.2
-            },
-            'energetic': {
-                'voice_id': 'AZnzlk1XvdvUeBnXmlld', 'name': 'Energetic Female - Elli', 
-                'stability': 0.4, 'similarity': 0.7, 'style': 0.9
-            },
-            'executive': {
-                'voice_id': 'SOYHLrjzK2X1ezoPC6cr', 'name': 'Executive Female - Emily', 
-                'stability': 0.85, 'similarity': 0.85, 'style': 0.6
-            }
-        }
-   
-    voice_config = voice_configs.get(voice_type, voice_configs['professional'])
-    voice_id = voice_config['voice_id']
-   
-    # Enhanced text for speech
-    clean_text = enhance_text_for_speech(text, voice_type)
-   
-    # REVOLUTIONARY speed settings for maximum personality distinction
-    speed_settings = {
-        'wise': 0.7,          # Very slow and thoughtful
-        'caring': 0.85,       # Gentle and measured
-        'professional': 1.0,  # Standard professional pace
-        'executive': 0.9,     # Authoritative and measured
-        'confident': 1.05,    # Slightly faster with confidence
-        'energetic': 1.3 if gender == 'female' else 1.5  # SUPER fast for energetic males!
-    }
-   
-    voice_speed = speed_settings.get(voice_type, 1.0)
-   
-    # Enhanced voice generation and playback with mobile support
+        settings['pitch'] = max(0.4, settings['pitch'] - 0.4)  # Much deeper for males
+    else:
+        settings['pitch'] = min(1.6, settings['pitch'] + 0.2)  # Higher for females
+    
+    # Add personality-specific pauses and emphasis (enhanced from reference)
+    if voice_type == 'wise':
+        clean_text = clean_text.replace('.', '... ')  # Thoughtful pauses
+        clean_text = clean_text.replace(',', ', ')    # More deliberate
+    elif voice_type == 'energetic':
+        clean_text = clean_text.replace('!', '! ')    # Excitement bursts
+        clean_text = clean_text.replace('.', '! ')    # Turn periods to exclamation
+    elif voice_type == 'caring':
+        clean_text = clean_text.replace('you', 'you... ')  # Gentle emphasis
+    elif voice_type == 'confident':
+        clean_text = clean_text.replace('.', '. ')    # Firm statements
+    
     voice_html = f"""
     <div style="
         padding: 15px;
-        background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
+        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
         border-radius: 15px;
-        border: 2px solid rgba(76, 175, 80, 0.3);
+        border: 1px solid rgba(138, 43, 226, 0.2);
         margin: 10px 0;
         text-align: center;
     ">
-        <div style="color: #4CAF50; font-weight: bold; margin-bottom: 10px;">
-            🎭 Premium ElevenLabs Voice: {voice_config['name']}
+        <div style="margin-bottom: 10px; color: #8A2BE2; font-weight: bold;">
+            🎭 Your coach is speaking...
         </div>
-        <div id="elevenlabsStatus" style="color: #666; font-size: 14px;">
-            🔄 Loading premium voice...
-        </div>
+        <button id="playVoiceButton" onclick="playVoiceManually()" style="
+            background: linear-gradient(135deg, #8A2BE2, #9370DB);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+            display: none;
+        ">
+            🔊 Tap to hear voice (Mobile)
+        </button>
     </div>
 
     <script>
-    async function playEnhancedElevenLabsVoice() {{
-        const statusEl = document.getElementById('elevenlabsStatus');
-        
-        try {{
-            statusEl.innerHTML = '🔄 Generating premium {voice_type} {gender} voice...';
+    let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let voiceUtterance = null;
+    
+    function playVoiceMobileFriendly() {{
+        if ('speechSynthesis' in window) {{
+            // Cancel any existing speech
+            speechSynthesis.cancel();
             
+            voiceUtterance = new SpeechSynthesisUtterance(`{clean_text}`);
+            voiceUtterance.rate = {settings['rate']};
+            voiceUtterance.pitch = {settings['pitch']};
+            voiceUtterance.volume = 1.0;
+            
+            // Gender and personality-based voice selection (enhanced)
+            const voices = speechSynthesis.getVoices();
+            let bestVoice;
+            
+            if ('{gender}' === 'male') {{
+                // Male voice selection with personality matching
+                if ('{voice_type}' === 'wise') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('daniel') ||
+                         v.name.toLowerCase().includes('alex') ||
+                         v.name.toLowerCase().includes('male'))
+                    );
+                }} else if ('{voice_type}' === 'confident' || '{voice_type}' === 'executive') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('david') ||
+                         v.name.toLowerCase().includes('mark') ||
+                         v.name.toLowerCase().includes('male'))
+                    );
+                }}
+                
+                // Fallback to any male voice
+                if (!bestVoice) {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        v.name.toLowerCase().includes('male')
+                    );
+                }}
+            }} else {{
+                // Female voice selection with personality matching  
+                if ('{voice_type}' === 'caring') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('samantha') ||
+                         v.name.toLowerCase().includes('susan') ||
+                         v.name.toLowerCase().includes('female'))
+                    );
+                }} else if ('{voice_type}' === 'energetic') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('victoria') ||
+                         v.name.toLowerCase().includes('karen') ||
+                         v.name.toLowerCase().includes('female'))
+                    );
+                }} else if ('{voice_type}' === 'professional') {{
+                    bestVoice = voices.find(v => 
+                        v.lang.startsWith('en-') && 
+                        (v.name.toLowerCase().includes('alex') ||
+                         v.name.toLowerCase().includes('female'))
+                    );
+                }}
+            }}
+            
+            // Fallback to any English voice
+            if (!bestVoice) {{
+                bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
+            }}
+            
+            if (bestVoice) {{
+                voiceUtterance.voice = bestVoice;
+                console.log('Selected voice:', bestVoice.name, 'for', '{voice_type}', '{gender}');
+            }}
+            
+            // Personality-specific speech adjustments (enhanced)
+            if ('{voice_type}' === 'wise') {{
+                voiceUtterance.rate = voiceUtterance.rate * 0.8;  // Even slower for wisdom
+            }} else if ('{voice_type}' === 'energetic') {{
+                voiceUtterance.rate = voiceUtterance.rate * 1.2;  // Even faster for energy
+                voiceUtterance.volume = 1.0;  // Full volume for excitement
+            }} else if ('{voice_type}' === 'caring') {{
+                voiceUtterance.pitch = voiceUtterance.pitch * 1.1;  // Softer, higher for caring
+            }} else if ('{voice_type}' === 'confident') {{
+                voiceUtterance.rate = voiceUtterance.rate * 1.0;
+                voiceUtterance.pitch = voiceUtterance.pitch * 0.9;  // Slightly lower for confidence
+            }} else if ('{voice_type}' === 'executive') {{
+                voiceUtterance.rate = voiceUtterance.rate * 0.95;  // Controlled pace
+                voiceUtterance.pitch = voiceUtterance.pitch * 0.85; // Authoritative tone
+            }}
+            
+            // Start speech
+            speechSynthesis.speak(voiceUtterance);
+            console.log('Voice started for {voice_type} {gender}');
+        }}
+    }}
+    
+    function playVoiceManually() {{
+        const button = document.getElementById('playVoiceButton');
+        button.style.display = 'none';
+        playVoiceMobileFriendly();
+    }}
+    
+    // Handle mobile autoplay restrictions
+    if (isMobileDevice) {{
+        // Show manual play button for mobile
+        document.getElementById('playVoiceButton').style.display = 'inline-block';
+        console.log('Mobile device detected - showing manual play button');
+    }} else {{
+        // Auto-play for desktop
+        if (speechSynthesis.getVoices().length > 0) {{
+            setTimeout(playVoiceMobileFriendly, 500);
+        }} else {{
+            speechSynthesis.onvoiceschanged = function() {{
+                setTimeout(playVoiceMobileFriendly, 500);
+            }};
+        }}
+    }}
+    
+    // Also try auto-play even on mobile (some browsers allow it)
+    setTimeout(() => {{
+        if (!isMobileDevice || speechSynthesis.speaking) {{
+            // Hide manual button if auto-play worked
+            document.getElementById('playVoiceButton').style.display = 'none';
+        }}
+    }}, 1000);
+    </script>
+    """
+    
+    st.components.v1.html(voice_html, height=120)
+
+def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
+    """Instant ElevenLabs voice with gender-matched voices"""
+    
+    # Voice selection based on gender and personality
+    if gender == 'male':
+        voice_configs = {
+            'professional': {'voice_id': 'TxGEqnHWrfWFTfGW9XjX', 'name': 'Professional Male'},
+            'confident': {'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'Confident Male'},
+            'caring': {'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Caring Male'},
+            'wise': {'voice_id': 'onwK4e9ZLuTAKqWW03F9', 'name': 'Wise Male'},
+            'energetic': {'voice_id': 'pNInz6obpgDQGcFmaJgB', 'name': 'Energetic Male'},
+            'executive': {'voice_id': 'Yko7PKHZNXotIFUBG7I9', 'name': 'Executive Male'}
+        }
+    else:  # female
+        voice_configs = {
+            'professional': {'voice_id': 'EXAVITQu4vr4xnSDxMaL', 'name': 'Professional Female'},
+            'confident': {'voice_id': 'ThT5KcBeYPX3keUQqHPh', 'name': 'Confident Female'},
+            'caring': {'voice_id': '21m00Tcm4TlvDq8ikWAM', 'name': 'Caring Female'},
+            'wise': {'voice_id': 'XrExE9yKIg1WjnnlVkGX', 'name': 'Wise Female'},
+            'energetic': {'voice_id': 'AZnzlk1XvdvUeBnXmlld', 'name': 'Energetic Female'},
+            'executive': {'voice_id': 'SOYHLrjzK2X1ezoPC6cr', 'name': 'Executive Female'}
+        }
+    
+    voice_config = voice_configs.get(voice_type, voice_configs['professional'])
+    voice_id = voice_config['voice_id']
+    
+    # Clean text for speech
+    clean_text = enhance_text_for_speech(text, voice_type)
+    
+    # Instant voice generation and playback (enhanced settings from reference)
+    voice_html = f"""
+    <script>
+    // Prevent multiple simultaneous voices
+    if (window.speechSynthesis) {{
+        window.speechSynthesis.cancel();
+    }}
+    
+    async function playInstantVoice() {{
+        try {{
             const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
                 method: 'POST',
                 headers: {{
@@ -990,245 +965,185 @@ def create_enhanced_elevenlabs_voice(text, api_key, voice_type, gender):
                 }},
                 body: JSON.stringify({{
                     text: `{clean_text}`,
-                    model_id: 'eleven_turbo_v2',
+                    model_id: 'eleven_monolingual_v1',
                     voice_settings: {{
-                        stability: {voice_config['stability']},
-                        similarity_boost: {voice_config['similarity']},
-                        style: {0.3 if voice_type == 'caring' else 0.8 if voice_type == 'energetic' else 0.5},
+                        stability: {0.9 if voice_type == 'wise' else 0.7 if voice_type == 'professional' else 0.5},
+                        similarity_boost: {0.9 if voice_type == 'professional' else 0.8 if voice_type == 'wise' else 0.6},
+                        style: {0.2 if voice_type == 'caring' else 0.8 if voice_type == 'energetic' else 0.5},
                         use_speaker_boost: {str(voice_type in ['confident', 'executive', 'energetic']).lower()},
-                        speed: {voice_speed}
+                        speed: {0.8 if voice_type == 'wise' else 1.2 if voice_type == 'energetic' else 1.0}
                     }}
                 }})
             }});
-           
+            
             if (response.ok) {{
-                statusEl.innerHTML = '🎵 Playing premium {voice_type} voice...';
-                
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 
-                // Enhanced mobile-friendly audio playback
-                audio.preload = 'auto';
-                
-                // Mobile compatibility settings
-                audio.setAttribute('playsinline', true);
-                audio.setAttribute('webkit-playsinline', true);
-                
-                const playPromise = audio.play();
-                
-                if (playPromise !== undefined) {{
-                    playPromise.then(() => {{
-                        console.log('ElevenLabs premium voice playing successfully');
-                        statusEl.innerHTML = '🎵 Premium voice playing...';
-                    }}).catch(error => {{
-                        console.log('ElevenLabs autoplay blocked, using browser TTS fallback');
-                        statusEl.innerHTML = '📱 Autoplay blocked - using browser voice fallback';
-                        enhancedFallbackToBrowserTTS();
-                    }});
-                }}
-                
-                audio.onended = () => {{
-                    statusEl.innerHTML = '✅ Premium voice completed!';
-                    setTimeout(() => {{
-                        statusEl.style.display = 'none';
-                    }}, 3000);
-                }};
-                
-                audio.onerror = () => {{
-                    statusEl.innerHTML = '❌ Audio error - using browser voice';
-                    enhancedFallbackToBrowserTTS();
-                }};
+                // Play immediately
+                audio.play().catch(e => {{
+                    console.log('Autoplay blocked, using browser TTS fallback');
+                    fallbackToBrowserTTS();
+                }});
                 
             }} else {{
-                console.log('ElevenLabs API failed, using browser TTS');
-                statusEl.innerHTML = '🔄 API limit reached - using enhanced browser voice';
-                enhancedFallbackToBrowserTTS();
+                console.log('ElevenLabs failed, using browser TTS');
+                fallbackToBrowserTTS();
             }}
         }} catch (error) {{
-            console.log('ElevenLabs error, using browser TTS:', error);
-            statusEl.innerHTML = '🔄 Using enhanced browser voice';
-            enhancedFallbackToBrowserTTS();
+            console.log('Voice error, using browser TTS');
+            fallbackToBrowserTTS();
         }}
     }}
-   
-    function enhancedFallbackToBrowserTTS() {{
+    
+    function fallbackToBrowserTTS() {{
         if ('speechSynthesis' in window) {{
-            speechSynthesis.cancel();
-           
+            window.speechSynthesis.cancel(); // Stop any existing speech
+            
             const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
-           
+            
             // Enhanced personality-specific settings for fallback
             if ('{voice_type}' === 'wise') {{
-                utterance.rate = 0.7;
-                utterance.pitch = {0.4 if gender == 'male' else 0.8};
+                utterance.rate = 0.6;
+                utterance.pitch = {0.5 if gender == 'male' else 0.8};
             }} else if ('{voice_type}' === 'energetic') {{
-                utterance.rate = {1.3 if gender == 'male' else 1.1};  // FIXED: Faster for energetic males
-                utterance.pitch = {0.7 if gender == 'male' else 1.4};
+                utterance.rate = 1.3;
+                utterance.pitch = {0.7 if gender == 'male' else 1.5};
             }} else if ('{voice_type}' === 'caring') {{
-                utterance.rate = 0.8;
+                utterance.rate = 0.75;
                 utterance.pitch = {0.6 if gender == 'male' else 1.3};
             }} else if ('{voice_type}' === 'confident') {{
                 utterance.rate = 1.0;
                 utterance.pitch = {0.4 if gender == 'male' else 0.9};
             }} else if ('{voice_type}' === 'professional') {{
-                utterance.rate = 0.9;
+                utterance.rate = 0.85;
                 utterance.pitch = {0.6 if gender == 'male' else 1.0};
+            }} else if ('{voice_type}' === 'executive') {{
+                utterance.rate = 0.9;
+                utterance.pitch = {0.5 if gender == 'male' else 0.85};
             }} else {{
                 utterance.rate = 0.9;
                 utterance.pitch = {0.6 if gender == 'male' else 1.0};
             }}
-           
+            
             utterance.volume = 1.0;
-           
-            // Enhanced voice selection for fallback
+            
+            // Enhanced gender-based voice selection for fallback
             const voices = speechSynthesis.getVoices();
-            let bestVoice = null;
-           
+            let bestVoice;
+            
             if ('{gender}' === 'male') {{
-                bestVoice = voices.find(v =>
-                    v.lang.startsWith('en-') &&
-                    (v.name.toLowerCase().includes('male') ||
+                bestVoice = voices.find(v => 
+                    v.lang.startsWith('en-') && 
+                    (v.name.toLowerCase().includes('male') || 
                      v.name.toLowerCase().includes('david') ||
-                     v.name.toLowerCase().includes('daniel') ||
-                     v.name.toLowerCase().includes('alex'))
+                     v.name.toLowerCase().includes('mark'))
                 );
             }} else {{
-                bestVoice = voices.find(v =>
-                    v.lang.startsWith('en-') &&
-                    (v.name.toLowerCase().includes('female') ||
-                     v.name.toLowerCase().includes('samantha') ||
-                     v.name.toLowerCase().includes('victoria'))
+                bestVoice = voices.find(v => 
+                    v.lang.startsWith('en-') && 
+                    (v.name.toLowerCase().includes('female') || 
+                     v.name.toLowerCase().includes('samantha'))
                 );
             }}
-           
+            
             if (!bestVoice) {{
                 bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
             }}
-           
-            if (bestVoice) utterance.voice = bestVoice;
-           
-            speechSynthesis.speak(utterance);
             
-            utterance.onend = () => {{
-                document.getElementById('elevenlabsStatus').innerHTML = '✅ Browser voice completed!';
-            }};
+            if (bestVoice) utterance.voice = bestVoice;
+            
+            speechSynthesis.speak(utterance);
         }}
     }}
-   
-    // Start enhanced voice immediately
-    if (speechSynthesis.getVoices().length > 0) {{
-        setTimeout(playEnhancedElevenLabsVoice, 500);
-    }} else {{
-        speechSynthesis.onvoiceschanged = () => {{
-            setTimeout(playEnhancedElevenLabsVoice, 500);
-        }};
-    }}
+    
+    // Start playing immediately
+    playInstantVoice();
     </script>
     """
-   
-    st.components.v1.html(voice_html, height=80)
+    
+    st.components.v1.html(voice_html, height=0)
 
 def enhance_text_for_speech(text, voice_type):
-    """REVOLUTIONARY text processing for DRAMATICALLY distinct personality voices"""
-   
+    """Make text MUCH more distinct for each personality type (enhanced from reference)"""
+    
     # Remove markdown and clean
     text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
     text = re.sub(r'\*(.*?)\*', r'\1', text)
     text = re.sub(r'#{1,6}\s', '', text)
     text = text.replace('\n', ' ').strip()
-   
-    # REVOLUTIONARY personality-based speech modifications
+    
+    # DRAMATIC personality-based enhancements (enhanced from reference code)
     if voice_type == 'caring':
         # Gentle, nurturing speech patterns
-        text = re.sub(r'\byou\b', 'you, my dear friend', text, flags=re.IGNORECASE, count=1)
-        text = re.sub(r'\.', '. Please take all the time you need with this.', text, count=1)
+        text = re.sub(r'\byou\b', 'you, dear', text, flags=re.IGNORECASE, count=1)
+        text = re.sub(r'\.', '. Take your time with this.', text, count=1)
+        text = re.sub(r'!', '. This is wonderful!', text)
         text = text.replace(' can ', ' absolutely can ')
         text = text.replace(' will ', ' will surely ')
-        text = text.replace(' are ', ' are truly ')
-        text = text.replace(' success', ' wonderful success')
-       
+        
     elif voice_type == 'energetic':
-        # MAXIMUM ENERGY speech - completely different for males vs females
-        text = re.sub(r'\bgreat\b', 'absolutely INCREDIBLE', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bgood\b', 'FANTASTIC and AMAZING', text, flags=re.IGNORECASE)
-        text = re.sub(r'\byes\b', 'YES! Absolutely YES!', text, flags=re.IGNORECASE)
-        text = re.sub(r'\.', '! This is SO exciting!', text, count=1)
-        text = text.replace(' can ', ' can TOTALLY and COMPLETELY ')
-        text = text.replace(' will ', ' will DEFINITELY and ABSOLUTELY ')
-        text = text.replace(' success', ' INCREDIBLE SUCCESS')
-        text = 'WOW! Listen to this! ' + text + ' I am SO PUMPED and ENERGIZED about this! This is going to be AMAZING!'
-       
+        # Excited, fast, motivational speech
+        text = re.sub(r'\bgreat\b', 'absolutely AMAZING', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bgood\b', 'fantastic', text, flags=re.IGNORECASE)
+        text = re.sub(r'\.', '! Let\'s do this!', text, count=1)
+        text = re.sub(r'\byes\b', 'YES! Absolutely!', text, flags=re.IGNORECASE)
+        text = text.replace(' can ', ' can totally ')
+        text = text.replace(' will ', ' will definitely ')
+        text += ' I\'m SO excited for you!'
+        
     elif voice_type == 'wise':
-        # Deep, thoughtful, philosophical speech
-        text = re.sub(r'\bremember\b', 'always keep in your mind', text, flags=re.IGNORECASE)
-        text = re.sub(r'\.', '... Think deeply and carefully about this wisdom.', text, count=1)
-        text = re.sub(r'\bthink\b', 'reflect deeply and thoughtfully', text, flags=re.IGNORECASE)
-        text = 'Hmm... Let me share some deep wisdom with you. ' + text + ' Consider this carefully, my friend.'
-        text = text.replace(' is ', ' truly and deeply is ')
-        text = text.replace(' can ', ' may indeed and wisely ')
-        text = text.replace(' success', ' profound success')
-       
+        # Slow, thoughtful, philosophical speech
+        text = re.sub(r'\bremember\b', 'always keep in mind', text, flags=re.IGNORECASE)
+        text = re.sub(r'\.', '... Consider this carefully.', text, count=1)
+        text = re.sub(r'\bthink\b', 'reflect deeply', text, flags=re.IGNORECASE)
+        text = 'Hmm... ' + text
+        text = text.replace(' is ', ' truly is ')
+        text = text.replace(' can ', ' may indeed ')
+        
     elif voice_type == 'professional':
-        # Clear, direct, business-focused speech
-        text = re.sub(r'\.', '. Let me be absolutely clear and direct about this point.', text, count=1)
-        text = re.sub(r'\bI think\b', 'Based on my comprehensive professional analysis', text, flags=re.IGNORECASE)
-        text = text.replace(' should ', ' must strategically and professionally ')
+        # Clear, direct, business-like speech
+        text = re.sub(r'\.', '. Let me be clear on this point.', text, count=1)
+        text = re.sub(r'\bI think\b', 'Based on my analysis', text, flags=re.IGNORECASE)
+        text = text.replace(' should ', ' must strategically ')
         text = text.replace(' can ', ' should systematically ')
-        text = text.replace(' success', ' professional success')
-        text = 'From a professional business standpoint: ' + text
-       
+        
     elif voice_type == 'confident':
-        # Strong, assertive, powerful speech - MORE aggressive for males
-        text = re.sub(r'\.', '. I am completely and totally certain about this.', text, count=1)
-        text = re.sub(r'\bI believe\b', 'I KNOW with absolute certainty', text, flags=re.IGNORECASE)
-        text = text.replace(' might ', ' WILL absolutely ')
-        text = text.replace(' could ', ' WILL definitely ')
-        text = text.replace(' maybe ', ' DEFINITELY ')
-        text = text.replace(' success', ' POWERFUL SUCCESS')
-        text = 'Listen to me very carefully: ' + text + ' Trust me completely on this! I am absolutely confident!'
-       
+        # Strong, assertive, powerful speech
+        text = re.sub(r'\.', '. I\'m absolutely certain of this.', text, count=1)
+        text = re.sub(r'\bI believe\b', 'I KNOW', text, flags=re.IGNORECASE)
+        text = text.replace(' might ', ' WILL ')
+        text = text.replace(' could ', ' WILL ')
+        text = 'Listen up! ' + text
+        
     elif voice_type == 'executive':
         # Authoritative, commanding, leadership speech
-        text = re.sub(r'\.', '. This is exactly what top-level executives and leaders do.', text, count=1)
-        text = text.replace(' need to ', ' must immediately and decisively ')
-        text = text.replace(' should ', ' will strategically execute ')
-        text = text.replace(' success', ' executive-level success')
-        text = 'Here is the strategic executive approach: ' + text + ' Execute this plan immediately and decisively.'
-   
-    # Add personality-specific speech patterns with dramatic pauses
-    if voice_type == 'wise':
-        text = re.sub(r'([.!?])', r'\1... ', text)  # Very long pauses for deep wisdom
-        text = re.sub(r'([,:])', r'\1... ', text)   # Thoughtful pauses even for commas
-    elif voice_type == 'energetic':
-        text = re.sub(r'([.!?])', r'\1 ', text)     # Quick bursts for energy
-        text = re.sub(r'([,:])', r'\1 ', text)      # Fast-paced speech
-    elif voice_type == 'confident':
-        text = re.sub(r'([.!?])', r'\1 ', text)     # Assertive pauses
-        text = re.sub(r'([,:])', r'\1 ', text)      # Strong delivery
-    elif voice_type == 'executive':
-        text = re.sub(r'([.!?])', r'\1 ', text)     # Commanding pauses
-        text = re.sub(r'([,:])', r'\1 ', text)      # Authoritative delivery
-    else:
-        text = re.sub(r'([.!?])', r'\1 ', text)     # Normal pauses
-        text = re.sub(r'([,:])', r'\1 ', text)
-   
+        text = re.sub(r'\.', '. This is exactly what successful leaders do.', text, count=1)
+        text = re.sub(r'\bwe should\b', 'we MUST execute', text, flags=re.IGNORECASE)
+        text = text.replace(' need to ', ' must immediately ')
+        text = 'Here\'s the strategic approach: ' + text
+    
+    # Add natural speech patterns with MORE dramatic pauses
+    text = re.sub(r'([.!?])', r'\1 ', text)
+    text = re.sub(r'([,:])', r'\1 ', text)
+    
     # Escape for JavaScript
     text = text.replace('"', '\\"').replace("'", "\\'")
     text = re.sub(r'\s+', ' ', text)
-   
+    
     return text.strip()
 
 # Load coaching knowledge base
 def load_coaching_knowledge():
     return """
-    You are a professional success and wealth coach with a warm, human personality.
-   
+    You are a professional success and wealth coach with a warm, human personality. 
+    
     CORE PRINCIPLES:
     - Success requires daily disciplined actions and consistent learning
     - True wealth encompasses money, time, purpose, and freedom
     - Focus on actionable strategies and practical steps
-   
+    
     COACHING STYLE:
     - Be conversational and natural, like a real human coach
     - Ask thoughtful questions to understand the client
@@ -1242,32 +1157,32 @@ def load_coaching_knowledge():
 def get_coach_response(user_input, chat_history):
     try:
         model, model_name = setup_gemini()
-       
+        
         # Get user profile
         profile = st.session_state.user_profile
         name = profile.get('name', 'there')
         voice_type = profile.get('voice_type', 'caring')
         goals = profile.get('goals', 'general success')
-       
+        
         # Build conversational context
         context = f"""You are a {voice_type} success coach speaking to {name}.
         Their goals: {goals}
-       
+        
         Recent conversation:"""
-       
+        
         # Add recent messages
         for msg in chat_history[-3:]:
             role = "Coach" if msg['role'] == 'coach' else name
             context += f"\n{role}: {msg['content']}"
-       
+        
         context += f"\n{name}: {user_input}"
-       
+        
         # Natural coaching prompt
         prompt = f"""{context}
-       
-        Respond as a {voice_type} human coach. Be natural, conversational, and helpful.
+        
+        Respond as a {voice_type} human coach. Be natural, conversational, and helpful. 
         Keep it under 80 words and ask a follow-up question to continue the conversation."""
-       
+        
         response = model.generate_content(
             prompt,
             generation_config={
@@ -1276,91 +1191,52 @@ def get_coach_response(user_input, chat_history):
                 'top_p': 0.9
             }
         )
-       
+        
         if response and response.text:
             return response.text.strip()
         else:
             return f"I'm here to help you, {name}. What's on your mind today?"
-           
+            
     except Exception as e:
         name = st.session_state.user_profile.get('name', 'there')
         return f"I'm still here for you, {name}. Could you share that with me again?"
 
-# FIXED Voice Note Processing - Direct Integration
-def process_voice_message_directly(voice_input):
-    """FIXED: Process voice message and add directly to conversation"""
-    if not voice_input or not voice_input.strip():
-        return False
-   
-    try:
-        # Clean the voice input
-        voice_text = voice_input.strip()
-        
-        # Reset voice flag for new conversation
-        st.session_state.voice_played = False
-       
-        # Add user voice message to conversation history
-        st.session_state.chat_history.append({
-            'role': 'user',
-            'content': voice_text,
-            'timestamp': datetime.now()
-        })
-       
-        # Get coach response immediately
-        coach_response = get_coach_response(voice_text, st.session_state.chat_history)
-       
-        # Add coach response to conversation
-        st.session_state.chat_history.append({
-            'role': 'coach',
-            'content': coach_response,
-            'timestamp': datetime.now()
-        })
-       
-        # Enable voice response from coach
-        st.session_state.is_speaking = True
-        
-        return True
-        
-    except Exception as e:
-        st.error(f"Voice processing error: {str(e)}")
-        return False
-
 # Chat interface
 def chat_interface():
     st.markdown("### 💬 Conversation")
-   
+    
     chat_container = st.container()
     with chat_container:
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-       
+        
         for message in st.session_state.chat_history:
             if message['role'] == 'user':
                 st.markdown(f'<div class="user-message">{message["content"]}</div>', unsafe_allow_html=True)
             else:
                 st.markdown(f'<div class="coach-message">{message["content"]}</div>', unsafe_allow_html=True)
-       
+        
         st.markdown('</div>', unsafe_allow_html=True)
 
 # Enhanced user profile sidebar
 def user_profile_sidebar():
     with st.sidebar:
         st.header("👤 Your Coach Settings")
-       
+        
         # Basic info
         name = st.text_input("Your Name", value=st.session_state.user_profile.get('name', ''))
         goals = st.text_area("Your Goals", value=st.session_state.user_profile.get('goals', ''))
-       
+        
         # Enhanced avatar choices
         st.subheader("🎭 Choose Your AI Coach")
         avatar_options = {
             "sophia": "👩‍💼 Sophia - Professional Female Coach",
-            "marcus": "👨‍💼 Marcus - Business Male Mentor",
+            "marcus": "👨‍💼 Marcus - Business Male Mentor", 
             "elena": "👩‍⚕️ Elena - Caring Female Guide",
             "david": "👨‍🎓 David - Wise Male Advisor",
             "maya": "👩‍🏫 Maya - Energetic Female Coach",
             "james": "👨‍💻 James - Executive Male Coach"
         }
-       
+        
         avatar_choice = st.selectbox(
             "Select Your Coach Avatar",
             options=list(avatar_options.keys()),
@@ -1369,8 +1245,8 @@ def user_profile_sidebar():
                 st.session_state.user_profile.get('avatar', 'sophia')
             )
         )
-       
-        # Voice personality
+        
+        # Voice personality (enhanced options from reference)
         st.subheader("🎤 Voice Style")
         voice_type = st.selectbox(
             "Coach Personality",
@@ -1380,14 +1256,14 @@ def user_profile_sidebar():
             ),
             format_func=lambda x: {
                 'caring': '💝 Caring & Supportive',
-                'professional': '💼 Professional & Direct',
+                'professional': '💼 Professional & Direct', 
                 'energetic': '⚡ Energetic & Motivating',
                 'wise': '🧙‍♂️ Wise & Thoughtful',
-                'confident': '💪 Confident & Strong',
+                'confident': '💪 Confident & Assertive',
                 'executive': '👔 Executive & Authoritative'
             }[x]
         )
-       
+        
         # Save profile
         if st.button("💾 Save Settings", type="primary"):
             st.session_state.user_profile = {
@@ -1401,73 +1277,144 @@ def user_profile_sidebar():
             st.success("✅ Settings saved!")
             st.rerun()
 
-# Main app
+# Process voice input from URL parameters
+def process_voice_input():
+    """Process voice input from URL parameters"""
+    if 'voice_input' in st.query_params and 'timestamp' in st.query_params:
+        voice_message = st.query_params['voice_input']
+        timestamp = st.query_params['timestamp']
+        
+        # Clear the parameters immediately to prevent reprocessing
+        del st.query_params['voice_input']
+        del st.query_params['timestamp']
+        
+        if voice_message.strip():
+            # Reset voice flag for new conversation
+            st.session_state.voice_played = False
+            
+            # Add user message to conversation
+            st.session_state.chat_history.append({
+                'role': 'user',
+                'content': voice_message.strip(),
+                'timestamp': datetime.now()
+            })
+            
+            # Get coach response
+            with st.spinner("Your coach is responding to your voice message..."):
+                coach_response = get_coach_response(voice_message, st.session_state.chat_history)
+            
+            # Add coach response to conversation
+            st.session_state.chat_history.append({
+                'role': 'coach',
+                'content': coach_response,
+                'timestamp': datetime.now()
+            })
+            
+            # Enable voice response
+            st.session_state.is_speaking = True
+            
+            # Show success message
+            st.success(f"🎤 Voice message processed: \"{voice_message}\"")
+            
+            # Force rerun to show the updated conversation
+            st.rerun()
+
 def main():
     load_css()
     init_session_state()
-   
+    
+    # Check for voice messages from sessionStorage FIRST
+    voice_check_script = """
+    <script>
+    const voiceMessage = sessionStorage.getItem('streamlit_voice_message');
+    if (voiceMessage) {
+        try {
+            const data = JSON.parse(voiceMessage);
+            if (data.message) {
+                console.log('Processing voice message:', data.message);
+                // Clear the storage
+                sessionStorage.removeItem('streamlit_voice_message');
+                // Set URL parameter to trigger processing
+                const url = new URL(window.location.href);
+                url.searchParams.set('voice_input', encodeURIComponent(data.message));
+                url.searchParams.set('timestamp', data.timestamp.toString());
+                window.location.href = url.toString();
+            }
+        } catch (error) {
+            console.error('Error processing voice message:', error);
+            sessionStorage.removeItem('streamlit_voice_message');
+        }
+    }
+    </script>
+    """
+    
+    st.components.v1.html(voice_check_script, height=0)
+    
+    # Process voice input AFTER checking storage
+    process_voice_input()
+    
     # Reset voice played flag on new interaction
     if 'last_chat_length' not in st.session_state:
         st.session_state.last_chat_length = 0
-   
+    
     current_chat_length = len(st.session_state.chat_history)
     if current_chat_length > st.session_state.last_chat_length:
         st.session_state.voice_played = False
         st.session_state.last_chat_length = current_chat_length
-   
+    
     # Header
     st.markdown("""
     <div class="main-header">
         <h1>🎯 Avatar Success Coach</h1>
-        <p>Your AI-powered success mentor with enhanced talking avatars</p>
+        <p>Your AI-powered success mentor with instant talking avatars</p>
     </div>
     """, unsafe_allow_html=True)
-   
+    
     # Sidebar
     user_profile_sidebar()
-   
+    
     # Show greeting for new users
     if st.session_state.user_profile and not st.session_state.chat_history:
         name = st.session_state.user_profile.get('name', 'there')
         avatar = st.session_state.user_profile.get('avatar', 'sophia')
-       
+        
         greeting = f"Hello {name}! I'm {avatar.title()}, your personal success coach. I'm here to help you achieve your wealth and success goals. What would you like to work on today?"
-       
+        
         st.session_state.chat_history.append({
             'role': 'coach',
             'content': greeting,
             'timestamp': datetime.now()
         })
         st.session_state.is_speaking = True
-   
+    
     # Main layout
     col1, col2 = st.columns([1, 2])
-   
+    
     with col1:
         # Fixed avatar display
         avatar_component(st.session_state.is_speaking)
-       
+        
         # ONLY play voice for NEW coach messages
-        if (st.session_state.chat_history and
-            st.session_state.chat_history[-1]['role'] == 'coach' and
-            st.session_state.is_speaking and
+        if (st.session_state.chat_history and 
+            st.session_state.chat_history[-1]['role'] == 'coach' and 
+            st.session_state.is_speaking and 
             not st.session_state.voice_played):
-           
+            
             latest_response = st.session_state.chat_history[-1]['content']
             voice_type = st.session_state.user_profile.get('voice_type', 'professional')
             natural_voice_component(latest_response, voice_type)
-       
+        
         # Reset speaking state after voice plays
         if st.session_state.is_speaking:
             st.session_state.is_speaking = False
-   
+    
     with col2:
         # Chat interface
         chat_interface()
-       
+        
         # Regular text input form
         st.markdown("### ✍️ Send Message")
-       
+        
         with st.form("message_form", clear_on_submit=True):
             user_input = st.text_area(
                 "Type your message:",
@@ -1475,363 +1422,42 @@ def main():
                 placeholder="Ask about your goals, challenges, or anything related to success...",
                 key="user_text_input"
             )
-           
+            
             submitted = st.form_submit_button("Send", type="primary")
-           
+            
             if submitted and user_input.strip():
                 # Reset voice flag for new conversation
                 st.session_state.voice_played = False
-               
+                
                 # Add user message
                 st.session_state.chat_history.append({
                     'role': 'user',
                     'content': user_input,
                     'timestamp': datetime.now()
                 })
-               
+                
                 # Get coach response
                 with st.spinner("Your coach is thinking..."):
                     coach_response = get_coach_response(user_input, st.session_state.chat_history)
-               
+                
                 # Add coach response
                 st.session_state.chat_history.append({
                     'role': 'coach',
                     'content': coach_response,
                     'timestamp': datetime.now()
                 })
-               
+                
                 st.session_state.is_speaking = True
                 st.rerun()
-       
-        # FIXED Voice recording section with DIRECT message processing
+        
+        # Voice recording section
         st.markdown("---")
         st.markdown("### 🎤 Voice Message")
-       
-        # FIXED voice note processing - check for voice input FIRST
-        voice_processed = False
+        st.info("💡 **BIG BUTTON:** Click to record → speak your message → automatically stops when you finish → click send!")
         
-        # Check for voice message parameters (multiple methods for compatibility)
-        voice_params_to_check = [
-            'voice_direct_send',
-            'auto_voice_message', 
-            'voice_message',
-            'voice_input_processed'
-        ]
+        # Big button auto-detecting voice recorder
+        enhanced_voice_recorder()
         
-        for param in voice_params_to_check:
-            if param in st.query_params:
-                voice_message = st.query_params[param]
-                # Clear the parameter immediately
-                del st.query_params[param]
-                
-                if voice_message and voice_message.strip():
-                    st.success(f"🎤 Voice Message Received: \"{voice_message}\"")
-                    
-                    # Process the voice message directly
-                    if process_voice_message_directly(voice_message):
-                        st.balloons()  # Show success animation
-                        time.sleep(0.5)  # Brief pause
-                        st.rerun()  # Refresh to show updated conversation
-                    
-                    voice_processed = True
-                    break
-       
-        # Enhanced voice recording interface - FIXED for mobile
-        voice_section_html = f"""
-        <div style="
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
-            border-radius: 20px;
-            border: 2px solid rgba(138, 43, 226, 0.2);
-            margin: 10px 0;
-        ">
-            <!-- Voice Status Area (LEFT) -->
-            <div id="voiceStatusArea" style="
-                flex-grow: 1;
-                padding: 10px 15px;
-                background: white;
-                border-radius: 15px;
-                border: 1px solid #ddd;
-                min-height: 50px;
-                display: flex;
-                align-items: center;
-            ">
-                <div id="voiceStatus" style="
-                    color: #8A2BE2;
-                    font-weight: bold;
-                    font-size: 14px;
-                ">
-                    🎤 Tap to start recording, tap again to stop and send
-                </div>
-            </div>
-           
-            <!-- Voice Button (RIGHT SIDE) -->
-            <button id="tapVoiceButton"
-                    onclick="handleVoiceTap()"
-                    style="
-                        background: linear-gradient(135deg, #8A2BE2, #9370DB);
-                        border: none;
-                        border-radius: 50%;
-                        width: 70px;
-                        height: 70px;
-                        color: white;
-                        font-size: 28px;
-                        cursor: pointer;
-                        box-shadow: 0 4px 20px rgba(138, 43, 226, 0.4);
-                        transition: all 0.3s ease;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        user-select: none;
-                        -webkit-user-select: none;
-                        flex-shrink: 0;
-                    "
-                    onmouseover="this.style.transform='scale(1.05)'"
-                    onmouseout="this.style.transform='scale(1)'">
-                🎤
-            </button>
-        </div>
-       
-        <!-- Voice Waveform Animation -->
-        <div id="voiceWaveform" style="
-            display: none;
-            justify-content: center;
-            align-items: center;
-            gap: 4px;
-            margin: 15px 0;
-            padding: 20px;
-            background: rgba(138, 43, 226, 0.1);
-            border-radius: 15px;
-        ">
-            <div class="wave-bar" style="width: 5px; height: 25px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite;"></div>
-            <div class="wave-bar" style="width: 5px; height: 25px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; animation-delay: 0.1s;"></div>
-            <div class="wave-bar" style="width: 5px; height: 25px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; animation-delay: 0.2s;"></div>
-            <div class="wave-bar" style="width: 5px; height: 25px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; animation-delay: 0.3s;"></div>
-            <div class="wave-bar" style="width: 5px; height: 25px; background: linear-gradient(135deg, #8A2BE2, #9370DB); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; animation-delay: 0.4s;"></div>
-        </div>
-
-        <script>
-        // FIXED TAP-TO-RECORD VOICE SYSTEM with DIRECT message sending
-        let tapRecognition;
-        let tapRecordingActive = false;
-        let tapVoiceTranscript = '';
-        let tapButtonState = 'ready'; // 'ready', 'recording', 'processing'
-       
-        console.log('🎤 FIXED Voice System Loading...');
-       
-        // Enhanced CSS animations
-        const tapStyle = document.createElement('style');
-        tapStyle.textContent = `
-            @keyframes wave {{
-                0%, 100% {{ height: 25px; }}
-                50% {{ height: 45px; }}
-            }}
-            .tap-recording {{
-                background: linear-gradient(135deg, #ff4757, #ff3742) !important;
-                animation: tap-pulse-record 1s ease-in-out infinite !important;
-                transform: scale(1.1) !important;
-            }}
-            .tap-processing {{
-                background: linear-gradient(135deg, #4CAF50, #45a049) !important;
-                animation: tap-pulse-process 1s ease-in-out infinite !important;
-                transform: scale(1.05) !important;
-            }}
-            @keyframes tap-pulse-record {{
-                0% {{ box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4); }}
-                50% {{ box-shadow: 0 6px 30px rgba(255, 71, 87, 0.8); }}
-                100% {{ box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4); }}
-            }}
-            @keyframes tap-pulse-process {{
-                0% {{ box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4); }}
-                50% {{ box-shadow: 0 6px 30px rgba(76, 175, 80, 0.8); }}
-                100% {{ box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4); }}
-            }}
-        `;
-        document.head.appendChild(tapStyle);
-       
-        // ENHANCED Speech Recognition Setup
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {{
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            tapRecognition = new SpeechRecognition();
-           
-            // Optimized settings for better accuracy
-            tapRecognition.continuous = false;
-            tapRecognition.interimResults = true;
-            tapRecognition.maxAlternatives = 3;  // More alternatives for better accuracy
-            tapRecognition.lang = 'en-US';
-           
-            tapRecognition.onstart = function() {{
-                console.log('✅ Enhanced recording started');
-                document.getElementById('voiceStatus').innerHTML = '🔴 Recording... Speak clearly, then tap STOP';
-                document.getElementById('voiceWaveform').style.display = 'flex';
-                tapVoiceTranscript = '';
-            }};
-           
-            tapRecognition.onresult = function(event) {{
-                let currentTranscript = '';
-                let finalTranscript = '';
-               
-                for (let i = event.resultIndex; i < event.results.length; i++) {{
-                    const transcript = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {{
-                        finalTranscript += transcript + ' ';
-                    }} else {{
-                        currentTranscript += transcript;
-                    }}
-                }}
-               
-                // Update running transcript
-                if (finalTranscript) {{
-                    tapVoiceTranscript += finalTranscript;
-                }}
-               
-                const displayText = (tapVoiceTranscript + currentTranscript).trim();
-                if (displayText) {{
-                    document.getElementById('voiceStatus').innerHTML = '📝 Heard: "' + displayText + '"';
-                }}
-            }};
-           
-            tapRecognition.onend = function() {{
-                console.log('🛑 Recording ended. Final transcript:', tapVoiceTranscript.trim());
-               
-                if (tapVoiceTranscript.trim()) {{
-                    // FIXED: Send the message DIRECTLY to conversation
-                    sendVoiceMessageToConversation(tapVoiceTranscript.trim());
-                }} else {{
-                    document.getElementById('voiceStatus').innerHTML = '❌ No speech detected. Try again.';
-                    tapResetButton();
-                }}
-            }};
-           
-            tapRecognition.onerror = function(event) {{
-                console.error('Recognition error:', event.error);
-                let errorMsg = '❌ Error: ';
-                
-                switch(event.error) {{
-                    case 'no-speech':
-                        errorMsg += 'No speech detected. Speak louder!';
-                        break;
-                    case 'audio-capture':
-                        errorMsg += 'Microphone not available.';
-                        break;
-                    case 'not-allowed':
-                        errorMsg += 'Microphone permission denied.';
-                        break;
-                    default:
-                        errorMsg += event.error;
-                }}
-               
-                document.getElementById('voiceStatus').innerHTML = errorMsg;
-                setTimeout(tapResetButton, 3000);
-            }};
-           
-        }} else {{
-            document.getElementById('voiceStatus').innerHTML = '❌ Voice recording not supported. Use Chrome/Edge browser.';
-        }}
-
-        // Main tap handler
-        function handleVoiceTap() {{
-            console.log('🖱️ Voice button tapped. State:', tapButtonState);
-           
-            if (tapButtonState === 'ready') {{
-                tapStartRecording();
-            }} else if (tapButtonState === 'recording') {{
-                tapStopRecording();
-            }}
-        }}
-
-        function tapStartRecording() {{
-            console.log('▶️ Starting voice recording');
-           
-            tapButtonState = 'recording';
-            tapRecordingActive = true;
-           
-            const button = document.getElementById('tapVoiceButton');
-            button.classList.add('tap-recording');
-            button.innerHTML = '⏹️';
-           
-            document.getElementById('voiceStatus').innerHTML = '🔴 Recording... Speak now, then tap STOP';
-            document.getElementById('voiceWaveform').style.display = 'flex';
-           
-            if (tapRecognition) {{
-                try {{
-                    tapVoiceTranscript = '';
-                    tapRecognition.start();
-                }} catch (error) {{
-                    console.error('Failed to start recording:', error);
-                    document.getElementById('voiceStatus').innerHTML = '❌ Failed to start recording';
-                    tapResetButton();
-                }}
-            }}
-        }}
-
-        function tapStopRecording() {{
-            console.log('⏹️ Stopping voice recording');
-           
-            tapButtonState = 'processing';
-            tapRecordingActive = false;
-           
-            const button = document.getElementById('tapVoiceButton');
-            button.classList.remove('tap-recording');
-            button.classList.add('tap-processing');
-            button.innerHTML = '⏳';
-           
-            document.getElementById('voiceStatus').innerHTML = '⏳ Processing and sending your message...';
-           
-            if (tapRecognition) {{
-                tapRecognition.stop();
-            }}
-        }}
-
-        // FIXED: Send voice message DIRECTLY to conversation
-        function sendVoiceMessageToConversation(message) {{
-            console.log('🚀 FIXED: Sending voice message directly:', message);
-           
-            document.getElementById('voiceStatus').innerHTML = '🚀 Sending: "' + message + '"';
-           
-            // MULTIPLE methods to ensure message gets through
-            const currentUrl = new URL(window.location.href);
-           
-            // Clear existing parameters
-            ['voice_direct_send', 'auto_voice_message', 'voice_message', 'voice_input_processed'].forEach(param => {{
-                currentUrl.searchParams.delete(param);
-            }});
-           
-            // Method 1: Direct send (primary)
-            currentUrl.searchParams.set('voice_direct_send', encodeURIComponent(message.trim()));
-            currentUrl.searchParams.set('voice_timestamp', Date.now().toString());
-           
-            console.log('🔄 FIXED: Redirecting to process voice message');
-            console.log('📝 Message:', message.trim());
-           
-            // Immediate redirect for reliable processing
-            window.location.href = currentUrl.toString();
-        }}
-
-        function tapResetButton() {{
-            console.log('🔄 Resetting voice button');
-           
-            tapButtonState = 'ready';
-            tapRecordingActive = false;
-            tapVoiceTranscript = '';
-           
-            const button = document.getElementById('tapVoiceButton');
-            button.classList.remove('tap-recording', 'tap-processing');
-            button.innerHTML = '🎤';
-           
-            document.getElementById('voiceStatus').innerHTML = '🎤 Tap to start recording, tap again to stop and send';
-            document.getElementById('voiceWaveform').style.display = 'none';
-        }}
-       
-        console.log('✅ FIXED Voice System Ready!');
-        </script>
-        """
-       
-        st.components.v1.html(voice_section_html, height=200)
-       
         # Clear chat
         if st.button("🗑️ Clear Chat"):
             st.session_state.chat_history = []
