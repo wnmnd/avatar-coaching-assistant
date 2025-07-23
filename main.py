@@ -942,7 +942,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                 utterance.rate = 0.6;
                 utterance.pitch = {0.5 if gender == 'male' else 0.8};
             }} else if ('{voice_type}' === 'energetic') {{
-                utterance.rate = 1.3;
+                utterance.rate = 1.1;
                 utterance.pitch = {0.7 if gender == 'male' else 1.5};
             }} else if ('{voice_type}' === 'caring') {{
                 utterance.rate = 0.75;
@@ -1007,7 +1007,7 @@ def create_instant_browser_voice(text, voice_type, gender):
         'confident': {'rate': 1.1, 'pitch': 0.8, 'emphasis': 'strong'},
         'caring': {'rate': 0.75, 'pitch': 1.3, 'emphasis': 'gentle'},
         'wise': {'rate': 0.65, 'pitch': 0.7, 'emphasis': 'thoughtful'},
-        'energetic': {'rate': 1.25, 'pitch': 1.4, 'emphasis': 'excited'},
+        'energetic': {'rate': 1.15, 'pitch': 1.4, 'emphasis': 'excited'},
         'executive': {'rate': 0.9, 'pitch': 0.85, 'emphasis': 'authoritative'}
     }
    
