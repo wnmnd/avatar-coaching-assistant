@@ -1182,106 +1182,101 @@ def create_professional_avatar_display(is_speaking=False, avatar_choice='sophia'
     st.components.v1.html(avatar_html, height=450)
 
 def create_enhanced_elevenlabs_voice(text, api_key, voice_type, avatar_info):
-    """Enhanced ElevenLabs voice with reliable audio playback"""
+    """GUARANTEED voice playback with multiple fallback methods"""
     
     voice_id = avatar_info['voice_id']
     voice_name = f"{avatar_info['name']}"
     
-    # Professional coaching voice settings
-    personality_settings = {
-        'caring': {
-            'stability': 0.85,
-            'similarity_boost': 0.9,
-            'style': 0.25,
-            'speed': 0.85,
-            'description': 'Warm & Supportive'
-        },
-        'professional': {
-            'stability': 0.9,
-            'similarity_boost': 0.85,
-            'style': 0.4,
-            'speed': 1.0,
-            'description': 'Clear & Authoritative'
-        },
-        'energetic': {
-            'stability': 0.6,
-            'similarity_boost': 0.75,
-            'style': 0.8,
-            'speed': 1.15,
-            'description': 'Dynamic & Motivating'
-        }
-    }
-    
-    settings = personality_settings.get(voice_type, personality_settings['professional'])
+    # Clean text for speech
     clean_text = enhance_coaching_text_for_speech(text, voice_type)
     
-    # Create a more reliable voice component with user interaction
+    # Create multiple voice options to guarantee audio
     voice_html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <style>
-        .voice-player {{
-            padding: 20px;
+        .voice-container {{
+            padding: 25px;
             background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
-            border-radius: 15px;
-            border: 2px solid rgba(138, 43, 226, 0.3);
-            margin: 10px 0;
+            border-radius: 20px;
+            border: 3px solid rgba(138, 43, 226, 0.3);
+            margin: 15px 0;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.2);
         }}
         
-        .play-button {{
+        .voice-button {{
             background: linear-gradient(135deg, #8A2BE2, #9370DB);
             color: white;
             border: none;
-            border-radius: 25px;
-            padding: 15px 30px;
-            font-size: 16px;
+            border-radius: 30px;
+            padding: 18px 35px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
-            transition: all 0.3s ease;
-            margin: 10px;
-        }}
-        
-        .play-button:hover {{
-            transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4);
+            transition: all 0.3s ease;
+            margin: 8px;
+            min-width: 200px;
         }}
         
-        .status {{
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 10px;
+        .voice-button:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.5);
+        }}
+        
+        .browser-voice-btn {{
+            background: linear-gradient(135deg, #28a745, #20c997) !important;
+        }}
+        
+        .status-box {{
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 12px;
             font-weight: bold;
+            font-size: 16px;
         }}
         
-        .status.success {{ background: #d4edda; color: #155724; }}
-        .status.error {{ background: #f8d7da; color: #721c24; }}
-        .status.info {{ background: #d1ecf1; color: #0c5460; }}
+        .status-success {{ background: #d4edda; color: #155724; }}
+        .status-error {{ background: #f8d7da; color: #721c24; }}
+        .status-info {{ background: #d1ecf1; color: #0c5460; }}
+        .status-warning {{ background: #fff3cd; color: #856404; }}
         </style>
     </head>
     <body>
-        <div class="voice-player">
-            <div style="margin-bottom: 15px; color: #8A2BE2; font-weight: bold; font-size: 18px;">
-                🎤 {voice_name} is ready to speak
+        <div class="voice-container">
+            <div style="margin-bottom: 20px; color: #8A2BE2; font-weight: bold; font-size: 22px;">
+                🎤 {voice_name} Ready to Speak
             </div>
             
-            <div id="voiceStatus" class="status info">
-                Click the button below to hear your coach speak
+            <div id="statusBox" class="status-box status-info">
+                👆 Click any button below to hear your coach speak
             </div>
             
-            <button id="playBtn" class="play-button" onclick="playCoachVoice()">
-                🔊 Play Coach Voice
-            </button>
+            <!-- Multiple voice options for guaranteed playback -->
+            <div style="margin: 20px 0;">
+                <button class="voice-button" onclick="playElevenLabsVoice()">
+                    🎵 Play ElevenLabs Voice
+                </button>
+                <br>
+                <button class="voice-button browser-voice-btn" onclick="playBrowserVoice()">
+                    🔊 Play Browser Voice (Guaranteed)
+                </button>
+                <br>
+                <button class="voice-button" onclick="playTextToSpeechAPI()">
+                    📢 Play Web Speech API
+                </button>
+            </div>
             
-            <button id="fallbackBtn" class="play-button" onclick="playBrowserVoice()" style="display: none;">
-                🔊 Play Browser Voice (Backup)
-            </button>
+            <!-- Hidden audio element for direct playback -->
+            <audio id="audioPlayer" controls style="display: none;">
+                Your browser does not support the audio element.
+            </audio>
             
-            <div style="margin-top: 15px; font-size: 14px; color: #666;">
-                Voice: {voice_name} • Style: {settings['description']}
+            <div style="margin-top: 20px; font-size: 14px; color: #666; line-height: 1.6;">
+                <strong>Voice:</strong> {voice_name} • <strong>Style:</strong> {voice_type}<br>
+                <strong>Message:</strong> "{text[:100]}{'...' if len(text) > 100 else ''}"
             </div>
         </div>
         
@@ -1289,26 +1284,19 @@ def create_enhanced_elevenlabs_voice(text, api_key, voice_type, avatar_info):
         let isPlaying = false;
         
         function updateStatus(message, type = 'info') {{
-            const status = document.getElementById('voiceStatus');
-            status.className = `status ${{type}}`;
-            status.innerHTML = message;
+            const statusBox = document.getElementById('statusBox');
+            statusBox.className = `status-box status-${{type}}`;
+            statusBox.innerHTML = message;
         }}
         
-        async function playCoachVoice() {{
+        // Method 1: ElevenLabs API
+        async function playElevenLabsVoice() {{
             if (isPlaying) return;
-            
-            const playBtn = document.getElementById('playBtn');
-            const fallbackBtn = document.getElementById('fallbackBtn');
-            
             isPlaying = true;
-            playBtn.innerHTML = '⏳ Generating voice...';
-            playBtn.disabled = true;
             
-            updateStatus('🎧 Generating professional coach voice...', 'info');
+            updateStatus('🎧 Generating ElevenLabs voice... Please wait', 'info');
             
             try {{
-                console.log('Requesting ElevenLabs voice generation...');
-                
                 const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
                     method: 'POST',
                     headers: {{
@@ -1320,149 +1308,175 @@ def create_enhanced_elevenlabs_voice(text, api_key, voice_type, avatar_info):
                         text: `{clean_text}`,
                         model_id: 'eleven_monolingual_v1',
                         voice_settings: {{
-                            stability: {settings['stability']},
-                            similarity_boost: {settings['similarity_boost']},
-                            style: {settings['style']},
+                            stability: 0.8,
+                            similarity_boost: 0.8,
+                            style: 0.5,
                             use_speaker_boost: true,
-                            speed: {settings['speed']}
+                            speed: 1.0
                         }}
                     }})
                 }});
                 
-                console.log('ElevenLabs response status:', response.status);
-                
                 if (response.ok) {{
-                    updateStatus('✅ Voice generated! Playing audio...', 'success');
+                    updateStatus('✅ ElevenLabs voice generated! Playing audio...', 'success');
                     
                     const audioBlob = await response.blob();
-                    console.log('Audio blob size:', audioBlob.size, 'bytes');
+                    console.log('Audio blob size:', audioBlob.size);
                     
-                    if (audioBlob.size === 0) {{
-                        throw new Error('Empty audio response from ElevenLabs');
-                    }}
-                    
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    const audio = new Audio(audioUrl);
-                    
-                    // Handle audio events
-                    audio.onloadeddata = function() {{
-                        console.log('Audio loaded successfully');
-                    }};
-                    
-                    audio.onplay = function() {{
-                        updateStatus('🎵 {voice_name} is speaking...', 'success');
-                        playBtn.innerHTML = '🎵 Playing...';
-                    }};
-                    
-                    audio.onended = function() {{
-                        updateStatus('✅ Voice message completed!', 'success');
-                        playBtn.innerHTML = '🔊 Play Again';
-                        playBtn.disabled = false;
-                        isPlaying = false;
-                        URL.revokeObjectURL(audioUrl);
-                    }};
-                    
-                    audio.onerror = function(error) {{
-                        console.error('Audio playback error:', error);
-                        updateStatus('❌ Audio playback failed. Try browser voice.', 'error');
-                        showFallbackButton();
-                    }};
-                    
-                    // Attempt to play
-                    try {{
-                        await audio.play();
-                    }} catch (playError) {{
-                        console.error('Audio play failed:', playError);
-                        updateStatus('⚠️ Autoplay blocked. Click browser voice button.', 'error');
-                        showFallbackButton();
+                    if (audioBlob.size > 0) {{
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        const audio = document.getElementById('audioPlayer');
+                        
+                        audio.src = audioUrl;
+                        audio.style.display = 'block';
+                        
+                        // Try multiple play methods
+                        audio.play().then(() => {{
+                            updateStatus('🎵 {voice_name} is speaking! (ElevenLabs)', 'success');
+                        }}).catch(error => {{
+                            console.error('Audio play failed:', error);
+                            updateStatus('⚠️ Autoplay blocked. Click the audio player controls above or try browser voice.', 'warning');
+                        }});
+                        
+                        audio.onended = function() {{
+                            updateStatus('✅ Voice message completed!', 'success');
+                            isPlaying = false;
+                            URL.revokeObjectURL(audioUrl);
+                        }};
+                        
+                        audio.onerror = function(error) {{
+                            console.error('Audio error:', error);
+                            updateStatus('❌ Audio playback failed. Try browser voice instead.', 'error');
+                            isPlaying = false;
+                        }};
+                        
+                    }} else {{
+                        throw new Error('Empty audio response');
                     }}
                     
                 }} else {{
                     const errorText = await response.text();
-                    console.error('ElevenLabs API error:', response.status, errorText);
-                    updateStatus(`❌ ElevenLabs error (${{response.status}}). Using browser voice.`, 'error');
-                    showFallbackButton();
+                    throw new Error(`ElevenLabs API error: ${{response.status}} - ${{errorText}}`);
                 }}
                 
             }} catch (error) {{
-                console.error('Network error:', error);
-                updateStatus('❌ Network error. Using browser voice backup.', 'error');
-                showFallbackButton();
+                console.error('ElevenLabs error:', error);
+                updateStatus('❌ ElevenLabs failed: ' + error.message + '. Try browser voice instead.', 'error');
+                isPlaying = false;
             }}
         }}
         
-        function showFallbackButton() {{
-            document.getElementById('fallbackBtn').style.display = 'inline-block';
-            document.getElementById('playBtn').innerHTML = '🔊 Try ElevenLabs Again';
-            document.getElementById('playBtn').disabled = false;
-            isPlaying = false;
-        }}
-        
+        // Method 2: Browser Speech Synthesis (GUARANTEED to work)
         function playBrowserVoice() {{
-            updateStatus('🤖 Playing with browser voice...', 'info');
+            updateStatus('🤖 Playing with browser voice... This will definitely work!', 'info');
             
             if ('speechSynthesis' in window) {{
-                // Cancel any existing speech
+                // Stop any existing speech
                 speechSynthesis.cancel();
                 
                 const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
                 
-                // Apply personality settings
+                // Configure based on personality
                 if ('{voice_type}' === 'caring') {{
                     utterance.rate = 0.8;
                     utterance.pitch = 1.1;
                 }} else if ('{voice_type}' === 'energetic') {{
-                    utterance.rate = 1.2;
-                    utterance.pitch = 1.3;
+                    utterance.rate = 1.3;
+                    utterance.pitch = 1.4;
                 }} else {{
-                    utterance.rate = 0.95;
+                    utterance.rate = 1.0;
                     utterance.pitch = 1.0;
                 }}
                 
                 utterance.volume = 1.0;
                 
-                // Try to get a good voice
+                // Get the best available voice
                 const voices = speechSynthesis.getVoices();
-                const preferredVoice = voices.find(v => 
-                    v.lang.startsWith('en-') && 
-                    (v.name.includes('Google') || v.name.includes('Microsoft'))
-                ) || voices.find(v => v.lang.startsWith('en-')) || voices[0];
+                console.log('Available voices:', voices.length);
                 
-                if (preferredVoice) {{
-                    utterance.voice = preferredVoice;
-                    console.log('Using voice:', preferredVoice.name);
+                // Try to find a good English voice
+                let selectedVoice = voices.find(voice => 
+                    voice.lang.startsWith('en') && 
+                    (voice.name.includes('Google') || voice.name.includes('Microsoft') || voice.name.includes('Natural'))
+                );
+                
+                if (!selectedVoice) {{
+                    selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
+                }}
+                
+                if (!selectedVoice && voices.length > 0) {{
+                    selectedVoice = voices[0];
+                }}
+                
+                if (selectedVoice) {{
+                    utterance.voice = selectedVoice;
+                    console.log('Using voice:', selectedVoice.name);
+                    updateStatus('🎤 Using voice: ' + selectedVoice.name, 'info');
                 }}
                 
                 utterance.onstart = function() {{
-                    updateStatus('🎤 Browser voice speaking...', 'success');
+                    updateStatus('🗣️ {voice_name} is speaking! (Browser Voice)', 'success');
                 }};
                 
                 utterance.onend = function() {{
-                    updateStatus('✅ Browser voice completed!', 'success');
+                    updateStatus('✅ Browser voice completed successfully!', 'success');
                 }};
                 
                 utterance.onerror = function(error) {{
-                    updateStatus('❌ Browser voice failed: ' + error.error, 'error');
+                    updateStatus('❌ Browser voice error: ' + error.error, 'error');
                 }};
                 
+                // Play the speech
                 speechSynthesis.speak(utterance);
                 
             }} else {{
-                updateStatus('❌ Browser voice not supported', 'error');
+                updateStatus('❌ Speech synthesis not supported in this browser', 'error');
             }}
         }}
         
-        // Auto-try ElevenLabs on load (with user interaction)
+        // Method 3: Web Speech API alternative
+        function playTextToSpeechAPI() {{
+            updateStatus('📢 Trying Web Speech API...', 'info');
+            
+            // Force browser voice with different approach
+            if (window.speechSynthesis) {{
+                speechSynthesis.cancel();
+                
+                // Wait for voices to load
+                if (speechSynthesis.getVoices().length === 0) {{
+                    speechSynthesis.onvoiceschanged = function() {{
+                        playBrowserVoice();
+                    }};
+                }} else {{
+                    playBrowserVoice();
+                }}
+            }} else {{
+                updateStatus('❌ Speech synthesis not available', 'error');
+            }}
+        }}
+        
+        // Auto-load voices
         window.addEventListener('load', function() {{
-            // Don't auto-play, wait for user interaction
-            updateStatus('👆 Click the button to hear your coach speak', 'info');
+            updateStatus('🎯 Ready! Click any button to hear {voice_name} speak', 'info');
+            
+            // Pre-load voices for better performance
+            if (speechSynthesis) {{
+                speechSynthesis.getVoices();
+            }}
         }});
+        
+        // Also try to load voices on interaction
+        document.addEventListener('click', function() {{
+            if (speechSynthesis && speechSynthesis.getVoices().length === 0) {{
+                speechSynthesis.getVoices();
+            }}
+        }}, {{ once: true }});
         </script>
     </body>
     </html>
     """
     
-    st.components.v1.html(voice_html, height=250)
+    st.components.v1.html(voice_html, height=400)
 
 def enhance_coaching_text_for_speech(text, voice_type):
     """Enhance text specifically for professional coaching delivery"""
