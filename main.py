@@ -806,129 +806,137 @@ def create_professional_avatar_display(is_speaking=False, avatar_choice='sophia'
     speaking_class = "avatar-speaking" if is_speaking else ""
     status_text = f"🎤 {config['name']} is coaching you..." if is_speaking else f"💭 Ready to help you succeed"
     
+    # Use st.components.v1.html instead of st.markdown for better HTML rendering
     avatar_html = f"""
-    <div style="
-        padding: 30px;
-        background: linear-gradient(135deg, #F8F4FF 0%, #E6E6FA 100%);
-        border-radius: 25px;
-        margin-bottom: 30px;
-        box-shadow: 0 8px 25px rgba(138, 43, 226, 0.2);
-        border: 3px solid rgba(138, 43, 226, 0.1);
-        min-height: 400px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    ">
-        <div class="avatar-display {speaking_class}" id="avatarDisplay">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="
-                    background: linear-gradient(135deg, #8A2BE2, #9370DB);
-                    border-radius: 50%;
-                    width: 160px;
-                    height: 160px;
-                    margin: 0 auto 20px auto;
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+        @keyframes voice-wave {{
+            0%, 100% {{ height: 15px; }}
+            50% {{ height: 45px; }}
+        }}
+        
+        .avatar-speaking .avatar-display {{
+            animation: talking 0.6s ease-in-out infinite alternate;
+        }}
+        
+        @keyframes talking {{
+            0% {{ transform: scale(1) rotate(-1deg); }}
+            100% {{ transform: scale(1.02) rotate(1deg); }}
+        }}
+        </style>
+    </head>
+    <body>
+        <div style="
+            padding: 30px;
+            background: linear-gradient(135deg, #F8F4FF 0%, #E6E6FA 100%);
+            border-radius: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.2);
+            border: 3px solid rgba(138, 43, 226, 0.1);
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        ">
+            <div class="avatar-display {speaking_class}" id="avatarDisplay">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="
+                        background: linear-gradient(135deg, #8A2BE2, #9370DB);
+                        border-radius: 50%;
+                        width: 140px;
+                        height: 140px;
+                        margin: 0 auto 20px auto;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-shadow: 0 8px 25px rgba(138, 43, 226, 0.3);
+                        font-size: 70px;
+                    ">
+                        {config['emoji']}
+                    </div>
+                    <div style="font-size: 22px; font-weight: bold; color: #8A2BE2; margin-bottom: 8px;">
+                        {config['name']}
+                    </div>
+                    <div style="font-size: 14px; color: #666; font-weight: 500; margin-bottom: 25px;">
+                        {config['title']}
+                    </div>
+                </div>
+                
+                <div class="voice-visualizer" style="
                     display: flex;
-                    align-items: center;
+                    gap: 4px;
+                    align-items: end;
+                    height: 40px;
+                    opacity: {'1' if is_speaking else '0'};
+                    transition: opacity 0.3s ease;
                     justify-content: center;
-                    box-shadow: 0 8px 25px rgba(138, 43, 226, 0.3);
-                    font-size: 80px;
+                    margin-bottom: 20px;
                 ">
-                    {config['emoji']}
-                </div>
-                <div style="font-size: 24px; font-weight: bold; color: #8A2BE2; margin-bottom: 8px;">
-                    {config['name']}
-                </div>
-                <div style="font-size: 16px; color: #666; font-weight: 500; margin-bottom: 20px;">
-                    {config['title']}
+                    <div style="
+                        width: 6px;
+                        height: 12px;
+                        background: linear-gradient(45deg, #8A2BE2, #9370DB);
+                        border-radius: 3px;
+                        animation: voice-wave 0.8s ease-in-out infinite;
+                    "></div>
+                    <div style="
+                        width: 6px;
+                        height: 12px;
+                        background: linear-gradient(45deg, #8A2BE2, #9370DB);
+                        border-radius: 3px;
+                        animation: voice-wave 0.8s ease-in-out infinite;
+                        animation-delay: 0.1s;
+                    "></div>
+                    <div style="
+                        width: 6px;
+                        height: 12px;
+                        background: linear-gradient(45deg, #8A2BE2, #9370DB);
+                        border-radius: 3px;
+                        animation: voice-wave 0.8s ease-in-out infinite;
+                        animation-delay: 0.2s;
+                    "></div>
+                    <div style="
+                        width: 6px;
+                        height: 12px;
+                        background: linear-gradient(45deg, #8A2BE2, #9370DB);
+                        border-radius: 3px;
+                        animation: voice-wave 0.8s ease-in-out infinite;
+                        animation-delay: 0.3s;
+                    "></div>
+                    <div style="
+                        width: 6px;
+                        height: 12px;
+                        background: linear-gradient(45deg, #8A2BE2, #9370DB);
+                        border-radius: 3px;
+                        animation: voice-wave 0.8s ease-in-out infinite;
+                        animation-delay: 0.4s;
+                    "></div>
                 </div>
             </div>
             
-            <div class="voice-visualizer" style="
-                display: flex;
-                gap: 4px;
-                align-items: end;
-                height: 50px;
-                opacity: {'1' if is_speaking else '0'};
-                transition: opacity 0.3s ease;
-                justify-content: center;
-                margin-bottom: 20px;
+            <div style="
+                margin-top: 15px;
+                padding: 12px 20px;
+                background: rgba(138, 43, 226, 0.1);
+                border-radius: 20px;
+                font-size: 15px;
+                font-weight: 600;
+                color: #8A2BE2;
+                text-align: center;
+                border: 2px solid rgba(138, 43, 226, 0.2);
             ">
-                <div class="voice-bar" style="
-                    width: 8px;
-                    height: 15px;
-                    background: linear-gradient(45deg, #8A2BE2, #9370DB);
-                    border-radius: 4px;
-                    animation: voice-wave 0.8s ease-in-out infinite;
-                "></div>
-                <div class="voice-bar" style="
-                    width: 8px;
-                    height: 15px;
-                    background: linear-gradient(45deg, #8A2BE2, #9370DB);
-                    border-radius: 4px;
-                    animation: voice-wave 0.8s ease-in-out infinite;
-                    animation-delay: 0.1s;
-                "></div>
-                <div class="voice-bar" style="
-                    width: 8px;
-                    height: 15px;
-                    background: linear-gradient(45deg, #8A2BE2, #9370DB);
-                    border-radius: 4px;
-                    animation: voice-wave 0.8s ease-in-out infinite;
-                    animation-delay: 0.2s;
-                "></div>
-                <div class="voice-bar" style="
-                    width: 8px;
-                    height: 15px;
-                    background: linear-gradient(45deg, #8A2BE2, #9370DB);
-                    border-radius: 4px;
-                    animation: voice-wave 0.8s ease-in-out infinite;
-                    animation-delay: 0.3s;
-                "></div>
-                <div class="voice-bar" style="
-                    width: 8px;
-                    height: 15px;
-                    background: linear-gradient(45deg, #8A2BE2, #9370DB);
-                    border-radius: 4px;
-                    animation: voice-wave 0.8s ease-in-out infinite;
-                    animation-delay: 0.4s;
-                "></div>
+                {status_text}
             </div>
         </div>
-        
-        <div style="
-            margin-top: 20px;
-            padding: 15px 25px;
-            background: rgba(138, 43, 226, 0.1);
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #8A2BE2;
-            text-align: center;
-            border: 2px solid rgba(138, 43, 226, 0.2);
-        ">
-            {status_text}
-        </div>
-    </div>
-    
-    <style>
-    @keyframes voice-wave {{
-        0%, 100% {{ height: 15px; }}
-        50% {{ height: 45px; }}
-    }}
-    
-    .avatar-speaking .avatar-display {{
-        animation: talking 0.6s ease-in-out infinite alternate;
-    }}
-    
-    @keyframes talking {{
-        0% {{ transform: scale(1) rotate(-1deg); }}
-        100% {{ transform: scale(1.02) rotate(1deg); }}
-    }}
-    </style>
+    </body>
+    </html>
     """
     
-    st.markdown(avatar_html, unsafe_allow_html=True)
+    st.components.v1.html(avatar_html, height=450)
 
 def create_enhanced_elevenlabs_voice(text, api_key, voice_type, avatar_info):
     """Enhanced ElevenLabs voice with professional coaching delivery"""
