@@ -280,56 +280,103 @@ def setup_heygen():
     return api_key
 
 def setup_gemini():
-    """Setup Gemini for enhanced coaching LLM with robust error handling"""
-    # Try multiple ways to get the API key
+    """Setup Gemini with comprehensive debugging and fallback"""
+    
+    # Direct fallback approach - use your actual key directly for now
+    DIRECT_API_KEY = "AIzaSyALgzgLQTX6avknNUzknLxSgmTggTJfTUg"
+    
     api_key = None
+    debug_info = []
     
+    # Method 1: Try secrets
     try:
-        # Method 1: Direct access
-        api_key = st.secrets["GEMINI_API_KEY"]
-    except:
-        try:
-            # Method 2: Using get method
-            api_key = st.secrets.get("GEMINI_API_KEY")
-        except:
+        if hasattr(st, 'secrets'):
+            debug_info.append("✅ st.secrets exists")
             try:
-                # Method 3: Environment variable
-                api_key = os.getenv("GEMINI_API_KEY")
-            except:
-                pass
+                api_key = st.secrets["GEMINI_API_KEY"]
+                debug_info.append(f"✅ Found via st.secrets['GEMINI_API_KEY']: {api_key[:10]}...")
+            except KeyError:
+                debug_info.append("❌ GEMINI_API_KEY not found in st.secrets")
+            except Exception as e:
+                debug_info.append(f"❌ Error accessing st.secrets['GEMINI_API_KEY']: {e}")
+        else:
+            debug_info.append("❌ st.secrets not available")
+    except Exception as e:
+        debug_info.append(f"❌ Error with st.secrets: {e}")
     
-    # Debug information (remove in production)
+    # Method 2: Try secrets.get()
     if not api_key:
-        st.error("❌ Cannot find GEMINI_API_KEY in secrets or environment variables")
-        st.info("🔍 **Debug Info:**")
         try:
-            available_secrets = list(st.secrets.keys())
-            st.write(f"Available secrets: {available_secrets}")
-        except:
-            st.write("Cannot read secrets.toml file")
+            api_key = st.secrets.get("GEMINI_API_KEY")
+            if api_key:
+                debug_info.append(f"✅ Found via st.secrets.get(): {api_key[:10]}...")
+            else:
+                debug_info.append("❌ st.secrets.get() returned None")
+        except Exception as e:
+            debug_info.append(f"❌ Error with st.secrets.get(): {e}")
+    
+    # Method 3: Try environment variable
+    if not api_key:
+        try:
+            api_key = os.getenv("GEMINI_API_KEY")
+            if api_key:
+                debug_info.append(f"✅ Found via os.getenv(): {api_key[:10]}...")
+            else:
+                debug_info.append("❌ os.getenv() returned None")
+        except Exception as e:
+            debug_info.append(f"❌ Error with os.getenv(): {e}")
+    
+    # Method 4: Use direct fallback
+    if not api_key:
+        api_key = DIRECT_API_KEY
+        debug_info.append(f"⚠️ Using direct fallback key: {api_key[:10]}...")
+    
+    # Show debug info
+    with st.expander("🔍 Gemini API Key Debug Info", expanded=not api_key):
+        for info in debug_info:
+            if "✅" in info:
+                st.success(info)
+            elif "❌" in info:
+                st.error(info)
+            else:
+                st.warning(info)
         
-        st.write("**Troubleshooting Steps:**")
-        st.write("1. Check that `.streamlit/secrets.toml` exists in your project root")
-        st.write("2. Verify your secrets.toml format:")
-        st.code('GEMINI_API_KEY = "your_actual_api_key_here"')
-        st.write("3. Restart your Streamlit app completely")
-        st.write("4. Clear browser cache and reload")
+        # Show secrets status
+        try:
+            st.write("**All available secrets:**")
+            secrets_dict = dict(st.secrets)
+            for key in secrets_dict.keys():
+                st.write(f"- {key}")
+        except Exception as e:
+            st.error(f"Cannot read secrets: {e}")
+        
+        # Instructions
+        st.write("**If secrets aren't working, try:**")
+        st.write("1. Restart Streamlit completely (Ctrl+C and restart)")
+        st.write("2. Check file location: `.streamlit/secrets.toml` in project root")
+        st.write("3. Verify file content has proper format (no extra spaces)")
+        st.write("4. Clear browser cache")
+    
+    if not api_key:
+        st.error("❌ No Gemini API key found anywhere")
         st.stop()
     
     if not api_key.startswith("AIza"):
         st.error(f"❌ Invalid Gemini API key format. Should start with 'AIza', got: {api_key[:10]}...")
         st.stop()
     
+    # Test the connection
     try:
         genai.configure(api_key=api_key)
-        model_names = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro']
+        model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp']
         
         for model_name in model_names:
             try:
                 model = genai.GenerativeModel(model_name)
-                test_response = model.generate_content("Say 'Connected'")
+                test_response = model.generate_content("Say 'Connected'", 
+                    generation_config={'max_output_tokens': 10})
                 if test_response and test_response.text:
-                    st.success(f"✅ Gemini connected successfully using {model_name}")
+                    st.success(f"✅ Gemini {model_name} connected successfully!")
                     return model, model_name
             except Exception as e:
                 st.warning(f"⚠️ {model_name} failed: {str(e)}")
@@ -340,10 +387,10 @@ def setup_gemini():
                 
     except Exception as e:
         st.error(f"❌ Gemini API Error: {str(e)}")
-        st.write("**Common Solutions:**")
-        st.write("- Check if your API key is valid and active")
-        st.write("- Ensure you have Gemini API enabled in Google Cloud Console")
-        st.write("- Verify your API key has the correct permissions")
+        st.error("**Possible solutions:**")
+        st.error("- Check if your API key is valid and active")
+        st.error("- Ensure Gemini API is enabled in Google AI Studio")
+        st.error("- Try generating a new API key")
         st.stop()
 
 # ==================== ENHANCED COACHING KNOWLEDGE ====================
