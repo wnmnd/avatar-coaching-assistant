@@ -901,7 +901,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                     voice_settings: {{
                         stability: {0.9 if voice_type == 'wise' else 0.7 if voice_type == 'professional' else 0.5},
                         similarity_boost: {0.9 if voice_type == 'professional' else 0.8 if voice_type == 'wise' else 0.6},
-                        style: {0.2 if voice_type == 'caring' else 0.8 if voice_type == 'energetic' else 0.5},
+                        style: {0.2 if voice_type == 'caring' else 0.6 if voice_type == 'energetic' else 0.5},
                         use_speaker_boost: {str(voice_type in ['confident', 'executive', 'energetic']).lower()},
                         speed: {0.8 if voice_type == 'wise' else 1.0 if voice_type == 'energetic' else 1.0}
                     }}
