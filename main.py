@@ -260,7 +260,7 @@ def setup_elevenlabs():
                 api_key = os.getenv("ELEVENLABS_API_KEY")
             except:
                 # Fallback to hardcoded key (remove in production)
-                api_key = "sk_0048770c4dd23670baac2de2cd6f616e2856935e8297be5f"
+                api_key = "sk_da2743844b74d8828b3d7d24c65984b95a55a71886ad12b3"
     
     if api_key and api_key.startswith("sk_"):
         return api_key
@@ -282,8 +282,8 @@ def setup_heygen():
 def setup_gemini():
     """Setup Gemini with comprehensive debugging and fallback"""
     
-    # Direct fallback approach - use your actual key directly for now
-    DIRECT_API_KEY = "AIzaSyALgzgLQTX6avknNUzknLxSgmTggTJfTUg"
+    # Direct fallback approach
+    DIRECT_API_KEY = "AIzaSyDZCG1cuKAa0IOqUdGCbFWIemWjErUiSeU"
     
     api_key = None
     debug_info = []
