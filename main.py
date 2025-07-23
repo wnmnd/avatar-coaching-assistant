@@ -933,18 +933,18 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
             'professional': {'voice_id': 'nPczCjzI2devNBz1zQrb', 'name': 'Brian (Professional Male)'},
             'confident': {'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Charlie (Confident Male)'},
             'caring': {'voice_id': 'pqHfZKP75CvOlQylNhV4', 'name': 'Bill (Caring Male)'},
-            'wise': {'voice_id': 'nPczCjzI2devNBz1zQrb', 'name': 'Brian (Wise Male)'},
-            'energetic': {'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Charlie (Energetic Male)'},
-            'executive': {'voice_id': 'nPczCjzI2devNBz1zQrb', 'name': 'Brian (Executive Male)'}
+            'wise': {'voice_id': 'onwK4e9ZLuTAKqWW03F9', 'name': 'Daniel (Wise Male)'},
+            'energetic': {'voice_id': 'TX3LPaxmHKxFdv7VOQHJ', 'name': 'Liam (Energetic Male)'},
+            'executive': {'voice_id': 'cjVigY5qzO86Huf0OWal', 'name': 'Eric (Executive Male)'}
         }
     else:  # female
         voice_configs = {
             'professional': {'voice_id': 'Xb7hH8MSUJpSbSDYk0k2', 'name': 'Alice (Professional Female)'},
-            'confident': {'voice_id': 'jsCqWAovK2LkecY7zXl4', 'name': 'Freya (Confident Female)'},
-            'caring': {'voice_id': 'LcfcDJNUP1GQjkzn1xUU', 'name': 'Emily (Caring Female)'},
+            'confident': {'voice_id': 'XB0fDUnXU5powFXDhCwa', 'name': 'Charlotte (Confident Female)'},
+            'caring': {'voice_id': 'EXAVITQu4vr4xnSDxMaL', 'name': 'Sarah (Caring Female)'},
             'wise': {'voice_id': '9BWtsMINqrJLrRacOk9x', 'name': 'Aria (Wise Female)'},
-            'energetic': {'voice_id': 'LcfcDJNUP1GQjkzn1xUU', 'name': 'Emily (Energetic Female)'},
-            'executive': {'voice_id': '9BWtsMINqrJLrRacOk9x', 'name': 'Aria (Executive Female)'}
+            'energetic': {'voice_id': 'cgSgspJ2msm6clMCkdW9', 'name': 'Jessica (Energetic Female)'},
+            'executive': {'voice_id': 'XrExE9yKIg1WjnnlVkGX', 'name': 'Matilda (Executive Female)'}
         }
     
     voice_config = voice_configs.get(voice_type, voice_configs['professional'])
@@ -1311,16 +1311,21 @@ def user_profile_sidebar():
         )
         
         # Show which voices will be used
-        st.info("🎤 **Voice Mapping:**\n\n"
+        st.info("🎤 **Your Voice Mapping:**\n\n"
                 "**Male Voices:**\n"
-                "• Brian - Professional/Executive/Wise\n"
-                "• Charlie - Confident/Energetic\n"
-                "• Bill - Caring\n\n"
+                "• Brian - Professional\n"
+                "• Charlie - Confident\n"
+                "• Bill - Caring\n"
+                "• Daniel - Wise\n"
+                "• Liam - Energetic\n"
+                "• Eric - Executive\n\n"
                 "**Female Voices:**\n"
                 "• Alice - Professional\n"
-                "• Freya - Confident\n"
-                "• Emily - Caring/Energetic\n"
-                "• Aria - Wise/Executive")
+                "• Charlotte - Confident\n"
+                "• Sarah - Caring\n"
+                "• Aria - Wise\n"
+                "• Jessica - Energetic\n"
+                "• Matilda - Executive")
         
         # Save profile
         if st.button("💾 Save Settings", type="primary"):
@@ -1594,8 +1599,13 @@ def main():
                     "pqHfZKP75CvOlQylNhV4",  # Bill
                     "nPczCjzI2devNBz1zQrb",  # Brian
                     "IKne3meq5aSn9XLyUdCD",  # Charlie
-                    "LcfcDJNUP1GQjkzn1xUU",  # Emily
-                    "jsCqWAovK2LkecY7zXl4",  # Freya
+                    "XB0fDUnXU5powFXDhCwa",  # Charlotte
+                    "onwK4e9ZLuTAKqWW03F9",  # Daniel
+                    "cjVigY5qzO86Huf0OWal",  # Eric
+                    "cgSgspJ2msm6clMCkdW9",  # Jessica
+                    "TX3LPaxmHKxFdv7VOQHJ",  # Liam
+                    "XrExE9yKIg1WjnnlVkGX",  # Matilda
+                    "EXAVITQu4vr4xnSDxMaL",  # Sarah
                 ], key="debug_voice_select")
             
             with debug_col2:
