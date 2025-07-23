@@ -88,29 +88,35 @@ def setup_gemini():
         st.stop()
 
 def setup_elevenlabs():
-    """Setup ElevenLabs API with proper secrets handling"""
+    """Setup ElevenLabs API with EMERGENCY HARDCODED FALLBACK"""
     api_key = None
+    
+    # 🚨 EMERGENCY: HARDCODED API KEY (REMOVE AFTER TESTING)
+    EMERGENCY_ELEVENLABS_KEY = "sk_da2743844b74d8828b3d7d24c65984b95a55a71886ad12b3"
     
     try:
         # Method 1: Try Streamlit secrets
         if hasattr(st, 'secrets') and 'ELEVENLABS_API_KEY' in st.secrets:
             api_key = st.secrets['ELEVENLABS_API_KEY']
+            st.success(f"✅ ElevenLabs API key loaded from secrets: {api_key[:10]}...")
         
         # Method 2: Try environment variable
         elif 'ELEVENLABS_API_KEY' in os.environ:
             api_key = os.environ['ELEVENLABS_API_KEY']
+            st.success(f"✅ ElevenLabs API key loaded from environment: {api_key[:10]}...")
         
+        # Method 3: 🚨 EMERGENCY FALLBACK
         else:
-            st.warning("⚠️ ELEVENLABS_API_KEY not found - voice features will use browser fallback")
-            return None
+            api_key = EMERGENCY_ELEVENLABS_KEY
+            st.warning(f"⚠️ Using emergency ElevenLabs key: {api_key[:10]}... (TEMPORARY)")
             
     except Exception as e:
-        st.warning(f"⚠️ Error accessing ElevenLabs API key: {str(e)} - using fallback")
-        return None
+        # Even if secrets fail, use emergency key
+        api_key = EMERGENCY_ELEVENLABS_KEY
+        st.warning(f"⚠️ ElevenLabs secrets error, using emergency key: {str(e)}")
     
     # Validate ElevenLabs API key format
     if api_key and api_key.startswith("sk_"):
-        st.success(f"✅ ElevenLabs API key loaded: {api_key[:10]}...")
         return api_key
     else:
         st.warning("⚠️ Invalid ElevenLabs API key format - using browser voice fallback")
@@ -177,55 +183,114 @@ def show_secrets_help():
     """)
 
 def show_api_status():
-    """Show current API key status"""
-    with st.expander("🔍 API Configuration Status", expanded=False):
+    """Show current API key status with enhanced debugging"""
+    with st.expander("🔍 API Configuration Status", expanded=True):
+        
+        # First check if we're running locally or on cloud
+        try:
+            import socket
+            hostname = socket.gethostname()
+            if 'streamlit' in hostname.lower():
+                environment = "🌐 Streamlit Cloud"
+            else:
+                environment = "💻 Local Development"
+        except:
+            environment = "❓ Unknown"
+        
+        st.write(f"**Environment:** {environment}")
         st.write("**Current API Key Status:**")
         
-        # Check Gemini
+        # Check if secrets object exists at all
         try:
-            if hasattr(st, 'secrets') and 'GEMINI_API_KEY' in st.secrets:
-                gemini_key = st.secrets['GEMINI_API_KEY']
-                if gemini_key.startswith('AIza'):
-                    st.success(f"✅ Gemini API: {gemini_key[:10]}...{gemini_key[-5:]}")
+            secrets_exists = hasattr(st, 'secrets')
+            st.write(f"**st.secrets exists:** {'✅ Yes' if secrets_exists else '❌ No'}")
+            
+            if secrets_exists:
+                try:
+                    all_secrets = dict(st.secrets)
+                    secret_keys = list(all_secrets.keys())
+                    st.write(f"**Available secrets:** {secret_keys}")
+                    
+                    if len(secret_keys) == 0:
+                        st.error("🚨 **NO SECRETS FOUND!** This is the main problem.")
+                        st.error("**Fix:** Add secrets through Streamlit Cloud interface or create .streamlit/secrets.toml locally")
+                    
+                except Exception as e:
+                    st.error(f"❌ Error reading secrets: {e}")
+            
+        except Exception as e:
+            st.error(f"❌ Error checking secrets existence: {e}")
+        
+        # Check individual API keys
+        apis_to_check = [
+            ('GEMINI_API_KEY', 'AIza', 'Gemini API'),
+            ('ELEVENLABS_API_KEY', 'sk_', 'ElevenLabs API'),
+            ('HEYGEN_API_KEY', None, 'HeyGen API')
+        ]
+        
+        for key_name, expected_prefix, display_name in apis_to_check:
+            try:
+                if hasattr(st, 'secrets') and key_name in st.secrets:
+                    key_value = st.secrets[key_name]
+                    if expected_prefix and key_value.startswith(expected_prefix):
+                        st.success(f"✅ {display_name}: {key_value[:10]}...{key_value[-5:]}")
+                    elif expected_prefix:
+                        st.error(f"❌ {display_name}: Invalid format (should start with '{expected_prefix}')")
+                    else:
+                        st.success(f"✅ {display_name}: Found")
                 else:
-                    st.error("❌ Gemini API: Invalid format")
-            else:
-                st.error("❌ Gemini API: Not found")
-        except Exception as e:
-            st.error(f"❌ Gemini API: Error - {e}")
+                    if key_name == 'GEMINI_API_KEY':
+                        st.error(f"❌ {display_name}: Not found (REQUIRED)")
+                    else:
+                        st.warning(f"⚠️ {display_name}: Not found (optional)")
+            except Exception as e:
+                st.error(f"❌ {display_name}: Error - {e}")
         
-        # Check ElevenLabs
+        # Show file system check for local development
+        st.write("---")
+        st.write("**File System Check:**")
         try:
-            if hasattr(st, 'secrets') and 'ELEVENLABS_API_KEY' in st.secrets:
-                el_key = st.secrets['ELEVENLABS_API_KEY']
-                if el_key.startswith('sk_'):
-                    st.success(f"✅ ElevenLabs API: {el_key[:10]}...{el_key[-5:]}")
-                else:
-                    st.warning("⚠️ ElevenLabs API: Invalid format")
-            else:
-                st.warning("⚠️ ElevenLabs API: Not found (will use browser voice)")
+            import os
+            current_dir = os.getcwd()
+            st.write(f"**Current directory:** {current_dir}")
+            
+            streamlit_dir = os.path.join(current_dir, '.streamlit')
+            secrets_file = os.path.join(streamlit_dir, 'secrets.toml')
+            
+            st.write(f"**Looking for:** {secrets_file}")
+            st.write(f"**.streamlit directory exists:** {'✅ Yes' if os.path.exists(streamlit_dir) else '❌ No'}")
+            st.write(f"**secrets.toml file exists:** {'✅ Yes' if os.path.exists(secrets_file) else '❌ No'}")
+            
+            if os.path.exists(secrets_file):
+                with open(secrets_file, 'r') as f:
+                    content = f.read()
+                    st.write(f"**File size:** {len(content)} characters")
+                    if len(content) < 10:
+                        st.error("⚠️ File seems empty or too small")
+            
         except Exception as e:
-            st.warning(f"⚠️ ElevenLabs API: Error - {e}")
+            st.error(f"❌ File system check error: {e}")
         
-        # Check HeyGen
-        try:
-            if hasattr(st, 'secrets') and 'HEYGEN_API_KEY' in st.secrets:
-                hg_key = st.secrets['HEYGEN_API_KEY']
-                st.success(f"✅ HeyGen API: {hg_key[:10]}...{hg_key[-10:]}")
-            else:
-                st.info("ℹ️ HeyGen API: Not found (will use emoji avatars)")
-        except Exception as e:
-            st.info(f"ℹ️ HeyGen API: Error - {e}")
+        # Instructions
+        st.write("---")
+        st.write("**🔧 How to Fix:**")
         
-        # Show available secrets
-        try:
-            if hasattr(st, 'secrets'):
-                available_secrets = list(st.secrets.keys())
-                st.write(f"**Available secrets:** {available_secrets}")
-            else:
-                st.error("❌ st.secrets not available")
-        except Exception as e:
-            st.error(f"❌ Cannot read secrets: {e}")
+        if environment == "🌐 Streamlit Cloud":
+            st.info("**For Streamlit Cloud:**")
+            st.info("1. Go to your app dashboard")
+            st.info("2. Click ⚙️ → Edit Secrets")
+            st.info("3. Paste your TOML secrets")
+            st.info("4. Click Save")
+        else:
+            st.info("**For Local Development:**")
+            st.info("1. Create `.streamlit/secrets.toml` in your project root")
+            st.info("2. Add your API keys in TOML format")
+            st.info("3. Restart Streamlit")
+        
+        # Sample TOML format
+        st.code('''GEMINI_API_KEY = "AIzaSyALgzLQTX6avknNUzknLxSgmTggTJfTUg"
+ELEVENLABS_API_KEY = "sk_0048770c4dd23670baac2de2cd6f616e2856935e8297be5f"
+HEYGEN_API_KEY = "your_heygen_key_here"''', language='toml')
 
 # ==================== CRM DATABASE SYSTEM ====================
 
@@ -1901,8 +1966,24 @@ def main():
     load_custom_css()
     init_session_state()
     
+    # 🚨 EMERGENCY WARNING BANNER
+    st.error("🚨 **EMERGENCY MODE**: Using hardcoded API keys for testing. This is TEMPORARY!")
+    st.error("⚠️ **SECURITY RISK**: Remove hardcoded keys and set up proper secrets after testing.")
+    st.error("📋 **TODO**: Follow the instructions in the debug panel below to set up secrets properly.")
+    
     # Show API status at the top
     show_api_status()
+    
+    # Test basic functionality immediately
+    st.success("🎯 **TESTING**: If you see this message, the app is running!")
+    
+    # Quick Gemini test
+    try:
+        with st.spinner("🧪 Testing Gemini connection..."):
+            model, model_name = setup_gemini()
+            st.success(f"✅ **SUCCESS**: Gemini {model_name} is working!")
+    except Exception as e:
+        st.error(f"❌ **FAILED**: Gemini test failed: {str(e)}")
     
     # Process voice input first
     process_voice_input()
@@ -2067,20 +2148,16 @@ def main():
     else:
         # Welcome screen for new users
         st.markdown("""
-        ## 🎯 Welcome to Professional Avatar Success Coaching
+        ## Welcome to Professional Avatar Success Coaching
         
         **Complete your profile in the sidebar to begin your personalized coaching journey.**
         
-        ### 🚀 What You'll Experience:
+        ### What You'll Experience:
         - **Professional AI Coaching** with proven methodologies
         - **Realistic Talking Avatars** powered by advanced AI
         - **Advanced Speech Processing** with ElevenLabs technology
         - **Intelligent CRM System** tracking your progress
         - **Personalized Strategies** for wealth and success
-        
-        ### 💡 This system follows industry-standard workflow:
-        `Voice Input → ElevenLabs STT → Enhanced LLM → Avatar Generation → ElevenLabs TTS → CRM Analytics → Professional Interface`
-        """)
 
 if __name__ == "__main__":
     main()
