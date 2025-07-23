@@ -282,8 +282,12 @@ def setup_heygen():
 
 def setup_elevenlabs():
     """Setup ElevenLabs for natural voice"""
-    # Use the API key provided by user
-    api_key = st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY") or "sk_3f36a2a57b246f01c2aab04a788b216a1c573a17cfd93af2"
+    # Use your updated API key
+    api_key = "sk_0048770c4dd23670baac2de2cd6f616e2856935e8297be5f"
+    
+    # Also check secrets/environment as fallback
+    if not api_key:
+        api_key = st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
     
     # Debug information
     if api_key and api_key.startswith("sk_"):
@@ -298,14 +302,14 @@ def avatar_component(is_speaking=False):
     profile = st.session_state.user_profile
     avatar_choice = profile.get('avatar', 'sophia')
     
-    # Avatar selection with personality and gender (enhanced from reference)
+    # Avatar selection with personality and gender (updated with your voice mappings)
     avatar_configs = {
-        'sophia': {'emoji': '👩‍💼', 'name': 'Sophia', 'voice_type': 'professional', 'gender': 'female'},
-        'marcus': {'emoji': '👨‍💼', 'name': 'Marcus', 'voice_type': 'confident', 'gender': 'male'}, 
-        'elena': {'emoji': '👩‍⚕️', 'name': 'Elena', 'voice_type': 'caring', 'gender': 'female'},
-        'david': {'emoji': '👨‍🎓', 'name': 'David', 'voice_type': 'wise', 'gender': 'male'},
-        'maya': {'emoji': '👩‍🏫', 'name': 'Maya', 'voice_type': 'energetic', 'gender': 'female'},
-        'james': {'emoji': '👨‍💻', 'name': 'James', 'voice_type': 'executive', 'gender': 'male'}
+        'sophia': {'emoji': '👩‍💼', 'name': 'Sophia', 'voice_id': 'LcfcDJNUP1GQjkzn1xUU', 'gender': 'female'},
+        'marcus': {'emoji': '👨‍💼', 'name': 'Marcus', 'voice_id': 'pNInz6obpgDQGcFmaJgB', 'gender': 'male'}, 
+        'elena': {'emoji': '👩‍⚕️', 'name': 'Elena', 'voice_id': 'jsCqWAovK2LkecY7zXl4', 'gender': 'female'},
+        'david': {'emoji': '👨‍🎓', 'name': 'David', 'voice_id': 'VR6AewLTigWG4xSOukaG', 'gender': 'male'},
+        'maya': {'emoji': '👩‍🏫', 'name': 'Maya', 'voice_id': 'z9fAnlkpzviPz146aGWa', 'gender': 'female'},
+        'james': {'emoji': '👨‍💻', 'name': 'James', 'voice_id': 'ErXwobaYiN019PkySvjV', 'gender': 'male'}
     }
     
     config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
@@ -710,37 +714,38 @@ def natural_voice_component(text, voice_type="professional"):
     profile = st.session_state.user_profile
     avatar_choice = profile.get('avatar', 'sophia')
     avatar_configs = {
-        'sophia': {'gender': 'female', 'voice_type': 'professional'},
-        'marcus': {'gender': 'male', 'voice_type': 'confident'}, 
-        'elena': {'gender': 'female', 'voice_type': 'caring'},
-        'david': {'gender': 'male', 'voice_type': 'wise'},
-        'maya': {'gender': 'female', 'voice_type': 'energetic'},
-        'james': {'gender': 'male', 'voice_type': 'executive'}
+        'sophia': {'gender': 'female', 'voice_id': 'LcfcDJNUP1GQjkzn1xUU', 'name': 'Emily'},
+        'marcus': {'gender': 'male', 'voice_id': 'pNInz6obpgDQGcFmaJgB', 'name': 'Adam'}, 
+        'elena': {'gender': 'female', 'voice_id': 'jsCqWAovK2LkecY7zXl4', 'name': 'Freya'},
+        'david': {'gender': 'male', 'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'Arnold'},
+        'maya': {'gender': 'female', 'voice_id': 'z9fAnlkpzviPz146aGWa', 'name': 'Glinda'},
+        'james': {'gender': 'male', 'voice_id': 'ErXwobaYiN019PkySvjV', 'name': 'Antoni'}
     }
-    avatar_gender = avatar_configs.get(avatar_choice, {}).get('gender', 'female')
+    avatar_info = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
     
     elevenlabs_key = setup_elevenlabs()
     
     if elevenlabs_key and elevenlabs_key.startswith("sk_"):
+        # Show API key confirmation
+        st.info(f"🔑 Using ElevenLabs API Key: {elevenlabs_key[:10]}...{elevenlabs_key[-5:]}")
         # Premium ElevenLabs voice with YOUR actual voice IDs
-        create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type, avatar_gender)
+        create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type, avatar_info)
     else:
+        # Show warning about missing API key
+        st.warning("⚠️ ElevenLabs API key not found. Using browser voice fallback.")
         # Enhanced browser TTS with improved personality settings
-        create_mobile_friendly_voice(text, voice_type, avatar_gender)
+        create_mobile_friendly_voice(text, voice_type, avatar_info['gender'])
 
 def create_mobile_friendly_voice(text, voice_type, gender):
     """Mobile-friendly browser TTS with enhanced personality settings"""
     
     clean_text = enhance_text_for_speech(text, voice_type)
     
-    # MUCH MORE DISTINCT voice personality settings (from reference code)
+    # Simplified voice personality settings (3 types only)
     voice_settings = {
-        'professional': {'rate': 0.85, 'pitch': 1.0, 'emphasis': 'neutral'},
-        'confident': {'rate': 1.1, 'pitch': 0.8, 'emphasis': 'strong'},
-        'caring': {'rate': 0.75, 'pitch': 1.3, 'emphasis': 'gentle'},
-        'wise': {'rate': 0.65, 'pitch': 0.7, 'emphasis': 'thoughtful'},
-        'energetic': {'rate': 1.25, 'pitch': 1.4, 'emphasis': 'excited'},
-        'executive': {'rate': 0.9, 'pitch': 0.85, 'emphasis': 'authoritative'}
+        'caring': {'rate': 0.75, 'pitch': 1.2, 'emphasis': 'gentle'},
+        'professional': {'rate': 0.9, 'pitch': 1.0, 'emphasis': 'neutral'},
+        'energetic': {'rate': 1.3, 'pitch': 1.4, 'emphasis': 'excited'}
     }
     
     settings = voice_settings.get(voice_type, voice_settings['professional'])
@@ -751,17 +756,15 @@ def create_mobile_friendly_voice(text, voice_type, gender):
     else:
         settings['pitch'] = min(1.6, settings['pitch'] + 0.2)  # Higher for females
     
-    # Add personality-specific pauses and emphasis (enhanced from reference)
-    if voice_type == 'wise':
-        clean_text = clean_text.replace('.', '... ')  # Thoughtful pauses
-        clean_text = clean_text.replace(',', ', ')    # More deliberate
+    # Add personality-specific pauses and emphasis (simplified)
+    if voice_type == 'caring':
+        clean_text = clean_text.replace(',', ', ')    # More deliberate pauses
+        clean_text = clean_text.replace('you', 'you... ')  # Gentle emphasis
     elif voice_type == 'energetic':
         clean_text = clean_text.replace('!', '! ')    # Excitement bursts
         clean_text = clean_text.replace('.', '! ')    # Turn periods to exclamation
-    elif voice_type == 'caring':
-        clean_text = clean_text.replace('you', 'you... ')  # Gentle emphasis
-    elif voice_type == 'confident':
-        clean_text = clean_text.replace('.', '. ')    # Firm statements
+    elif voice_type == 'professional':
+        clean_text = clean_text.replace('.', '. ')    # Clear, firm statements
     
     voice_html = f"""
     <div style="
@@ -804,20 +807,20 @@ def create_mobile_friendly_voice(text, voice_type, gender):
             voiceUtterance.pitch = {settings['pitch']};
             voiceUtterance.volume = 1.0;
             
-            // Gender and personality-based voice selection (enhanced)
+            // Gender and personality-based voice selection (simplified)
             const voices = speechSynthesis.getVoices();
             let bestVoice;
             
             if ('{gender}' === 'male') {{
                 // Male voice selection with personality matching
-                if ('{voice_type}' === 'wise') {{
+                if ('{voice_type}' === 'caring') {{
                     bestVoice = voices.find(v => 
                         v.lang.startsWith('en-') && 
                         (v.name.toLowerCase().includes('daniel') ||
                          v.name.toLowerCase().includes('alex') ||
                          v.name.toLowerCase().includes('male'))
                     );
-                }} else if ('{voice_type}' === 'confident' || '{voice_type}' === 'executive') {{
+                }} else if ('{voice_type}' === 'professional') {{
                     bestVoice = voices.find(v => 
                         v.lang.startsWith('en-') && 
                         (v.name.toLowerCase().includes('david') ||
@@ -924,32 +927,45 @@ def create_mobile_friendly_voice(text, voice_type, gender):
     
     st.components.v1.html(voice_html, height=120)
 
-def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
-    """Instant ElevenLabs voice with YOUR ACTUAL voice IDs mapped to personalities"""
+def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
+    """Instant ElevenLabs voice with avatar-based voice selection and personality-based tone adjustments"""
     
-    # YOUR ACTUAL VOICE IDS MAPPED TO PERSONALITIES AND GENDERS
-    if gender == 'male':
-        voice_configs = {
-            'professional': {'voice_id': 'nPczCjzI2devNBz1zQrb', 'name': 'Brian (Professional Male)'},
-            'confident': {'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Charlie (Confident Male)'},
-            'caring': {'voice_id': 'pqHfZKP75CvOlQylNhV4', 'name': 'Bill (Caring Male)'},
-            'wise': {'voice_id': 'onwK4e9ZLuTAKqWW03F9', 'name': 'Daniel (Wise Male)'},
-            'energetic': {'voice_id': 'TX3LPaxmHKxFdv7VOQHJ', 'name': 'Liam (Energetic Male)'},
-            'executive': {'voice_id': 'cjVigY5qzO86Huf0OWal', 'name': 'Eric (Executive Male)'}
-        }
-    else:  # female
-        voice_configs = {
-            'professional': {'voice_id': 'Xb7hH8MSUJpSbSDYk0k2', 'name': 'Alice (Professional Female)'},
-            'confident': {'voice_id': 'XB0fDUnXU5powFXDhCwa', 'name': 'Charlotte (Confident Female)'},
-            'caring': {'voice_id': 'EXAVITQu4vr4xnSDxMaL', 'name': 'Sarah (Caring Female)'},
-            'wise': {'voice_id': '9BWtsMINqrJLrRacOk9x', 'name': 'Aria (Wise Female)'},
-            'energetic': {'voice_id': 'cgSgspJ2msm6clMCkdW9', 'name': 'Jessica (Energetic Female)'},
-            'executive': {'voice_id': 'XrExE9yKIg1WjnnlVkGX', 'name': 'Matilda (Executive Female)'}
-        }
+    # Validate API key format
+    if not api_key or not api_key.startswith("sk_") or len(api_key) < 20:
+        st.error(f"❌ Invalid ElevenLabs API key format: {api_key[:10] if api_key else 'None'}...")
+        return
     
-    voice_config = voice_configs.get(voice_type, voice_configs['professional'])
-    voice_id = voice_config['voice_id']
-    voice_name = voice_config['name']
+    # Get voice ID from avatar (same voice per avatar, personality only affects tone/speed/energy)
+    voice_id = avatar_info['voice_id']
+    voice_name = f"{avatar_info['name']} ({avatar_info['gender']})"
+    
+    # Personality-based voice settings (only tone, speed, energy - NOT voice selection)
+    personality_settings = {
+        'caring': {
+            'stability': 0.8,        # Calm and steady
+            'similarity_boost': 0.9, # Clear and warm
+            'style': 0.2,           # Gentle style
+            'speed': 0.8,           # Slower, more thoughtful pace
+            'description': 'Calm & Empathetic'
+        },
+        'professional': {
+            'stability': 0.9,        # Very stable and controlled
+            'similarity_boost': 0.8, # Clear and authoritative  
+            'style': 0.4,           # Neutral, business-like
+            'speed': 1.0,           # Normal, clear pace
+            'description': 'Formal & Direct'
+        },
+        'energetic': {
+            'stability': 0.5,        # More dynamic and variable
+            'similarity_boost': 0.7, # Expressive and lively
+            'style': 0.8,           # High energy style
+            'speed': 1.2,           # Faster, more excited pace
+            'description': 'High Energy & Happy'
+        }
+    }
+    
+    # Get settings for current personality
+    settings = personality_settings.get(voice_type, personality_settings['professional'])
     
     # Clean text for speech
     clean_text = enhance_text_for_speech(text, voice_type)
@@ -990,9 +1006,11 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
             font-size: 14px;
             font-family: monospace;
         ">
-            Target: {voice_name}<br>
+            Voice: {voice_name}<br>
             Voice ID: {voice_id}<br>
-            Personality: {voice_type}
+            Personality: {voice_type} ({settings['description']})<br>
+            Speed: {settings['speed']}x | Energy: {settings['style']} | Stability: {settings['stability']}<br>
+            API Key: {api_key[:10]}...{api_key[-5:]}
         </div>
         
         <div id="errorDetails" style="
@@ -1076,18 +1094,20 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
             console.log('=== ELEVENLABS DEBUG INFO ===');
             console.log('API Key:', '{api_key[:10]}...{api_key[-5:]}');
             console.log('Voice ID:', '{voice_id}');
-            console.log('Voice Type:', '{voice_type}');
+            console.log('Voice Name:', '{voice_name}');
+            console.log('Personality:', '{voice_type}');
+            console.log('Settings:', {settings});
             console.log('Text to speak:', `{clean_text}`);
             
             const requestBody = {{
                 text: `{clean_text}`,
                 model_id: 'eleven_monolingual_v1',
                 voice_settings: {{
-                    stability: {0.9 if voice_type == 'wise' else 0.7 if voice_type == 'professional' else 0.4},
-                    similarity_boost: {0.9 if voice_type == 'professional' else 0.8 if voice_type == 'wise' else 0.6},
-                    style: {0.2 if voice_type == 'caring' else 0.9 if voice_type == 'energetic' else 0.5},
-                    use_speaker_boost: {str(voice_type in ['confident', 'executive', 'energetic']).lower()},
-                    speed: {0.7 if voice_type == 'wise' else 1.3 if voice_type == 'energetic' else 1.0}
+                    stability: {settings['stability']},
+                    similarity_boost: {settings['similarity_boost']},
+                    style: {settings['style']},
+                    use_speaker_boost: true,
+                    speed: {settings['speed']}
                 }}
             }};
             
@@ -1123,7 +1143,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                 const audio = new Audio(audioUrl);
                 
                 audio.play().then(() => {{
-                    updateVoiceStatus('🎵 ELEVENLABS PLAYING: {voice_name}', '#28a745', '#f8fff8');
+                    updateVoiceStatus('🎵 ELEVENLABS PLAYING: {voice_name} ({settings["description"]})', '#28a745', '#f8fff8');
                     console.log('ElevenLabs audio playing successfully!');
                 }}).catch(error => {{
                     console.log('Audio play blocked/failed:', error);
@@ -1134,7 +1154,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                 
                 audio.onended = function() {{
                     URL.revokeObjectURL(audioUrl);
-                    updateVoiceStatus('✅ ELEVENLABS COMPLETED: {voice_name}', '#28a745', '#f8fff8');
+                    updateVoiceStatus('✅ ELEVENLABS COMPLETED: {voice_name} ({settings["description"]})', '#28a745', '#f8fff8');
                 }};
                 
                 audio.onerror = function(error) {{
@@ -1208,37 +1228,25 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
             
             const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
             
-            // Enhanced personality-specific settings for fallback
-            if ('{voice_type}' === 'wise') {{
-                utterance.rate = 0.6;
-                utterance.pitch = {0.5 if gender == 'male' else 0.8};
+            // Personality-based settings for browser TTS
+            if ('{voice_type}' === 'caring') {{
+                utterance.rate = 0.75;
+                utterance.pitch = {0.6 if avatar_info['gender'] == 'male' else 1.2};
             }} else if ('{voice_type}' === 'energetic') {{
                 utterance.rate = 1.4;
-                utterance.pitch = {0.8 if gender == 'male' else 1.6};
-            }} else if ('{voice_type}' === 'caring') {{
-                utterance.rate = 0.75;
-                utterance.pitch = {0.6 if gender == 'male' else 1.3};
-            }} else if ('{voice_type}' === 'confident') {{
-                utterance.rate = 1.1;
-                utterance.pitch = {0.4 if gender == 'male' else 0.9};
-            }} else if ('{voice_type}' === 'professional') {{
-                utterance.rate = 0.85;
-                utterance.pitch = {0.6 if gender == 'male' else 1.0};
-            }} else if ('{voice_type}' === 'executive') {{
+                utterance.pitch = {0.8 if avatar_info['gender'] == 'male' else 1.6};
+            }} else {{ // professional
                 utterance.rate = 0.9;
-                utterance.pitch = {0.5 if gender == 'male' else 0.85};
-            }} else {{
-                utterance.rate = 0.9;
-                utterance.pitch = {0.6 if gender == 'male' else 1.0};
+                utterance.pitch = {0.7 if avatar_info['gender'] == 'male' else 1.0};
             }}
             
             utterance.volume = 1.0;
             
-            // Enhanced gender-based voice selection for fallback
+            // Gender-based voice selection for fallback
             const voices = speechSynthesis.getVoices();
             let bestVoice;
             
-            if ('{gender}' === 'male') {{
+            if ('{avatar_info['gender']}' === 'male') {{
                 bestVoice = voices.find(v => 
                     v.lang.startsWith('en-') && 
                     (v.name.toLowerCase().includes('male') || 
@@ -1286,10 +1294,10 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
     </script>
     """
     
-    st.components.v1.html(voice_html, height=200)
+    st.components.v1.html(voice_html, height=300)
 
 def enhance_text_for_speech(text, voice_type):
-    """Make text MUCH more distinct for each personality type (enhanced from reference)"""
+    """Make text more expressive for the 3 personality types"""
     
     # Remove markdown and clean
     text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
@@ -1297,12 +1305,11 @@ def enhance_text_for_speech(text, voice_type):
     text = re.sub(r'#{1,6}\s', '', text)
     text = text.replace('\n', ' ').strip()
     
-    # DRAMATIC personality-based enhancements (enhanced from reference code)
+    # Personality-based text enhancements (simplified to 3 types)
     if voice_type == 'caring':
         # Gentle, nurturing speech patterns
         text = re.sub(r'\byou\b', 'you, dear', text, flags=re.IGNORECASE, count=1)
         text = re.sub(r'\.', '. Take your time with this.', text, count=1)
-        text = re.sub(r'!', '. This is wonderful!', text)
         text = text.replace(' can ', ' absolutely can ')
         text = text.replace(' will ', ' will surely ')
         
@@ -1316,38 +1323,14 @@ def enhance_text_for_speech(text, voice_type):
         text = text.replace(' will ', ' will definitely ')
         text += ' I\'m SO excited for you!'
         
-    elif voice_type == 'wise':
-        # Slow, thoughtful, philosophical speech
-        text = re.sub(r'\bremember\b', 'always keep in mind', text, flags=re.IGNORECASE)
-        text = re.sub(r'\.', '... Consider this carefully.', text, count=1)
-        text = re.sub(r'\bthink\b', 'reflect deeply', text, flags=re.IGNORECASE)
-        text = 'Hmm... ' + text
-        text = text.replace(' is ', ' truly is ')
-        text = text.replace(' can ', ' may indeed ')
-        
     elif voice_type == 'professional':
         # Clear, direct, business-like speech
         text = re.sub(r'\.', '. Let me be clear on this point.', text, count=1)
         text = re.sub(r'\bI think\b', 'Based on my analysis', text, flags=re.IGNORECASE)
         text = text.replace(' should ', ' must strategically ')
         text = text.replace(' can ', ' should systematically ')
-        
-    elif voice_type == 'confident':
-        # Strong, assertive, powerful speech
-        text = re.sub(r'\.', '. I\'m absolutely certain of this.', text, count=1)
-        text = re.sub(r'\bI believe\b', 'I KNOW', text, flags=re.IGNORECASE)
-        text = text.replace(' might ', ' WILL ')
-        text = text.replace(' could ', ' WILL ')
-        text = 'Listen up! ' + text
-        
-    elif voice_type == 'executive':
-        # Authoritative, commanding, leadership speech
-        text = re.sub(r'\.', '. This is exactly what successful leaders do.', text, count=1)
-        text = re.sub(r'\bwe should\b', 'we MUST execute', text, flags=re.IGNORECASE)
-        text = text.replace(' need to ', ' must immediately ')
-        text = 'Here\'s the strategic approach: ' + text
     
-    # Add natural speech patterns with MORE dramatic pauses
+    # Add natural speech patterns
     text = re.sub(r'([.!?])', r'\1 ', text)
     text = re.sub(r'([,:])', r'\1 ', text)
     
@@ -1469,40 +1452,34 @@ def user_profile_sidebar():
             )
         )
         
-        # Voice personality (enhanced options from reference)
-        st.subheader("🎤 Voice Style")
+        # Voice personality (simplified to 3 options)
+        st.subheader("🎤 Voice Personality")
         voice_type = st.selectbox(
             "Coach Personality",
-            ["caring", "professional", "energetic", "wise", "confident", "executive"],
-            index=["caring", "professional", "energetic", "wise", "confident", "executive"].index(
+            ["caring", "professional", "energetic"],
+            index=["caring", "professional", "energetic"].index(
                 st.session_state.user_profile.get('voice_type', 'caring')
             ),
             format_func=lambda x: {
-                'caring': '💝 Caring & Supportive',
-                'professional': '💼 Professional & Direct', 
-                'energetic': '⚡ Energetic & Motivating',
-                'wise': '🧙‍♂️ Wise & Thoughtful',
-                'confident': '💪 Confident & Assertive',
-                'executive': '👔 Executive & Authoritative'
+                'caring': '💝 Caring & Supportive (Calm, Empathetic)',
+                'professional': '💼 Professional & Direct (Formal, Business-like)', 
+                'energetic': '⚡ Energetic & Motivating (High Energy, Happy Vibes)'
             }[x]
         )
         
         # Show which voices will be used
         st.info("🎤 **Your Voice Mapping:**\n\n"
-                "**Male Voices:**\n"
-                "• Brian - Professional\n"
-                "• Charlie - Confident\n"
-                "• Bill - Caring\n"
-                "• Daniel - Wise\n"
-                "• Liam - Energetic\n"
-                "• Eric - Executive\n\n"
-                "**Female Voices:**\n"
-                "• Alice - Professional\n"
-                "• Charlotte - Confident\n"
-                "• Sarah - Caring\n"
-                "• Aria - Wise\n"
-                "• Jessica - Energetic\n"
-                "• Matilda - Executive")
+                "**Each avatar has their own unique voice:**\n"
+                "• Sophia → Emily (Female)\n"
+                "• Marcus → Adam (Male)\n"
+                "• Elena → Freya (Female)\n"
+                "• David → Arnold (Male)\n"
+                "• Maya → Glinda (Female)\n"
+                "• James → Antoni (Male)\n\n"
+                "**Personality affects tone/speed/energy only!**\n"
+                "• Caring: Calm & slow (0.8x speed)\n"
+                "• Professional: Clear & normal (1.0x speed)\n"
+                "• Energetic: Fast & exciting (1.2x speed)")
         
         # Save profile
         if st.button("💾 Save Settings", type="primary"):
@@ -1771,18 +1748,12 @@ def main():
             
             with debug_col1:
                 test_voice_id = st.selectbox("Select Voice ID to Test:", [
-                    "Xb7hH8MSUJpSbSDYk0k2",  # Alice
-                    "9BWtsMINqrJLrRacOk9x",  # Aria  
-                    "pqHfZKP75CvOlQylNhV4",  # Bill
-                    "nPczCjzI2devNBz1zQrb",  # Brian
-                    "IKne3meq5aSn9XLyUdCD",  # Charlie
-                    "XB0fDUnXU5powFXDhCwa",  # Charlotte
-                    "onwK4e9ZLuTAKqWW03F9",  # Daniel
-                    "cjVigY5qzO86Huf0OWal",  # Eric
-                    "cgSgspJ2msm6clMCkdW9",  # Jessica
-                    "TX3LPaxmHKxFdv7VOQHJ",  # Liam
-                    "XrExE9yKIg1WjnnlVkGX",  # Matilda
-                    "EXAVITQu4vr4xnSDxMaL",  # Sarah
+                    "LcfcDJNUP1GQjkzn1xUU",  # Emily (Sophia)
+                    "pNInz6obpgDQGcFmaJgB",  # Adam (Marcus)
+                    "jsCqWAovK2LkecY7zXl4",  # Freya (Elena)
+                    "VR6AewLTigWG4xSOukaG",  # Arnold (David)
+                    "z9fAnlkpzviPz146aGWa",  # Glinda (Maya)
+                    "ErXwobaYiN019PkySvjV",  # Antoni (James)
                 ], key="debug_voice_select")
             
             with debug_col2:
