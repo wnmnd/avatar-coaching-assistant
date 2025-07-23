@@ -901,9 +901,9 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                     voice_settings: {{
                         stability: {0.9 if voice_type == 'wise' else 0.7 if voice_type == 'professional' else 0.5},
                         similarity_boost: {0.9 if voice_type == 'professional' else 0.8 if voice_type == 'wise' else 0.6},
-                        style: {0.2 if voice_type == 'caring' else 0.6 if voice_type == 'energetic' else 0.5},
+                        style: {0.2 if voice_type == 'caring' else 0.7 if voice_type == 'energetic' else 0.5},
                         use_speaker_boost: {str(voice_type in ['confident', 'executive', 'energetic']).lower()},
-                        speed: {0.8 if voice_type == 'wise' else 1.0 if voice_type == 'energetic' else 1.0}
+                        speed: {0.8 if voice_type == 'wise' else 1.1 if voice_type == 'energetic' else 1.0}
                     }}
                 }})
             }});
@@ -942,7 +942,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                 utterance.rate = 0.6;
                 utterance.pitch = {0.5 if gender == 'male' else 0.8};
             }} else if ('{voice_type}' === 'energetic') {{
-                utterance.rate = 1.1;
+                utterance.rate = 1.2;
                 utterance.pitch = {0.7 if gender == 'male' else 1.5};
             }} else if ('{voice_type}' === 'caring') {{
                 utterance.rate = 0.75;
@@ -1007,7 +1007,7 @@ def create_instant_browser_voice(text, voice_type, gender):
         'confident': {'rate': 1.1, 'pitch': 0.8, 'emphasis': 'strong'},
         'caring': {'rate': 0.75, 'pitch': 1.3, 'emphasis': 'gentle'},
         'wise': {'rate': 0.65, 'pitch': 0.7, 'emphasis': 'thoughtful'},
-        'energetic': {'rate': 1.15, 'pitch': 1.4, 'emphasis': 'excited'},
+        'energetic': {'rate': 1.2, 'pitch': 1.4, 'emphasis': 'excited'},
         'executive': {'rate': 0.9, 'pitch': 0.85, 'emphasis': 'authoritative'}
     }
    
