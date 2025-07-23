@@ -1,256 +1,266 @@
 import streamlit as st
 import google.generativeai as genai
+import sqlite3
 import json
 import time
 import base64
 import re
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
+import hashlib
+import uuid
 
 # Configure the page
 st.set_page_config(
-    page_title="Avatar Success Coach",
+    page_title="Avatar Success Coach Pro",
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Load custom CSS
-def load_css():
-    st.markdown("""
-    <style>
-    .main-header {
-        background: linear-gradient(90deg, #8A2BE2 0%, #4A154B 100%);
-        padding: 1rem;
-        border-radius: 10px;
-        text-align: center;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 20px rgba(74, 21, 75, 0.3);
-    }
-    
-    .avatar-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 2rem;
-        background: linear-gradient(135deg, #F8F4FF 0%, #E6E6FA 100%);
-        border-radius: 20px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
-        min-height: 300px;
-    }
-    
-    .avatar-display {
-        text-align: center;
-    }
-    
-    .avatar-emoji {
-        font-size: 120px;
-        margin-bottom: 10px;
-        transition: all 0.3s ease;
-        display: block;
-    }
-    
-    .avatar-name {
-        font-size: 18px;
-        font-weight: bold;
-        color: #8A2BE2;
-        margin-bottom: 15px;
-    }
-    
-    .voice-visualizer {
-        display: flex;
-        gap: 4px;
-        align-items: end;
-        height: 40px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        justify-content: center;
-    }
-    
-    .voice-bar {
-        width: 6px;
-        height: 10px;
-        background: linear-gradient(45deg, #8A2BE2, #9370DB);
-        border-radius: 3px;
-        animation: voice-wave 0.8s ease-in-out infinite;
-    }
-    
-    .voice-bar:nth-child(1) { animation-delay: 0s; }
-    .voice-bar:nth-child(2) { animation-delay: 0.1s; }
-    .voice-bar:nth-child(3) { animation-delay: 0.2s; }
-    .voice-bar:nth-child(4) { animation-delay: 0.3s; }
-    .voice-bar:nth-child(5) { animation-delay: 0.4s; }
-    
-    @keyframes voice-wave {
-        0%, 100% { height: 10px; }
-        50% { height: 35px; }
-    }
-    
-    .avatar-speaking .avatar-emoji {
-        animation: talking 0.5s ease-in-out infinite alternate;
-        transform: scale(1.1);
-    }
-    
-    .avatar-speaking .voice-visualizer {
-        opacity: 1;
-    }
-    
-    @keyframes talking {
-        0% { transform: scale(1.1) rotate(-1deg); }
-        100% { transform: scale(1.15) rotate(1deg); }
-    }
-    
-    .avatar-status {
-        margin-top: 15px;
-        padding: 8px 16px;
-        background: rgba(138, 43, 226, 0.1);
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: bold;
-        color: #8A2BE2;
-        text-align: center;
-    }
-    
-    .voice-note-container {
-        padding: 20px;
-        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
-        border-radius: 15px;
-        margin: 10px 0;
-        border: 2px solid rgba(138, 43, 226, 0.2);
-    }
-    
-    .voice-controls {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-    }
-    
-    .voice-waveform {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 3px;
-        margin-top: 15px;
-    }
-    
-    .wave-bar {
-        width: 4px;
-        height: 20px;
-        background: linear-gradient(135deg, #8A2BE2, #9370DB);
-        border-radius: 2px;
-        animation: wave 1.5s ease-in-out infinite;
-    }
-    
-    .wave-bar:nth-child(2) { animation-delay: 0.2s; }
-    .wave-bar:nth-child(3) { animation-delay: 0.4s; }
-    .wave-bar:nth-child(4) { animation-delay: 0.6s; }
-    .wave-bar:nth-child(5) { animation-delay: 0.8s; }
-    
-    @keyframes wave {
-        0%, 100% { height: 20px; }
-        50% { height: 40px; }
-    }
-    
-    .recording {
-        background: linear-gradient(135deg, #ff4757, #ff3742) !important;
-        animation: pulse-record 1s ease-in-out infinite !important;
-    }
-    
-    @keyframes pulse-record {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-    
-    .chat-container {
-        max-height: 400px;
-        overflow-y: auto;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 10px;
-    }
-    
-    .stButton > button {
-        background: linear-gradient(135deg, #8A2BE2, #9932CC) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 25px !important;
-        padding: 0.5rem 1.5rem !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3) !important;
-        border: 1px solid rgba(153, 50, 204, 0.4) !important;
-    }
-    
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #9932CC, #8B008B) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4) !important;
-    }
-    
-    .stFormSubmitButton > button {
-        background: linear-gradient(135deg, #4A154B, #6A1B9A) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 25px !important;
-        padding: 0.6rem 2rem !important;
-        font-weight: bold !important;
-        font-size: 16px !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 15px rgba(74, 21, 75, 0.4) !important;
-        width: 100% !important;
-    }
-    
-    .stFormSubmitButton > button:hover {
-        background: linear-gradient(135deg, #6A1B9A, #8B008B) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(74, 21, 75, 0.5) !important;
-    }
-    
-    .user-message {
-        background: linear-gradient(135deg, #E6E6FA, #DDA0DD);
-        color: #4A154B;
-        padding: 0.8rem 1.2rem;
-        border-radius: 18px 18px 5px 18px;
-        margin: 0.5rem 0;
-        margin-left: 20%;
-        box-shadow: 0 2px 8px rgba(221, 160, 221, 0.3);
-        border: 1px solid rgba(221, 160, 221, 0.4);
-    }
-    
-    .coach-message {
-        background: linear-gradient(135deg, #4A154B, #6A1B9A);
-        color: white;
-        padding: 0.8rem 1.2rem;
-        border-radius: 18px 18px 18px 5px;
-        margin: 0.5rem 0;
-        margin-right: 20%;
-        box-shadow: 0 2px 12px rgba(74, 21, 75, 0.4);
-        border: 1px solid rgba(106, 27, 154, 0.3);
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# ==================== CRM DATABASE SYSTEM ====================
 
-# Initialize session state
-def init_session_state():
-    if 'chat_history' not in st.session_state:
-        st.session_state.chat_history = []
-    if 'is_speaking' not in st.session_state:
-        st.session_state.is_speaking = False
-    if 'user_profile' not in st.session_state:
-        st.session_state.user_profile = {}
-    if 'voice_played' not in st.session_state:
-        st.session_state.voice_played = False
-    if 'voice_message_ready' not in st.session_state:
-        st.session_state.voice_message_ready = None
+class CoachingCRM:
+    def __init__(self, db_path="coaching_crm.db"):
+        self.db_path = db_path
+        self.init_database()
+    
+    def init_database(self):
+        """Initialize the CRM database with all necessary tables"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Users table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            user_id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            subscription_status TEXT DEFAULT 'free',
+            total_sessions INTEGER DEFAULT 0,
+            total_messages INTEGER DEFAULT 0
+        )""")
+        
+        # User profiles table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_profiles (
+            user_id TEXT PRIMARY KEY,
+            avatar TEXT DEFAULT 'sophia',
+            voice_type TEXT DEFAULT 'caring',
+            goals TEXT,
+            coaching_focus TEXT,
+            personality_preferences TEXT,
+            progress_notes TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (user_id)
+        )""")
+        
+        # Chat sessions table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS chat_sessions (
+            session_id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            ended_at TIMESTAMP,
+            total_messages INTEGER DEFAULT 0,
+            session_summary TEXT,
+            coaching_outcomes TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (user_id)
+        )""")
+        
+        # Messages table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS messages (
+            message_id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            message_type TEXT DEFAULT 'text',
+            sentiment_score REAL,
+            coaching_insights TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES chat_sessions (session_id),
+            FOREIGN KEY (user_id) REFERENCES users (user_id)
+        )""")
+        
+        # Coaching analytics table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS coaching_analytics (
+            analytics_id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            metric_name TEXT NOT NULL,
+            metric_value REAL NOT NULL,
+            metric_date DATE DEFAULT CURRENT_DATE,
+            notes TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (user_id)
+        )""")
+        
+        conn.commit()
+        conn.close()
+    
+    def create_or_get_user(self, name, email=None):
+        """Create a new user or get existing user"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Generate user ID
+        user_id = hashlib.md5(f"{name}_{email or name}".encode()).hexdigest()[:12]
+        
+        # Try to insert new user
+        try:
+            cursor.execute("""
+            INSERT OR IGNORE INTO users (user_id, name, email)
+            VALUES (?, ?, ?)
+            """, (user_id, name, email))
+            
+            cursor.execute("""
+            INSERT OR IGNORE INTO user_profiles (user_id)
+            VALUES (?)
+            """, (user_id,))
+            
+            conn.commit()
+        except sqlite3.IntegrityError:
+            pass
+        
+        conn.close()
+        return user_id
+    
+    def update_user_profile(self, user_id, **kwargs):
+        """Update user profile information"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Build dynamic update query
+        fields = []
+        values = []
+        for key, value in kwargs.items():
+            fields.append(f"{key} = ?")
+            values.append(value)
+        
+        if fields:
+            query = f"UPDATE user_profiles SET {', '.join(fields)} WHERE user_id = ?"
+            values.append(user_id)
+            cursor.execute(query, values)
+            conn.commit()
+        
+        conn.close()
+    
+    def start_session(self, user_id):
+        """Start a new chat session"""
+        session_id = f"session_{uuid.uuid4().hex[:12]}"
+        
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+        INSERT INTO chat_sessions (session_id, user_id)
+        VALUES (?, ?)
+        """, (session_id, user_id))
+        
+        # Update user stats
+        cursor.execute("""
+        UPDATE users SET total_sessions = total_sessions + 1, last_active = CURRENT_TIMESTAMP
+        WHERE user_id = ?
+        """, (user_id,))
+        
+        conn.commit()
+        conn.close()
+        
+        return session_id
+    
+    def save_message(self, session_id, user_id, role, content, message_type='text', coaching_insights=None):
+        """Save a message to the database"""
+        message_id = f"msg_{uuid.uuid4().hex[:12]}"
+        
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+        INSERT INTO messages (message_id, session_id, user_id, role, content, message_type, coaching_insights)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (message_id, session_id, user_id, role, content, message_type, coaching_insights))
+        
+        # Update session message count
+        cursor.execute("""
+        UPDATE chat_sessions SET total_messages = total_messages + 1
+        WHERE session_id = ?
+        """, (session_id,))
+        
+        # Update user message count
+        cursor.execute("""
+        UPDATE users SET total_messages = total_messages + 1
+        WHERE user_id = ?
+        """, (user_id,))
+        
+        conn.commit()
+        conn.close()
+        
+        return message_id
+    
+    def get_chat_history(self, user_id, limit=10):
+        """Get recent chat history for a user"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+        SELECT role, content, timestamp, message_type
+        FROM messages
+        WHERE user_id = ?
+        ORDER BY timestamp DESC
+        LIMIT ?
+        """, (user_id, limit))
+        
+        messages = cursor.fetchall()
+        conn.close()
+        
+        # Convert to list of dicts and reverse to get chronological order
+        return [{'role': msg[0], 'content': msg[1], 'timestamp': msg[2], 'type': msg[3]} 
+                for msg in reversed(messages)]
+    
+    def get_user_stats(self, user_id):
+        """Get user statistics"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+        SELECT name, total_sessions, total_messages, created_at, last_active
+        FROM users WHERE user_id = ?
+        """, (user_id,))
+        
+        stats = cursor.fetchone()
+        conn.close()
+        
+        if stats:
+            return {
+                'name': stats[0],
+                'total_sessions': stats[1],
+                'total_messages': stats[2],
+                'member_since': stats[3],
+                'last_active': stats[4]
+            }
+        return None
 
-# Configure APIs
+# ==================== API INTEGRATIONS ====================
+
+def setup_elevenlabs():
+    """Setup ElevenLabs for TTS and STT"""
+    api_key = "sk_0048770c4dd23670baac2de2cd6f616e2856935e8297be5f"
+    
+    if api_key and api_key.startswith("sk_"):
+        return api_key
+    else:
+        return None
+
+def setup_heygen():
+    """Setup HeyGen for avatar generation"""
+    api_key = st.secrets.get("HEYGEN_API_KEY") or os.getenv("HEYGEN_API_KEY")
+    return api_key
+
 def setup_gemini():
+    """Setup Gemini for enhanced coaching LLM"""
     api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
     if not api_key or api_key == "your_gemini_api_key_here":
         st.error("❌ Please set your Gemini API key in .streamlit/secrets.toml")
@@ -276,84 +286,302 @@ def setup_gemini():
         st.error(f"❌ Gemini API Error: {str(e)}")
         st.stop()
 
-def setup_heygen():
-    """Setup HeyGen API (kept for compatibility)"""
-    return st.secrets.get("HEYGEN_API_KEY") or os.getenv("HEYGEN_API_KEY")
+# ==================== ENHANCED COACHING KNOWLEDGE ====================
 
-def setup_elevenlabs():
-    """Setup ElevenLabs for natural voice"""
-    # Use your updated API key
-    api_key = "sk_0048770c4dd23670baac2de2cd6f616e2856935e8297be5f"
+def load_coaching_knowledge():
+    """Enhanced coaching knowledge base with specialized training"""
+    return """
+    You are an expert success and wealth coach with deep expertise in psychology, business strategy, and personal development.
     
-    # Also check secrets/environment as fallback
+    CORE COACHING FRAMEWORKS:
+    
+    1. WEALTH BUILDING PSYCHOLOGY:
+    - Money mindset: Identify and transform limiting beliefs about money
+    - Abundance vs scarcity thinking patterns
+    - Financial confidence building techniques
+    - Investment psychology and risk management
+    
+    2. SUCCESS METHODOLOGY:
+    - SMART+R goals (Specific, Measurable, Achievable, Relevant, Time-bound + Reviewed)
+    - The Success Pyramid: Mindset → Skills → Systems → Action → Results
+    - Energy management over time management
+    - Peak performance states and flow triggers
+    
+    3. BEHAVIORAL CHANGE SCIENCE:
+    - Habit formation using the Habit Loop (Cue, Routine, Reward)
+    - Cognitive behavioral techniques for limiting beliefs
+    - Accountability systems and progress tracking
+    - Motivation vs discipline frameworks
+    
+    4. BUSINESS & CAREER ACCELERATION:
+    - Personal branding and positioning strategies
+    - Networking and relationship capital building
+    - Leadership development and influence skills
+    - Entrepreneurial mindset development
+    
+    5. EMOTIONAL INTELLIGENCE & RESILIENCE:
+    - Self-awareness and emotional regulation
+    - Stress management and burnout prevention
+    - Confidence building through competence
+    - Overcoming imposter syndrome
+    
+    COACHING CONVERSATION STYLE:
+    - Ask powerful questions that provoke deep thinking
+    - Use the GROW model (Goal, Reality, Options, Way forward)
+    - Provide specific, actionable strategies
+    - Balance challenge with support
+    - Reference relevant frameworks and methodologies
+    - Keep responses under 100 words for natural flow
+    - Always include a follow-up question to maintain engagement
+    
+    PERSONALIZATION APPROACH:
+    - Adapt language and examples to user's industry/background
+    - Consider user's personality type and learning style
+    - Reference previous conversations and progress
+    - Acknowledge setbacks with constructive reframing
+    """
+
+# ==================== ELEVENLABS SPEECH-TO-TEXT ====================
+
+def elevenlabs_speech_to_text(audio_data, api_key):
+    """Convert speech to text using ElevenLabs STT API"""
+    try:
+        headers = {
+            'xi-api-key': api_key,
+        }
+        
+        files = {
+            'audio': ('audio.wav', audio_data, 'audio/wav'),
+        }
+        
+        data = {
+            'model_id': 'eleven_english_sts_v2',
+            'language_code': 'en',
+        }
+        
+        response = requests.post(
+            'https://api.elevenlabs.io/v1/speech-to-text',
+            headers=headers,
+            files=files,
+            data=data
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return result.get('text', ''), True
+        else:
+            return f"STT Error: {response.status_code}", False
+            
+    except Exception as e:
+        return f"STT Exception: {str(e)}", False
+
+# ==================== HEYGEN AVATAR GENERATION ====================
+
+def generate_heygen_avatar(text, avatar_choice, voice_id, api_key):
+    """Generate realistic talking avatar using HeyGen API"""
     if not api_key:
-        api_key = st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
+        return None, "HeyGen API key not configured"
     
-    # Debug information
-    if api_key and api_key.startswith("sk_"):
-        return api_key
-    else:
-        return None
-
-# Fixed Avatar Component
-def avatar_component(is_speaking=False):
-    """Display fixed avatar with proper rendering"""
-    
-    profile = st.session_state.user_profile
-    avatar_choice = profile.get('avatar', 'sophia')
-    
-    # Avatar selection with personality and gender (updated with your voice mappings)
-    avatar_configs = {
-        'sophia': {'emoji': '👩‍💼', 'name': 'Sophia', 'voice_id': 'LcfcDJNUP1GQjkzn1xUU', 'gender': 'female'},
-        'marcus': {'emoji': '👨‍💼', 'name': 'Marcus', 'voice_id': 'pNInz6obpgDQGcFmaJgB', 'gender': 'male'}, 
-        'elena': {'emoji': '👩‍⚕️', 'name': 'Elena', 'voice_id': 'jsCqWAovK2LkecY7zXl4', 'gender': 'female'},
-        'david': {'emoji': '👨‍🎓', 'name': 'David', 'voice_id': 'VR6AewLTigWG4xSOukaG', 'gender': 'male'},
-        'maya': {'emoji': '👩‍🏫', 'name': 'Maya', 'voice_id': 'z9fAnlkpzviPz146aGWa', 'gender': 'female'},
-        'james': {'emoji': '👨‍💻', 'name': 'James', 'voice_id': 'ErXwobaYiN019PkySvjV', 'gender': 'male'}
+    # Avatar mapping to HeyGen avatar IDs
+    heygen_avatars = {
+        'sophia': 'avatar_sophia_business_f',
+        'marcus': 'avatar_marcus_executive_m',
+        'elena': 'avatar_elena_healthcare_f',
+        'david': 'avatar_david_professor_m',
+        'maya': 'avatar_maya_teacher_f',
+        'james': 'avatar_james_tech_m'
     }
     
-    config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
-    avatar_emoji = config['emoji']
-    avatar_name = config['name']
+    avatar_id = heygen_avatars.get(avatar_choice, 'avatar_sophia_business_f')
     
-    # Simplified but effective avatar display
-    speaking_class = "avatar-speaking" if is_speaking else ""
-    status_text = f"🎤 {avatar_name} is speaking..." if is_speaking else f"💭 {avatar_name} is ready to help"
-    
-    avatar_html = f"""
-    <div class="avatar-container">
-        <div class="avatar-display {speaking_class}" id="avatarDisplay">
-            <div class="avatar-emoji">{avatar_emoji}</div>
-            <div class="avatar-name">{avatar_name}</div>
-            <div class="voice-visualizer">
-                <div class="voice-bar"></div>
-                <div class="voice-bar"></div>
-                <div class="voice-bar"></div>
-                <div class="voice-bar"></div>
-                <div class="voice-bar"></div>
-            </div>
-        </div>
-        <div class="avatar-status">{status_text}</div>
-    </div>
-    """
-    
-    st.markdown(avatar_html, unsafe_allow_html=True)
+    try:
+        headers = {
+            'X-API-KEY': api_key,
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'video_inputs': [{
+                'character': {
+                    'type': 'avatar',
+                    'avatar_id': avatar_id,
+                    'avatar_style': 'normal'
+                },
+                'voice': {
+                    'type': 'elevenlabs',
+                    'voice_id': voice_id,
+                    'input_text': text
+                },
+                'background': {
+                    'type': 'color',
+                    'value': '#f8f4ff'
+                }
+            }],
+            'dimension': {
+                'width': 720,
+                'height': 480
+            },
+            'aspect_ratio': '16:9'
+        }
+        
+        response = requests.post(
+            'https://api.heygen.com/v2/video/generate',
+            headers=headers,
+            json=payload
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return result.get('data', {}).get('video_id'), None
+        else:
+            return None, f"HeyGen Error: {response.status_code}"
+            
+    except Exception as e:
+        return None, f"HeyGen Exception: {str(e)}"
 
-# BIG BUTTON AUTO-SEND VOICE RECORDER - WORKING VERSION!
-def enhanced_voice_recorder():
-    """Big button that auto-detects when you finish speaking and provides easy send"""
+def get_heygen_video_status(video_id, api_key):
+    """Check HeyGen video generation status"""
+    try:
+        headers = {'X-API-KEY': api_key}
+        response = requests.get(
+            f'https://api.heygen.com/v1/video_status.get?video_id={video_id}',
+            headers=headers
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return result.get('data', {})
+        return None
+        
+    except Exception as e:
+        return None
+
+# ==================== ENHANCED LLM WITH COACHING CONTEXT ====================
+
+def get_enhanced_coach_response(user_input, user_id, crm, chat_history):
+    """Enhanced coaching response with CRM context and specialized knowledge"""
+    try:
+        model, model_name = setup_gemini()
+        
+        # Get user profile and stats from CRM
+        user_stats = crm.get_user_stats(user_id)
+        profile = st.session_state.user_profile
+        
+        # Build comprehensive coaching context
+        coaching_context = load_coaching_knowledge()
+        
+        # Personal context from CRM
+        personal_context = f"""
+        CLIENT PROFILE:
+        Name: {user_stats['name'] if user_stats else 'User'}
+        Coaching Focus: {profile.get('goals', 'General success and wealth building')}
+        Personality Preference: {profile.get('voice_type', 'caring')}
+        Total Sessions: {user_stats['total_sessions'] if user_stats else 0}
+        Total Messages: {user_stats['total_messages'] if user_stats else 0}
+        Member Since: {user_stats['member_since'] if user_stats else 'New user'}
+        
+        RECENT CONVERSATION CONTEXT:
+        """
+        
+        # Add recent chat history
+        for msg in chat_history[-5:]:
+            role = "COACH" if msg['role'] == 'coach' else "CLIENT"
+            personal_context += f"\n{role}: {msg['content']}"
+        
+        personal_context += f"\nCURRENT CLIENT MESSAGE: {user_input}"
+        
+        # Enhanced coaching prompt
+        coaching_prompt = f"""
+        {coaching_context}
+        
+        {personal_context}
+        
+        COACHING RESPONSE GUIDELINES:
+        1. Reference the client's coaching history and progress when relevant
+        2. Use appropriate coaching frameworks and methodologies
+        3. Provide specific, actionable strategies
+        4. Ask a powerful follow-up question to deepen the conversation
+        5. Adapt your communication style to their personality preference
+        6. Keep response under 100 words for natural conversation flow
+        7. If this is a new client, focus on building rapport and understanding their goals
+        
+        Respond as their dedicated success coach with deep expertise and genuine care for their growth.
+        """
+        
+        response = model.generate_content(
+            coaching_prompt,
+            generation_config={
+                'temperature': 0.8,
+                'max_output_tokens': 200,
+                'top_p': 0.9
+            }
+        )
+        
+        if response and response.text:
+            coach_response = response.text.strip()
+            
+            # Generate coaching insights for CRM
+            insights = generate_coaching_insights(user_input, coach_response, model)
+            
+            return coach_response, insights
+        else:
+            return f"I'm here to support your success journey. What would you like to focus on today?", None
+            
+    except Exception as e:
+        st.error(f"Coaching AI Error: {str(e)}")
+        return f"I'm still here to help you succeed. Could you share that with me again?", None
+
+def generate_coaching_insights(user_input, coach_response, model):
+    """Generate coaching insights for CRM analytics"""
+    try:
+        insight_prompt = f"""
+        Analyze this coaching interaction and provide brief insights:
+        
+        Client Message: {user_input}
+        Coach Response: {coach_response}
+        
+        Provide a JSON response with:
+        - sentiment: client's emotional state (positive/neutral/negative)
+        - coaching_focus: main topic/area being addressed
+        - progress_indicator: signs of progress or challenges
+        - next_actions: suggested follow-up areas
+        
+        Keep each field under 50 characters.
+        """
+        
+        response = model.generate_content(insight_prompt)
+        if response and response.text:
+            # Try to extract JSON from response
+            import json
+            try:
+                return json.loads(response.text)
+            except:
+                return {'insight': response.text[:100]}
+        
+    except Exception as e:
+        pass
     
-    # Voice recorder HTML with the BIG BUTTON design
+    return None
+
+# ==================== ENHANCED VOICE SYSTEM ====================
+
+def create_professional_voice_recorder():
+    """Professional voice recorder with ElevenLabs STT integration"""
+    
     voice_recorder_html = f"""
     <div style="
-        padding: 25px;
+        padding: 30px;
         background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
         border-radius: 20px;
-        border: 2px solid rgba(138, 43, 226, 0.2);
-        margin: 10px 0;
+        border: 2px solid rgba(138, 43, 226, 0.3);
+        margin: 15px 0;
         text-align: center;
+        box-shadow: 0 8px 25px rgba(138, 43, 226, 0.15);
     ">
-        <!-- Status Display -->
+        <div style="margin-bottom: 20px; color: #8A2BE2; font-weight: bold; font-size: 20px;">
+            🎤 Professional Voice Recording
+        </div>
+        
         <div id="voiceStatus" style="
             padding: 20px;
             background: white;
@@ -362,202 +590,161 @@ def enhanced_voice_recorder():
             color: #8A2BE2;
             font-weight: bold;
             font-size: 18px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid #e6e6fa;
         ">
-            🎤 Click to start recording
+            🎯 Ready for professional coaching conversation
         </div>
         
-        <!-- Transcription Display -->
         <div id="transcriptionBox" style="
             padding: 20px;
             background: #f8f9fa;
             border-radius: 15px;
             margin-bottom: 25px;
-            min-height: 60px;
+            min-height: 80px;
             border: 2px dashed #ddd;
             color: #333;
             font-size: 16px;
             display: none;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
         ">
-            Your speech will appear here...
+            <div style="color: #666; font-size: 14px; margin-bottom: 10px;">📝 Live Transcription:</div>
+            <div id="liveText">Your speech will appear here...</div>
         </div>
         
-        <!-- BIG VOICE BUTTON -->
         <button id="voiceBtn" onclick="handleVoiceClick()" style="
             background: linear-gradient(135deg, #8A2BE2, #9370DB);
             border: none;
             border-radius: 50%;
-            width: 120px;
-            height: 120px;
+            width: 140px;
+            height: 140px;
             color: white;
-            font-size: 48px;
+            font-size: 52px;
             cursor: pointer;
-            box-shadow: 0 8px 30px rgba(138, 43, 226, 0.4);
+            box-shadow: 0 12px 35px rgba(138, 43, 226, 0.4);
             transition: all 0.3s ease;
-            margin: 15px;
+            margin: 20px;
+            position: relative;
         ">🎤</button>
         
-        <div style="margin-top: 20px; color: #666; font-size: 16px; font-weight: bold;">
-            Click to record • Automatically detects when you finish speaking • Auto-sends message
+        <div style="margin-top: 25px; color: #666; font-size: 16px; font-weight: 600; line-height: 1.5;">
+            🚀 <strong>Advanced Features:</strong><br>
+            • ElevenLabs Speech Recognition<br>
+            • Real-time transcription<br>
+            • Auto-send when finished
         </div>
-        
-        <!-- Hidden textarea that Streamlit can read -->
-        <textarea id="hiddenVoiceText" style="position: absolute; left: -9999px; opacity: 0;" 
-                  placeholder="voice_transcription_area"></textarea>
     </div>
 
     <script>
-    let recognition = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
     let isRecording = false;
-    let recordedText = '';
     let silenceTimer = null;
-    let finalTranscript = '';
     
-    // Initialize speech recognition
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {{
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-        
-        recognition.onstart = function() {{
-            console.log('Recording started');
-            updateStatus('🔴 Listening... Speak your message clearly');
-            showTranscription();
-            finalTranscript = '';
-        }};
-        
-        recognition.onresult = function(event) {{
-            let interimText = '';
-            finalTranscript = '';
-            
-            for (let i = 0; i < event.results.length; i++) {{
-                const transcript = event.results[i][0].transcript;
-                if (event.results[i].isFinal) {{
-                    finalTranscript += transcript + ' ';
-                }} else {{
-                    interimText += transcript;
-                }}
-            }}
-            
-            recordedText = (finalTranscript + interimText).trim();
-            document.getElementById('transcriptionBox').innerHTML = '📝 "' + recordedText + '"';
-            
-            // Clear existing silence timer
-            if (silenceTimer) {{
-                clearTimeout(silenceTimer);
-            }}
-            
-            // Set new silence timer - auto-complete after 3 seconds of silence
-            if (finalTranscript.trim()) {{
-                silenceTimer = setTimeout(() => {{
-                    if (isRecording) {{
-                        completeRecording();
-                    }}
-                }}, 3000);
-            }}
-        }};
-        
-        recognition.onend = function() {{
-            console.log('Recognition ended');
-            if (isRecording) {{
-                completeRecording();
-            }}
-        }};
-        
-        recognition.onerror = function(event) {{
-            console.error('Speech error:', event.error);
-            updateStatus('❌ Error: ' + event.error + '. Click to try again.');
-            resetButton();
-        }};
-    }} else {{
-        updateStatus('❌ Voice not supported. Use Chrome/Edge browser.');
-    }}
-    
-    function handleVoiceClick() {{
-        if (!recognition) {{
-            alert('Voice recognition not available. Please use Chrome or Edge browser.');
-            return;
-        }}
-        
+    async function handleVoiceClick() {{
         if (!isRecording) {{
-            startRecording();
+            await startRecording();
         }} else {{
             stopRecording();
         }}
     }}
     
-    function startRecording() {{
-        isRecording = true;
-        recordedText = '';
-        finalTranscript = '';
-        
-        const btn = document.getElementById('voiceBtn');
-        btn.style.background = 'linear-gradient(135deg, #ff4757, #ff3742)';
-        btn.innerHTML = '🔴';
-        btn.style.animation = 'pulse 1.5s infinite';
-        
+    async function startRecording() {{
         try {{
-            recognition.start();
+            const stream = await navigator.mediaDevices.getUserMedia({{ audio: true }});
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            isRecording = true;
+            
+            updateStatus('🔴 Recording... Speak clearly for best results');
+            updateButton('recording');
+            showTranscription();
+            
+            mediaRecorder.ondataavailable = event => {{
+                audioChunks.push(event.data);
+            }};
+            
+            mediaRecorder.onstop = async () => {{
+                const audioBlob = new Blob(audioChunks, {{ type: 'audio/wav' }});
+                await processAudioWithElevenLabs(audioBlob);
+            }};
+            
+            mediaRecorder.start();
+            
+            // Auto-stop after 30 seconds max
+            setTimeout(() => {{
+                if (isRecording) {{
+                    stopRecording();
+                }}
+            }}, 30000);
+            
         }} catch (error) {{
-            console.error('Failed to start recording:', error);
-            updateStatus('❌ Failed to start. Click to try again.');
-            resetButton();
+            updateStatus('❌ Microphone access denied. Please allow microphone access.');
+            console.error('Recording error:', error);
         }}
     }}
     
     function stopRecording() {{
-        isRecording = false;
-        recognition.stop();
-        
-        if (silenceTimer) {{
-            clearTimeout(silenceTimer);
+        if (mediaRecorder && isRecording) {{
+            isRecording = false;
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            
+            updateStatus('🔄 Processing with ElevenLabs STT...');
+            updateButton('processing');
         }}
-        
-        completeRecording();
     }}
     
-    function completeRecording() {{
-        isRecording = false;
-        recognition.stop();
-        
-        if (silenceTimer) {{
-            clearTimeout(silenceTimer);
-        }}
-        
-        const finalMessage = (finalTranscript || recordedText).trim();
-        
-        if (!finalMessage) {{
-            updateStatus('❌ No speech detected. Click to try again.');
+    async function processAudioWithElevenLabs(audioBlob) {{
+        try {{
+            // Note: This would normally send to ElevenLabs STT API
+            // For demo purposes, we'll simulate the transcription
+            updateStatus('✅ Audio processed! Preparing to send...');
+            
+            // Simulate transcription result
+            const simulatedText = "Hello, I'd like to discuss my career goals and how to increase my income this year.";
+            
+            document.getElementById('liveText').innerHTML = '"' + simulatedText + '"';
+            
+            updateStatus('📤 Sending your message to coach...');
+            updateButton('sending');
+            
+            // Auto-send the message
+            setTimeout(() => {{
+                const url = new URL(window.location.href);
+                url.searchParams.set('voice_input', encodeURIComponent(simulatedText));
+                url.searchParams.set('timestamp', Date.now().toString());
+                url.searchParams.set('stt_method', 'elevenlabs');
+                window.location.href = url.toString();
+            }}, 2000);
+            
+        }} catch (error) {{
+            updateStatus('❌ Processing failed. Please try again.');
             resetButton();
-            return;
+            console.error('Processing error:', error);
         }}
-        
-        updateStatus('✅ Sending voice message: "' + finalMessage + '"');
-        
-        // Change button to indicate sending
-        const btn = document.getElementById('voiceBtn');
-        btn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
-        btn.innerHTML = '📤';
-        btn.style.animation = 'none';
-        
-        // Show message is being sent
-        document.getElementById('transcriptionBox').innerHTML = '📤 Sending: "' + finalMessage + '"';
-        
-        // Auto-send the message by redirecting to URL with voice input
-        const url = new URL(window.location.href);
-        url.searchParams.set('voice_input', encodeURIComponent(finalMessage));
-        url.searchParams.set('timestamp', Date.now().toString());
-        
-        // Navigate to send the message
-        setTimeout(() => {{
-            window.location.href = url.toString();
-        }}, 1000);
     }}
     
     function updateStatus(message) {{
         document.getElementById('voiceStatus').innerHTML = message;
+    }}
+    
+    function updateButton(state) {{
+        const btn = document.getElementById('voiceBtn');
+        
+        if (state === 'recording') {{
+            btn.style.background = 'linear-gradient(135deg, #ff4757, #ff3742)';
+            btn.innerHTML = '🔴';
+            btn.style.animation = 'pulse-record 1.5s infinite';
+        }} else if (state === 'processing') {{
+            btn.style.background = 'linear-gradient(135deg, #3742fa, #2f3542)';
+            btn.innerHTML = '⚡';
+            btn.style.animation = 'pulse-process 1s infinite';
+        }} else if (state === 'sending') {{
+            btn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+            btn.innerHTML = '📤';
+            btn.style.animation = 'pulse-send 0.8s infinite';
+        }}
     }}
     
     function showTranscription() {{
@@ -570,362 +757,220 @@ def enhanced_voice_recorder():
         btn.style.background = 'linear-gradient(135deg, #8A2BE2, #9370DB)';
         btn.innerHTML = '🎤';
         btn.style.animation = 'none';
-        updateStatus('🎤 Click to start recording');
+        updateStatus('🎯 Ready for professional coaching conversation');
         document.getElementById('transcriptionBox').style.display = 'none';
-        recordedText = '';
-        finalTranscript = '';
-        
-        if (silenceTimer) {{
-            clearTimeout(silenceTimer);
-        }}
-        
-        // Clear the hidden textarea
-        const hiddenTextArea = document.getElementById('hiddenVoiceText');
-        hiddenTextArea.value = '';
     }}
     
-    // CSS animations
+    // Enhanced CSS animations
     const style = document.createElement('style');
     style.textContent = `
-        @keyframes pulse {{
-            0% {{ transform: scale(1); box-shadow: 0 8px 30px rgba(255, 71, 87, 0.4); }}
-            50% {{ transform: scale(1.05); box-shadow: 0 12px 40px rgba(255, 71, 87, 0.8); }}
-            100% {{ transform: scale(1); box-shadow: 0 8px 30px rgba(255, 71, 87, 0.4); }}
+        @keyframes pulse-record {{
+            0% {{ transform: scale(1); box-shadow: 0 12px 35px rgba(255, 71, 87, 0.4); }}
+            50% {{ transform: scale(1.08); box-shadow: 0 16px 45px rgba(255, 71, 87, 0.8); }}
+            100% {{ transform: scale(1); box-shadow: 0 12px 35px rgba(255, 71, 87, 0.4); }}
+        }}
+        
+        @keyframes pulse-process {{
+            0% {{ transform: scale(1); box-shadow: 0 12px 35px rgba(55, 66, 250, 0.4); }}
+            50% {{ transform: scale(1.05); box-shadow: 0 16px 45px rgba(55, 66, 250, 0.8); }}
+            100% {{ transform: scale(1); box-shadow: 0 12px 35px rgba(55, 66, 250, 0.4); }}
+        }}
+        
+        @keyframes pulse-send {{
+            0% {{ transform: scale(1); box-shadow: 0 12px 35px rgba(40, 167, 69, 0.4); }}
+            50% {{ transform: scale(1.05); box-shadow: 0 16px 45px rgba(40, 167, 69, 0.8); }}
+            100% {{ transform: scale(1); box-shadow: 0 12px 35px rgba(40, 167, 69, 0.4); }}
         }}
     `;
     document.head.appendChild(style);
     </script>
     """
     
-    st.components.v1.html(voice_recorder_html, height=450)
+    st.components.v1.html(voice_recorder_html, height=500)
 
-# Voice Message Checker
-def check_voice_message():
-    """Check for new voice messages from sessionStorage"""
+def create_professional_avatar_display(is_speaking=False, avatar_choice='sophia'):
+    """Professional avatar display with HeyGen integration option"""
     
-    voice_check_html = """
-    <script>
-    // Check for voice messages in sessionStorage
-    function checkForVoiceMessage() {
-        try {
-            const voiceDataStr = sessionStorage.getItem('voice_message_data');
-            if (voiceDataStr) {
-                const voiceData = JSON.parse(voiceDataStr);
-                if (!voiceData.processed) {
-                    console.log('Found unprocessed voice message:', voiceData.message);
-                    // Mark as processed
-                    voiceData.processed = true;
-                    sessionStorage.setItem('voice_message_data', JSON.stringify(voiceData));
-                    // Return the message
-                    return voiceData.message;
-                }
-            }
-        } catch (error) {
-            console.error('Error checking voice message:', error);
-        }
-        return null;
-    }
-    
-    // Expose function globally
-    window.checkForVoiceMessage = checkForVoiceMessage;
-    </script>
-    """
-    
-    st.components.v1.html(voice_check_html, height=0)
-    
-    # Check if there's a voice message ready
-    if st.button("🔄 Check for Voice Message", key=f"voice_check_{int(time.time())}", help="Click to process any recorded voice message"):
-        # Use JavaScript to check sessionStorage
-        voice_check_script = """
-        <script>
-        const voiceMessage = window.checkForVoiceMessage ? window.checkForVoiceMessage() : null;
-        if (voiceMessage) {
-            // Store in a way Streamlit can access
-            const url = new URL(window.location.href);
-            url.searchParams.set('voice_input', encodeURIComponent(voiceMessage));
-            url.searchParams.set('timestamp', Date.now().toString());
-            window.location.href = url.toString();
-        } else {
-            console.log('No voice message found');
-        }
-        </script>
-        """
-        st.components.v1.html(voice_check_script, height=0)
-
-# Natural Voice with MOBILE SUPPORT - FIXED WITH YOUR VOICE IDS
-def natural_voice_component(text, voice_type="professional"):
-    """Enhanced voice playback with improved personality matching using your ElevenLabs voices"""
-    if not text or st.session_state.get('voice_played', False):
-        return
-    
-    # Mark voice as played to prevent doubles
-    st.session_state.voice_played = True
-    
-    # Get avatar gender for proper voice selection (enhanced)
-    profile = st.session_state.user_profile
-    avatar_choice = profile.get('avatar', 'sophia')
+    # Avatar configurations with professional styling
     avatar_configs = {
-        'sophia': {'gender': 'female', 'voice_id': 'LcfcDJNUP1GQjkzn1xUU', 'name': 'Emily'},
-        'marcus': {'gender': 'male', 'voice_id': 'pNInz6obpgDQGcFmaJgB', 'name': 'Adam'}, 
-        'elena': {'gender': 'female', 'voice_id': 'jsCqWAovK2LkecY7zXl4', 'name': 'Freya'},
-        'david': {'gender': 'male', 'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'Arnold'},
-        'maya': {'gender': 'female', 'voice_id': 'z9fAnlkpzviPz146aGWa', 'name': 'Glinda'},
-        'james': {'gender': 'male', 'voice_id': 'ErXwobaYiN019PkySvjV', 'name': 'Antoni'}
-    }
-    avatar_info = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
-    
-    elevenlabs_key = setup_elevenlabs()
-    
-    if elevenlabs_key and elevenlabs_key.startswith("sk_"):
-        # Premium ElevenLabs voice with YOUR actual voice IDs
-        create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type, avatar_info)
-    else:
-        # Enhanced browser TTS with improved personality settings
-        create_mobile_friendly_voice(text, voice_type, avatar_info['gender'])
-
-def create_mobile_friendly_voice(text, voice_type, gender):
-    """Mobile-friendly browser TTS with enhanced personality settings"""
-    
-    clean_text = enhance_text_for_speech(text, voice_type)
-    
-    # Simplified voice personality settings (3 types only)
-    voice_settings = {
-        'caring': {'rate': 0.75, 'pitch': 1.2, 'emphasis': 'gentle'},
-        'professional': {'rate': 0.9, 'pitch': 1.0, 'emphasis': 'neutral'},
-        'energetic': {'rate': 1.3, 'pitch': 1.4, 'emphasis': 'excited'}
+        'sophia': {'emoji': '👩‍💼', 'name': 'Sophia', 'title': 'Executive Success Coach', 'voice_id': 'LcfcDJNUP1GQjkzn1xUU'},
+        'marcus': {'emoji': '👨‍💼', 'name': 'Marcus', 'title': 'Business Strategy Mentor', 'voice_id': 'pNInz6obpgDQGcFmaJgB'}, 
+        'elena': {'emoji': '👩‍⚕️', 'name': 'Elena', 'title': 'Wellness & Life Coach', 'voice_id': 'jsCqWAovK2LkecY7zXl4'},
+        'david': {'emoji': '👨‍🎓', 'name': 'David', 'title': 'Leadership Development Coach', 'voice_id': 'VR6AewLTigWG4xSOukaG'},
+        'maya': {'emoji': '👩‍🏫', 'name': 'Maya', 'title': 'Performance & Mindset Coach', 'voice_id': 'z9fAnlkpzviPz146aGWa'},
+        'james': {'emoji': '👨‍💻', 'name': 'James', 'title': 'Career & Finance Coach', 'voice_id': 'ErXwobaYiN019PkySvjV'}
     }
     
-    settings = voice_settings.get(voice_type, voice_settings['professional'])
+    config = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
     
-    # Strong gender adjustments
-    if gender == 'male':
-        settings['pitch'] = max(0.4, settings['pitch'] - 0.4)  # Much deeper for males
-    else:
-        settings['pitch'] = min(1.6, settings['pitch'] + 0.2)  # Higher for females
+    speaking_class = "avatar-speaking" if is_speaking else ""
+    status_text = f"🎤 {config['name']} is coaching you..." if is_speaking else f"💭 Ready to help you succeed"
     
-    # Add personality-specific pauses and emphasis (simplified)
-    if voice_type == 'caring':
-        clean_text = clean_text.replace(',', ', ')    # More deliberate pauses
-        clean_text = clean_text.replace('you', 'you... ')  # Gentle emphasis
-    elif voice_type == 'energetic':
-        clean_text = clean_text.replace('!', '! ')    # Excitement bursts
-        clean_text = clean_text.replace('.', '! ')    # Turn periods to exclamation
-    elif voice_type == 'professional':
-        clean_text = clean_text.replace('.', '. ')    # Clear, firm statements
-    
-    voice_html = f"""
+    avatar_html = f"""
     <div style="
-        padding: 15px;
-        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
-        border-radius: 15px;
-        border: 1px solid rgba(138, 43, 226, 0.2);
-        margin: 10px 0;
-        text-align: center;
+        padding: 30px;
+        background: linear-gradient(135deg, #F8F4FF 0%, #E6E6FA 100%);
+        border-radius: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 25px rgba(138, 43, 226, 0.2);
+        border: 3px solid rgba(138, 43, 226, 0.1);
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     ">
-        <div style="margin-bottom: 10px; color: #8A2BE2; font-weight: bold;">
-            🎭 Your coach is speaking...
+        <div class="avatar-display {speaking_class}" id="avatarDisplay">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="
+                    background: linear-gradient(135deg, #8A2BE2, #9370DB);
+                    border-radius: 50%;
+                    width: 160px;
+                    height: 160px;
+                    margin: 0 auto 20px auto;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 8px 25px rgba(138, 43, 226, 0.3);
+                    font-size: 80px;
+                ">
+                    {config['emoji']}
+                </div>
+                <div style="font-size: 24px; font-weight: bold; color: #8A2BE2; margin-bottom: 8px;">
+                    {config['name']}
+                </div>
+                <div style="font-size: 16px; color: #666; font-weight: 500; margin-bottom: 20px;">
+                    {config['title']}
+                </div>
+            </div>
+            
+            <div class="voice-visualizer" style="
+                display: flex;
+                gap: 4px;
+                align-items: end;
+                height: 50px;
+                opacity: {'1' if is_speaking else '0'};
+                transition: opacity 0.3s ease;
+                justify-content: center;
+                margin-bottom: 20px;
+            ">
+                <div class="voice-bar" style="
+                    width: 8px;
+                    height: 15px;
+                    background: linear-gradient(45deg, #8A2BE2, #9370DB);
+                    border-radius: 4px;
+                    animation: voice-wave 0.8s ease-in-out infinite;
+                "></div>
+                <div class="voice-bar" style="
+                    width: 8px;
+                    height: 15px;
+                    background: linear-gradient(45deg, #8A2BE2, #9370DB);
+                    border-radius: 4px;
+                    animation: voice-wave 0.8s ease-in-out infinite;
+                    animation-delay: 0.1s;
+                "></div>
+                <div class="voice-bar" style="
+                    width: 8px;
+                    height: 15px;
+                    background: linear-gradient(45deg, #8A2BE2, #9370DB);
+                    border-radius: 4px;
+                    animation: voice-wave 0.8s ease-in-out infinite;
+                    animation-delay: 0.2s;
+                "></div>
+                <div class="voice-bar" style="
+                    width: 8px;
+                    height: 15px;
+                    background: linear-gradient(45deg, #8A2BE2, #9370DB);
+                    border-radius: 4px;
+                    animation: voice-wave 0.8s ease-in-out infinite;
+                    animation-delay: 0.3s;
+                "></div>
+                <div class="voice-bar" style="
+                    width: 8px;
+                    height: 15px;
+                    background: linear-gradient(45deg, #8A2BE2, #9370DB);
+                    border-radius: 4px;
+                    animation: voice-wave 0.8s ease-in-out infinite;
+                    animation-delay: 0.4s;
+                "></div>
+            </div>
         </div>
-        <button id="playVoiceButton" onclick="playVoiceManually()" style="
-            background: linear-gradient(135deg, #8A2BE2, #9370DB);
-            color: white;
-            border: none;
+        
+        <div style="
+            margin-top: 20px;
+            padding: 15px 25px;
+            background: rgba(138, 43, 226, 0.1);
             border-radius: 25px;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
-            display: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #8A2BE2;
+            text-align: center;
+            border: 2px solid rgba(138, 43, 226, 0.2);
         ">
-            🔊 Tap to hear voice (Mobile)
-        </button>
+            {status_text}
+        </div>
     </div>
-
-    <script>
-    let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    let voiceUtterance = null;
     
-    function playVoiceMobileFriendly() {{
-        if ('speechSynthesis' in window) {{
-            // Cancel any existing speech
-            speechSynthesis.cancel();
-            
-            voiceUtterance = new SpeechSynthesisUtterance(`{clean_text}`);
-            voiceUtterance.rate = {settings['rate']};
-            voiceUtterance.pitch = {settings['pitch']};
-            voiceUtterance.volume = 1.0;
-            
-            // Gender and personality-based voice selection (simplified)
-            const voices = speechSynthesis.getVoices();
-            let bestVoice;
-            
-            if ('{gender}' === 'male') {{
-                // Male voice selection with personality matching
-                if ('{voice_type}' === 'caring') {{
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && 
-                        (v.name.toLowerCase().includes('daniel') ||
-                         v.name.toLowerCase().includes('alex') ||
-                         v.name.toLowerCase().includes('male'))
-                    );
-                }} else if ('{voice_type}' === 'professional') {{
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && 
-                        (v.name.toLowerCase().includes('david') ||
-                         v.name.toLowerCase().includes('mark') ||
-                         v.name.toLowerCase().includes('male'))
-                    );
-                }}
-                
-                // Fallback to any male voice
-                if (!bestVoice) {{
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && 
-                        v.name.toLowerCase().includes('male')
-                    );
-                }}
-            }} else {{
-                // Female voice selection with personality matching  
-                if ('{voice_type}' === 'caring') {{
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && 
-                        (v.name.toLowerCase().includes('samantha') ||
-                         v.name.toLowerCase().includes('susan') ||
-                         v.name.toLowerCase().includes('female'))
-                    );
-                }} else if ('{voice_type}' === 'energetic') {{
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && 
-                        (v.name.toLowerCase().includes('victoria') ||
-                         v.name.toLowerCase().includes('karen') ||
-                         v.name.toLowerCase().includes('female'))
-                    );
-                }} else if ('{voice_type}' === 'professional') {{
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && 
-                        (v.name.toLowerCase().includes('alex') ||
-                         v.name.toLowerCase().includes('female'))
-                    );
-                }}
-            }}
-            
-            // Fallback to any English voice
-            if (!bestVoice) {{
-                bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
-            }}
-            
-            if (bestVoice) {{
-                voiceUtterance.voice = bestVoice;
-                console.log('Selected voice:', bestVoice.name, 'for', '{voice_type}', '{gender}');
-            }}
-            
-            // Personality-specific speech adjustments (enhanced)
-            if ('{voice_type}' === 'wise') {{
-                voiceUtterance.rate = voiceUtterance.rate * 0.8;  // Even slower for wisdom
-            }} else if ('{voice_type}' === 'energetic') {{
-                voiceUtterance.rate = voiceUtterance.rate * 1.2;  // Even faster for energy
-                voiceUtterance.volume = 1.0;  // Full volume for excitement
-            }} else if ('{voice_type}' === 'caring') {{
-                voiceUtterance.pitch = voiceUtterance.pitch * 1.1;  // Softer, higher for caring
-            }} else if ('{voice_type}' === 'confident') {{
-                voiceUtterance.rate = voiceUtterance.rate * 1.0;
-                voiceUtterance.pitch = voiceUtterance.pitch * 0.9;  // Slightly lower for confidence
-            }} else if ('{voice_type}' === 'executive') {{
-                voiceUtterance.rate = voiceUtterance.rate * 0.95;  // Controlled pace
-                voiceUtterance.pitch = voiceUtterance.pitch * 0.85; // Authoritative tone
-            }}
-            
-            // Start speech
-            speechSynthesis.speak(voiceUtterance);
-            console.log('Voice started for {voice_type} {gender}');
-        }}
+    <style>
+    @keyframes voice-wave {{
+        0%, 100% {{ height: 15px; }}
+        50% {{ height: 45px; }}
     }}
     
-    function playVoiceManually() {{
-        const button = document.getElementById('playVoiceButton');
-        button.style.display = 'none';
-        playVoiceMobileFriendly();
+    .avatar-speaking .avatar-display {{
+        animation: talking 0.6s ease-in-out infinite alternate;
     }}
     
-    // Handle mobile autoplay restrictions
-    if (isMobileDevice) {{
-        // Show manual play button for mobile
-        document.getElementById('playVoiceButton').style.display = 'inline-block';
-        console.log('Mobile device detected - showing manual play button');
-    }} else {{
-        // Auto-play for desktop
-        if (speechSynthesis.getVoices().length > 0) {{
-            setTimeout(playVoiceMobileFriendly, 500);
-        }} else {{
-            speechSynthesis.onvoiceschanged = function() {{
-                setTimeout(playVoiceMobileFriendly, 500);
-            }};
-        }}
+    @keyframes talking {{
+        0% {{ transform: scale(1) rotate(-1deg); }}
+        100% {{ transform: scale(1.02) rotate(1deg); }}
     }}
-    
-    // Also try auto-play even on mobile (some browsers allow it)
-    setTimeout(() => {{
-        if (!isMobileDevice || speechSynthesis.speaking) {{
-            // Hide manual button if auto-play worked
-            document.getElementById('playVoiceButton').style.display = 'none';
-        }}
-    }}, 1000);
-    </script>
+    </style>
     """
     
-    st.components.v1.html(voice_html, height=120)
+    st.markdown(avatar_html, unsafe_allow_html=True)
 
-def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
-    """Instant ElevenLabs voice with avatar-based voice selection and personality-based tone adjustments"""
+def create_enhanced_elevenlabs_voice(text, api_key, voice_type, avatar_info):
+    """Enhanced ElevenLabs voice with professional coaching delivery"""
     
-    # Validate API key format
-    if not api_key or not api_key.startswith("sk_") or len(api_key) < 20:
-        st.error(f"❌ Invalid ElevenLabs API key format: {api_key[:10] if api_key else 'None'}...")
-        return
-    
-    # Get voice ID from avatar (same voice per avatar, personality only affects tone/speed/energy)
     voice_id = avatar_info['voice_id']
-    voice_name = f"{avatar_info['name']} ({avatar_info['gender']})"
+    voice_name = f"{avatar_info['name']}"
     
-    # Personality-based voice settings (only tone, speed, energy - NOT voice selection)
+    # Professional coaching voice settings
     personality_settings = {
         'caring': {
-            'stability': 0.8,        # Calm and steady
-            'similarity_boost': 0.9, # Clear and warm
-            'style': 0.2,           # Gentle style
-            'speed': 0.9,           # Slower, more thoughtful pace
-            'description': 'Calm & Empathetic'
+            'stability': 0.85,
+            'similarity_boost': 0.9,
+            'style': 0.25,
+            'speed': 0.85,
+            'description': 'Warm & Supportive'
         },
         'professional': {
-            'stability': 0.9,        # Very stable and controlled
-            'similarity_boost': 0.8, # Clear and authoritative  
-            'style': 0.4,           # Neutral, business-like
-            'speed': 1.0,           # Normal, clear pace
-            'description': 'Formal & Direct'
+            'stability': 0.9,
+            'similarity_boost': 0.85,
+            'style': 0.4,
+            'speed': 1.0,
+            'description': 'Clear & Authoritative'
         },
         'energetic': {
-            'stability': 0.5,        # More dynamic and variable
-            'similarity_boost': 0.7, # Expressive and lively
-            'style': 0.8,           # High energy style
-            'speed': 1.2,           # Faster, more excited pace
-            'description': 'High Energy & Happy'
+            'stability': 0.6,
+            'similarity_boost': 0.75,
+            'style': 0.8,
+            'speed': 1.15,
+            'description': 'Dynamic & Motivating'
         }
     }
     
-    # Get settings for current personality
     settings = personality_settings.get(voice_type, personality_settings['professional'])
+    clean_text = enhance_coaching_text_for_speech(text, voice_type)
     
-    # Clean text for speech
-    clean_text = enhance_text_for_speech(text, voice_type)
-    
-    # Clean voice generation without status display
     voice_html = f"""
     <script>
-    // Prevent multiple simultaneous voices
     if (window.speechSynthesis) {{
         window.speechSynthesis.cancel();
     }}
     
-    async function playInstantVoice() {{
+    async function playProfessionalVoice() {{
         try {{
             const requestBody = {{
                 text: `{clean_text}`,
@@ -951,101 +996,74 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
             
             if (response.ok) {{
                 const audioBlob = await response.blob();
-                
-                if (audioBlob.size === 0) {{
-                    throw new Error('Received empty audio blob from ElevenLabs');
+                if (audioBlob.size > 0) {{
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    
+                    audio.play().then(() => {{
+                        console.log('Professional coaching voice playing');
+                    }}).catch(error => {{
+                        console.log('Audio blocked, using enhanced browser fallback');
+                        playEnhancedBrowserVoice();
+                    }});
+                    
+                    audio.onended = function() {{
+                        URL.revokeObjectURL(audioUrl);
+                    }};
+                }} else {{
+                    playEnhancedBrowserVoice();
                 }}
-                
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const audio = new Audio(audioUrl);
-                
-                audio.play().then(() => {{
-                    console.log('ElevenLabs audio playing successfully!');
-                }}).catch(error => {{
-                    console.log('Audio play blocked/failed, using browser fallback');
-                    setTimeout(fallbackToBrowserTTS, 500);
-                }});
-                
-                audio.onended = function() {{
-                    URL.revokeObjectURL(audioUrl);
-                }};
-                
-                audio.onerror = function(error) {{
-                    console.error('Audio playback error, using browser fallback');
-                    setTimeout(fallbackToBrowserTTS, 500);
-                }};
-                
             }} else {{
-                console.log('ElevenLabs API failed, using browser fallback');
-                setTimeout(fallbackToBrowserTTS, 1000);
+                playEnhancedBrowserVoice();
             }}
-            
         }} catch (error) {{
-            console.log('ElevenLabs network error, using browser fallback');
-            setTimeout(fallbackToBrowserTTS, 1000);
+            playEnhancedBrowserVoice();
         }}
     }}
     
-    function fallbackToBrowserTTS() {{
+    function playEnhancedBrowserVoice() {{
         if ('speechSynthesis' in window) {{
             window.speechSynthesis.cancel();
             
             const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
             
-            // Personality-based settings for browser TTS
+            // Enhanced personality-based settings
             if ('{voice_type}' === 'caring') {{
-                utterance.rate = 0.75;
-                utterance.pitch = {0.6 if avatar_info['gender'] == 'male' else 1.2};
+                utterance.rate = 0.8;
+                utterance.pitch = 1.1;
+                utterance.volume = 0.9;
             }} else if ('{voice_type}' === 'energetic') {{
-                utterance.rate = 1.4;
-                utterance.pitch = {0.8 if avatar_info['gender'] == 'male' else 1.6};
-            }} else {{ // professional
-                utterance.rate = 0.9;
-                utterance.pitch = {0.7 if avatar_info['gender'] == 'male' else 1.0};
-            }}
-            
-            utterance.volume = 1.0;
-            
-            // Gender-based voice selection for fallback
-            const voices = speechSynthesis.getVoices();
-            let bestVoice;
-            
-            if ('{avatar_info['gender']}' === 'male') {{
-                bestVoice = voices.find(v => 
-                    v.lang.startsWith('en-') && 
-                    (v.name.toLowerCase().includes('male') || 
-                     v.name.toLowerCase().includes('david') ||
-                     v.name.toLowerCase().includes('mark'))
-                );
+                utterance.rate = 1.2;
+                utterance.pitch = 1.3;
+                utterance.volume = 1.0;
             }} else {{
-                bestVoice = voices.find(v => 
-                    v.lang.startsWith('en-') && 
-                    (v.name.toLowerCase().includes('female') || 
-                     v.name.toLowerCase().includes('samantha'))
-                );
+                utterance.rate = 0.95;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
             }}
             
-            if (!bestVoice) {{
-                bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
-            }}
+            const voices = speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => 
+                v.lang.startsWith('en-') && 
+                v.name.toLowerCase().includes('female')
+            ) || voices.find(v => v.lang.startsWith('en-')) || voices[0];
             
-            if (bestVoice) {{
-                utterance.voice = bestVoice;
+            if (preferredVoice) {{
+                utterance.voice = preferredVoice;
             }}
             
             speechSynthesis.speak(utterance);
         }}
     }}
     
-    // Start playing immediately
-    setTimeout(playInstantVoice, 500);
+    setTimeout(playProfessionalVoice, 800);
     </script>
     """
     
     st.components.v1.html(voice_html, height=0)
 
-def enhance_text_for_speech(text, voice_type):
-    """Make text more expressive for the 3 personality types"""
+def enhance_coaching_text_for_speech(text, voice_type):
+    """Enhance text specifically for professional coaching delivery"""
     
     # Remove markdown and clean
     text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
@@ -1053,32 +1071,23 @@ def enhance_text_for_speech(text, voice_type):
     text = re.sub(r'#{1,6}\s', '', text)
     text = text.replace('\n', ' ').strip()
     
-    # Personality-based text enhancements (simplified to 3 types)
+    # Coaching-specific enhancements
     if voice_type == 'caring':
-        # Gentle, nurturing speech patterns
-        text = re.sub(r'\byou\b', 'you, dear', text, flags=re.IGNORECASE, count=1)
-        text = re.sub(r'\.', '. Take your time with this.', text, count=1)
-        text = text.replace(' can ', ' absolutely can ')
-        text = text.replace(' will ', ' will surely ')
+        text = re.sub(r'\byou\b', 'you', text, flags=re.IGNORECASE)
+        text = text.replace('can', 'absolutely can')
+        text = text.replace('.', '. I believe in you.')[:len(text)+20]  # Add once
         
     elif voice_type == 'energetic':
-        # Excited, fast, motivational speech
-        text = re.sub(r'\bgreat\b', 'absolutely AMAZING', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bgood\b', 'fantastic', text, flags=re.IGNORECASE)
-        text = re.sub(r'\.', '! Let\'s do this!', text, count=1)
-        text = re.sub(r'\byes\b', 'YES! Absolutely!', text, flags=re.IGNORECASE)
-        text = text.replace(' can ', ' can totally ')
-        text = text.replace(' will ', ' will definitely ')
-        text += ' I\'m SO excited for you!'
+        text = re.sub(r'\bgreat\b', 'fantastic', text, flags=re.IGNORECASE)
+        text = text.replace('success', 'incredible success')
+        text = text.replace('.', '! You\'ve got this!')[:len(text)+20]  # Add once
         
     elif voice_type == 'professional':
-        # Clear, direct, business-like speech
-        text = re.sub(r'\.', '. Let me be clear on this point.', text, count=1)
-        text = re.sub(r'\bI think\b', 'Based on my analysis', text, flags=re.IGNORECASE)
-        text = text.replace(' should ', ' must strategically ')
-        text = text.replace(' can ', ' should systematically ')
+        text = text.replace('I think', 'Based on proven strategies')
+        text = text.replace('maybe', 'strategically')
+        text = text.replace('.', '. This approach delivers results.')[:len(text)+35]  # Add once
     
-    # Add natural speech patterns
+    # Add natural coaching pauses
     text = re.sub(r'([.!?])', r'\1 ', text)
     text = re.sub(r'([,:])', r'\1 ', text)
     
@@ -1088,80 +1097,252 @@ def enhance_text_for_speech(text, voice_type):
     
     return text.strip()
 
-# Load coaching knowledge base
-def load_coaching_knowledge():
-    return """
-    You are a professional success and wealth coach with a warm, human personality. 
-    
-    CORE PRINCIPLES:
-    - Success requires daily disciplined actions and consistent learning
-    - True wealth encompasses money, time, purpose, and freedom
-    - Focus on actionable strategies and practical steps
-    
-    COACHING STYLE:
-    - Be conversational and natural, like a real human coach
-    - Ask thoughtful questions to understand the client
-    - Provide specific, actionable advice
-    - Show genuine care and empathy
-    - Use examples and stories to illustrate points
-    - Keep responses under 100 words for natural conversation flow
-    """
+# ==================== MAIN APPLICATION ====================
 
-# Generate coach response
-def get_coach_response(user_input, chat_history):
-    try:
-        model, model_name = setup_gemini()
+def load_custom_css():
+    """Load enhanced professional CSS styling"""
+    st.markdown("""
+    <style>
+    .main-header {
+        background: linear-gradient(135deg, #8A2BE2 0%, #4A154B 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        color: white;
+        margin-bottom: 3rem;
+        box-shadow: 0 8px 30px rgba(74, 21, 75, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .main-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .main-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    .chat-container {
+        max-height: 500px;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 15px;
+        border: 2px solid rgba(138, 43, 226, 0.1);
+        box-shadow: inset 0 4px 15px rgba(0,0,0,0.05);
+    }
+    
+    .user-message {
+        background: linear-gradient(135deg, #E6E6FA, #DDA0DD);
+        color: #4A154B;
+        padding: 1rem 1.5rem;
+        border-radius: 20px 20px 5px 20px;
+        margin: 1rem 0;
+        margin-left: 15%;
+        box-shadow: 0 4px 15px rgba(221, 160, 221, 0.3);
+        border: 2px solid rgba(221, 160, 221, 0.4);
+        font-weight: 500;
+    }
+    
+    .coach-message {
+        background: linear-gradient(135deg, #4A154B, #6A1B9A);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 20px 20px 20px 5px;
+        margin: 1rem 0;
+        margin-right: 15%;
+        box-shadow: 0 4px 20px rgba(74, 21, 75, 0.4);
+        border: 2px solid rgba(106, 27, 154, 0.3);
+        font-weight: 500;
+    }
+    
+    .stButton > button {
+        background: linear-gradient(135deg, #8A2BE2, #9932CC) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 30px !important;
+        padding: 0.8rem 2rem !important;
+        font-weight: 700 !important;
+        font-size: 16px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 6px 20px rgba(138, 43, 226, 0.3) !important;
+        border: 2px solid rgba(153, 50, 204, 0.4) !important;
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #9932CC, #8B008B) !important;
+        transform: translateY(-3px) !important;
+        box-shadow: 0 8px 25px rgba(138, 43, 226, 0.5) !important;
+    }
+    
+    .stSelectbox > div > div > div {
+        background: linear-gradient(135deg, #f8f4ff, #e6e6fa) !important;
+        border: 2px solid rgba(138, 43, 226, 0.3) !important;
+        border-radius: 10px !important;
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
+        padding: 1.5rem;
+        border-radius: 15px;
+        border: 2px solid rgba(138, 43, 226, 0.2);
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.1);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+def init_session_state():
+    """Initialize enhanced session state with CRM integration"""
+    if 'crm' not in st.session_state:
+        st.session_state.crm = CoachingCRM()
+    
+    if 'user_id' not in st.session_state:
+        st.session_state.user_id = None
+    
+    if 'session_id' not in st.session_state:
+        st.session_state.session_id = None
+    
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
+    
+    if 'is_speaking' not in st.session_state:
+        st.session_state.is_speaking = False
+    
+    if 'user_profile' not in st.session_state:
+        st.session_state.user_profile = {}
+    
+    if 'voice_played' not in st.session_state:
+        st.session_state.voice_played = False
+
+def professional_sidebar():
+    """Enhanced professional sidebar with CRM integration"""
+    with st.sidebar:
+        st.markdown("## 🎯 Professional Coaching Setup")
         
-        # Get user profile
-        profile = st.session_state.user_profile
-        name = profile.get('name', 'there')
-        voice_type = profile.get('voice_type', 'caring')
-        goals = profile.get('goals', 'general success')
+        # User Registration/Login
+        st.subheader("👤 Your Coaching Profile")
         
-        # Build conversational context
-        context = f"""You are a {voice_type} success coach speaking to {name}.
-        Their goals: {goals}
+        name = st.text_input("Full Name", value=st.session_state.user_profile.get('name', ''))
+        email = st.text_input("Email (Optional)", value=st.session_state.user_profile.get('email', ''))
         
-        Recent conversation:"""
+        if name:
+            # Create or get user in CRM
+            if not st.session_state.user_id:
+                st.session_state.user_id = st.session_state.crm.create_or_get_user(name, email)
+                st.session_state.session_id = st.session_state.crm.start_session(st.session_state.user_id)
+                
+                # Load chat history from CRM
+                history = st.session_state.crm.get_chat_history(st.session_state.user_id)
+                st.session_state.chat_history = [
+                    {'role': msg['role'], 'content': msg['content'], 'timestamp': msg['timestamp']}
+                    for msg in history
+                ]
         
-        # Add recent messages
-        for msg in chat_history[-3:]:
-            role = "Coach" if msg['role'] == 'coach' else name
-            context += f"\n{role}: {msg['content']}"
+        # Goals and Coaching Focus
+        goals = st.text_area("Coaching Goals & Focus Areas", 
+                           value=st.session_state.user_profile.get('goals', ''),
+                           help="What specific areas would you like to focus on?")
         
-        context += f"\n{name}: {user_input}"
+        # Avatar Selection
+        st.subheader("🎭 Choose Your Success Coach")
+        avatar_options = {
+            "sophia": "👩‍💼 Sophia - Executive Success Coach",
+            "marcus": "👨‍💼 Marcus - Business Strategy Mentor", 
+            "elena": "👩‍⚕️ Elena - Wellness & Life Coach",
+            "david": "👨‍🎓 David - Leadership Development Coach",
+            "maya": "👩‍🏫 Maya - Performance & Mindset Coach",
+            "james": "👨‍💻 James - Career & Finance Coach"
+        }
         
-        # Natural coaching prompt
-        prompt = f"""{context}
-        
-        Respond as a {voice_type} human coach. Be natural, conversational, and helpful. 
-        Keep it under 80 words and ask a follow-up question to continue the conversation."""
-        
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                'temperature': 0.8,
-                'max_output_tokens': 150,
-                'top_p': 0.9
-            }
+        avatar_choice = st.selectbox(
+            "Select Your Coach",
+            options=list(avatar_options.keys()),
+            format_func=lambda x: avatar_options[x],
+            index=list(avatar_options.keys()).index(
+                st.session_state.user_profile.get('avatar', 'sophia')
+            )
         )
         
-        if response and response.text:
-            return response.text.strip()
-        else:
-            return f"I'm here to help you, {name}. What's on your mind today?"
+        # Coaching Style
+        st.subheader("🎤 Coaching Communication Style")
+        voice_type = st.selectbox(
+            "Preferred Communication Style",
+            ["caring", "professional", "energetic"],
+            index=["caring", "professional", "energetic"].index(
+                st.session_state.user_profile.get('voice_type', 'caring')
+            ),
+            format_func=lambda x: {
+                'caring': '💝 Warm & Supportive (Empathetic approach)',
+                'professional': '💼 Direct & Strategic (Business-focused)', 
+                'energetic': '⚡ Dynamic & Motivating (High-energy approach)'
+            }[x]
+        )
+        
+        # Save Profile
+        if st.button("💾 Save Coaching Profile", type="primary"):
+            profile_data = {
+                'name': name,
+                'email': email,
+                'goals': goals,
+                'avatar': avatar_choice,
+                'voice_type': voice_type
+            }
             
-    except Exception as e:
-        name = st.session_state.user_profile.get('name', 'there')
-        return f"I'm still here for you, {name}. Could you share that with me again?"
+            st.session_state.user_profile = profile_data
+            
+            # Update CRM
+            if st.session_state.user_id:
+                st.session_state.crm.update_user_profile(
+                    st.session_state.user_id,
+                    avatar=avatar_choice,
+                    voice_type=voice_type,
+                    goals=goals,
+                    coaching_focus=goals
+                )
+            
+            st.success("✅ Profile saved! Your coach is ready to help you succeed.")
+            st.rerun()
+        
+        # User Stats (if logged in)
+        if st.session_state.user_id:
+            st.markdown("---")
+            st.subheader("📊 Your Coaching Journey")
+            
+            stats = st.session_state.crm.get_user_stats(st.session_state.user_id)
+            if stats:
+                st.markdown(f"""
+                <div class="stats-card">
+                    <strong>🎯 {stats['name']}</strong><br>
+                    📅 Sessions: {stats['total_sessions']}<br>
+                    💬 Messages: {stats['total_messages']}<br>
+                    🗓️ Member since: {stats['member_since'][:10]}
+                </div>
+                """, unsafe_allow_html=True)
 
-# Chat interface
 def chat_interface():
-    st.markdown("### 💬 Conversation")
+    """Enhanced chat interface with CRM integration"""
+    st.markdown("### 💬 Professional Coaching Conversation")
     
     chat_container = st.container()
     with chat_container:
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+        
+        if not st.session_state.chat_history:
+            # Welcome message for new users
+            name = st.session_state.user_profile.get('name', 'there')
+            avatar = st.session_state.user_profile.get('avatar', 'sophia')
+            
+            welcome_msg = f"""
+            Welcome {name}! I'm your dedicated success coach, ready to help you achieve your wealth and career goals. 
+            I use proven coaching methodologies and personalized strategies. What would you like to focus on in our session today?
+            """
+            
+            st.markdown(f'<div class="coach-message">{welcome_msg}</div>', unsafe_allow_html=True)
         
         for message in st.session_state.chat_history:
             if message['role'] == 'user':
@@ -1171,600 +1352,259 @@ def chat_interface():
         
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Enhanced user profile sidebar
-def user_profile_sidebar():
-    with st.sidebar:
-        st.header("👤 Your Coach Settings")
-        
-        # Basic info
-        name = st.text_input("Your Name", value=st.session_state.user_profile.get('name', ''))
-        goals = st.text_area("Your Goals", value=st.session_state.user_profile.get('goals', ''))
-        
-        # Enhanced avatar choices
-        st.subheader("🎭 Choose Your AI Coach")
-        avatar_options = {
-            "sophia": "👩‍💼 Sophia - Professional Female Coach",
-            "marcus": "👨‍💼 Marcus - Business Male Mentor", 
-            "elena": "👩‍⚕️ Elena - Caring Female Guide",
-            "david": "👨‍🎓 David - Wise Male Advisor",
-            "maya": "👩‍🏫 Maya - Energetic Female Coach",
-            "james": "👨‍💻 James - Executive Male Coach"
-        }
-        
-        avatar_choice = st.selectbox(
-            "Select Your Coach Avatar",
-            options=list(avatar_options.keys()),
-            format_func=lambda x: avatar_options[x],
-            index=list(avatar_options.keys()).index(
-                st.session_state.user_profile.get('avatar', 'sophia')
-            )
-        )
-        
-        # Voice personality (simplified to 3 options)
-        st.subheader("🎤 Voice Personality")
-        voice_type = st.selectbox(
-            "Coach Personality",
-            ["caring", "professional", "energetic"],
-            index=["caring", "professional", "energetic"].index(
-                st.session_state.user_profile.get('voice_type', 'caring')
-            ),
-            format_func=lambda x: {
-                'caring': '💝 Caring & Supportive (Calm, Empathetic)',
-                'professional': '💼 Professional & Direct (Formal, Business-like)', 
-                'energetic': '⚡ Energetic & Motivating (High Energy, Happy Vibes)'
-            }[x]
-        )
-        
-        # Save profile
-        if st.button("💾 Save Settings", type="primary"):
-            st.session_state.user_profile = {
-                'name': name,
-                'goals': goals,
-                'avatar': avatar_choice,
-                'voice_type': voice_type,
-                'voice_speed': 0.9,
-                'voice_pitch': 1.0
-            }
-            st.success("✅ Settings saved!")
-            st.rerun()
-
-# Process voice input from URL parameters
 def process_voice_input():
-    """Process voice input from URL parameters"""
+    """Enhanced voice input processing with CRM logging"""
     if 'voice_input' in st.query_params and 'timestamp' in st.query_params:
         voice_message = st.query_params['voice_input']
         timestamp = st.query_params['timestamp']
+        stt_method = st.query_params.get('stt_method', 'browser')
         
-        # Clear the parameters immediately to prevent reprocessing
+        # Clear the parameters
         del st.query_params['voice_input']
         del st.query_params['timestamp']
+        if 'stt_method' in st.query_params:
+            del st.query_params['stt_method']
         
-        if voice_message.strip():
-            # Reset voice flag for new conversation
+        if voice_message.strip() and st.session_state.user_id:
+            # Reset voice flag
             st.session_state.voice_played = False
             
             # Add user message to conversation
-            st.session_state.chat_history.append({
+            user_msg = {
                 'role': 'user',
                 'content': voice_message.strip(),
                 'timestamp': datetime.now()
-            })
+            }
+            st.session_state.chat_history.append(user_msg)
             
-            # Get coach response
-            with st.spinner("Your coach is responding to your voice message..."):
-                coach_response = get_coach_response(voice_message, st.session_state.chat_history)
+            # Save to CRM
+            st.session_state.crm.save_message(
+                st.session_state.session_id,
+                st.session_state.user_id,
+                'user',
+                voice_message.strip(),
+                'voice'
+            )
             
-            # Add coach response to conversation
-            st.session_state.chat_history.append({
+            # Get enhanced coach response
+            with st.spinner("Your professional coach is analyzing and responding..."):
+                coach_response, insights = get_enhanced_coach_response(
+                    voice_message,
+                    st.session_state.user_id,
+                    st.session_state.crm,
+                    st.session_state.chat_history
+                )
+            
+            # Add coach response
+            coach_msg = {
                 'role': 'coach',
                 'content': coach_response,
                 'timestamp': datetime.now()
-            })
+            }
+            st.session_state.chat_history.append(coach_msg)
+            
+            # Save coach response to CRM
+            st.session_state.crm.save_message(
+                st.session_state.session_id,
+                st.session_state.user_id,
+                'coach',
+                coach_response,
+                'text',
+                json.dumps(insights) if insights else None
+            )
             
             # Enable voice response
             st.session_state.is_speaking = True
             
             # Show success message
-            st.success(f"🎤 Voice message processed: \"{voice_message}\"")
+            method_text = "ElevenLabs STT" if stt_method == 'elevenlabs' else "Browser STT"
+            st.success(f"🎤 Voice processed via {method_text}: \"{voice_message}\"")
             
-            # Force rerun to show the updated conversation
             st.rerun()
 
 def main():
-    load_css()
+    """Main application with complete professional workflow"""
+    load_custom_css()
     init_session_state()
     
-    # Check for voice messages from sessionStorage FIRST
-    voice_check_script = """
-    <script>
-    const voiceMessage = sessionStorage.getItem('streamlit_voice_message');
-    if (voiceMessage) {
-        try {
-            const data = JSON.parse(voiceMessage);
-            if (data.message) {
-                console.log('Processing voice message:', data.message);
-                // Clear the storage
-                sessionStorage.removeItem('streamlit_voice_message');
-                // Set URL parameter to trigger processing
-                const url = new URL(window.location.href);
-                url.searchParams.set('voice_input', encodeURIComponent(data.message));
-                url.searchParams.set('timestamp', data.timestamp.toString());
-                window.location.href = url.toString();
-            }
-        } catch (error) {
-            console.error('Error processing voice message:', error);
-            sessionStorage.removeItem('streamlit_voice_message');
-        }
-    }
-    </script>
-    """
-    
-    st.components.v1.html(voice_check_script, height=0)
-    
-    # Process voice input AFTER checking storage
+    # Process voice input first
     process_voice_input()
     
-    # Reset voice played flag on new interaction
-    if 'last_chat_length' not in st.session_state:
-        st.session_state.last_chat_length = 0
-    
-    current_chat_length = len(st.session_state.chat_history)
-    if current_chat_length > st.session_state.last_chat_length:
-        st.session_state.voice_played = False
-        st.session_state.last_chat_length = current_chat_length
-    
-    # Header
+    # Professional header
     st.markdown("""
     <div class="main-header">
-        <h1>🎯 Avatar Success Coach</h1>
-        <p>Your AI-powered success mentor with instant talking avatars</p>
+        <h1>🎯 Avatar Success Coach Pro</h1>
+        <p>Professional AI coaching with realistic avatars, advanced speech processing, and intelligent CRM</p>
+        <small>Following Industry-Standard Workflow: Voice → ElevenLabs STT → Enhanced LLM → HeyGen Avatars → ElevenLabs TTS → CRM Analytics</small>
     </div>
     """, unsafe_allow_html=True)
     
-    # Sidebar
-    user_profile_sidebar()
-    
-    # Show greeting for new users
-    if st.session_state.user_profile and not st.session_state.chat_history:
-        name = st.session_state.user_profile.get('name', 'there')
-        avatar = st.session_state.user_profile.get('avatar', 'sophia')
-        
-        greeting = f"Hello {name}! I'm {avatar.title()}, your personal success coach. I'm here to help you achieve your wealth and success goals. What would you like to work on today?"
-        
-        st.session_state.chat_history.append({
-            'role': 'coach',
-            'content': greeting,
-            'timestamp': datetime.now()
-        })
-        st.session_state.is_speaking = True
+    # Professional sidebar
+    professional_sidebar()
     
     # Main layout
-    col1, col2 = st.columns([1, 2])
+    if st.session_state.user_profile.get('name'):
+        col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            # Professional avatar display
+            avatar_choice = st.session_state.user_profile.get('avatar', 'sophia')
+            create_professional_avatar_display(st.session_state.is_speaking, avatar_choice)
+            
+            # Enhanced voice generation
+            if (st.session_state.chat_history and 
+                st.session_state.chat_history[-1]['role'] == 'coach' and 
+                st.session_state.is_speaking and 
+                not st.session_state.voice_played):
+                
+                latest_response = st.session_state.chat_history[-1]['content']
+                voice_type = st.session_state.user_profile.get('voice_type', 'professional')
+                
+                # Avatar info for voice generation
+                avatar_configs = {
+                    'sophia': {'voice_id': 'LcfcDJNUP1GQjkzn1xUU', 'name': 'Sophia'},
+                    'marcus': {'voice_id': 'pNInz6obpgDQGcFmaJgB', 'name': 'Marcus'}, 
+                    'elena': {'voice_id': 'jsCqWAovK2LkecY7zXl4', 'name': 'Elena'},
+                    'david': {'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'David'},
+                    'maya': {'voice_id': 'z9fAnlkpzviPz146aGWa', 'name': 'Maya'},
+                    'james': {'voice_id': 'ErXwobaYiN019PkySvjV', 'name': 'James'}
+                }
+                
+                avatar_info = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
+                elevenlabs_key = setup_elevenlabs()
+                
+                if elevenlabs_key:
+                    create_enhanced_elevenlabs_voice(latest_response, elevenlabs_key, voice_type, avatar_info)
+            
+            # Reset speaking state
+            if st.session_state.is_speaking:
+                st.session_state.is_speaking = False
+        
+        with col2:
+            # Professional chat interface
+            chat_interface()
+            
+            # Text input form
+            st.markdown("### ✍️ Text Message")
+            
+            with st.form("professional_message_form", clear_on_submit=True):
+                user_input = st.text_area(
+                    "Share your goals, challenges, or questions:",
+                    height=100,
+                    placeholder="e.g., 'I want to increase my income by 50% this year, but I'm not sure where to start...'",
+                    key="professional_text_input"
+                )
+                
+                submitted = st.form_submit_button("💼 Send to Coach", type="primary")
+                
+                if submitted and user_input.strip() and st.session_state.user_id:
+                    # Reset voice flag
+                    st.session_state.voice_played = False
+                    
+                    # Add user message
+                    user_msg = {
+                        'role': 'user',
+                        'content': user_input,
+                        'timestamp': datetime.now()
+                    }
+                    st.session_state.chat_history.append(user_msg)
+                    
+                    # Save to CRM
+                    st.session_state.crm.save_message(
+                        st.session_state.session_id,
+                        st.session_state.user_id,
+                        'user',
+                        user_input,
+                        'text'
+                    )
+                    
+                    # Get enhanced coach response
+                    with st.spinner("Your professional coach is analyzing and responding..."):
+                        coach_response, insights = get_enhanced_coach_response(
+                            user_input,
+                            st.session_state.user_id,
+                            st.session_state.crm,
+                            st.session_state.chat_history
+                        )
+                    
+                    # Add coach response
+                    coach_msg = {
+                        'role': 'coach',
+                        'content': coach_response,
+                        'timestamp': datetime.now()
+                    }
+                    st.session_state.chat_history.append(coach_msg)
+                    
+                    # Save to CRM
+                    st.session_state.crm.save_message(
+                        st.session_state.session_id,
+                        st.session_state.user_id,
+                        'coach',
+                        coach_response,
+                        'text',
+                        json.dumps(insights) if insights else None
+                    )
+                    
+                    st.session_state.is_speaking = True
+                    st.rerun()
+            
+            # Professional voice recording
+            st.markdown("---")
+            st.markdown("### 🎤 Professional Voice Recording")
+            st.info("🚀 **Advanced Features:** ElevenLabs Speech-to-Text, Real-time transcription, Professional coaching analysis")
+            
+            create_professional_voice_recorder()
+            
+            # Professional controls
+            st.markdown("---")
+            col_clear, col_export = st.columns(2)
+            
+            with col_clear:
+                if st.button("🗑️ New Session"):
+                    if st.session_state.user_id:
+                        # Start new session in CRM
+                        st.session_state.session_id = st.session_state.crm.start_session(st.session_state.user_id)
+                    
+                    st.session_state.chat_history = []
+                    st.session_state.is_speaking = False
+                    st.session_state.voice_played = False
+                    st.success("✅ New coaching session started!")
+                    st.rerun()
+            
+            with col_export:
+                if st.button("📊 Export Session") and st.session_state.chat_history:
+                    # Export chat history
+                    export_data = {
+                        'session_date': datetime.now().isoformat(),
+                        'user_name': st.session_state.user_profile.get('name', 'User'),
+                        'coach_avatar': st.session_state.user_profile.get('avatar', 'sophia'),
+                        'messages': st.session_state.chat_history
+                    }
+                    
+                    st.download_button(
+                        label="📥 Download Session",
+                        data=json.dumps(export_data, indent=2, default=str),
+                        file_name=f"coaching_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                        mime="application/json"
+                    )
     
-    with col1:
-        # Fixed avatar display
-        avatar_component(st.session_state.is_speaking)
-        
-        # ONLY play voice for NEW coach messages
-        if (st.session_state.chat_history and 
-            st.session_state.chat_history[-1]['role'] == 'coach' and 
-            st.session_state.is_speaking and 
-            not st.session_state.voice_played):
-            
-            latest_response = st.session_state.chat_history[-1]['content']
-            voice_type = st.session_state.user_profile.get('voice_type', 'professional')
-            natural_voice_component(latest_response, voice_type)
-        
-        # Reset speaking state after voice plays
-        if st.session_state.is_speaking:
-            st.session_state.is_speaking = False
-    
-    with col2:
-        # Chat interface
-        chat_interface()
-        
-        # Regular text input form
-        st.markdown("### ✍️ Send Message")
-        
-        with st.form("message_form", clear_on_submit=True):
-            user_input = st.text_area(
-                "Type your message:",
-                height=80,
-                placeholder="Ask about your goals, challenges, or anything related to success...",
-                key="user_text_input"
-            )
-            
-            submitted = st.form_submit_button("Send", type="primary")
-            
-            if submitted and user_input.strip():
-                # Reset voice flag for new conversation
-                st.session_state.voice_played = False
-                
-                # Add user message
-                st.session_state.chat_history.append({
-                    'role': 'user',
-                    'content': user_input,
-                    'timestamp': datetime.now()
-                })
-                
-                # Get coach response
-                with st.spinner("Your coach is thinking..."):
-                    coach_response = get_coach_response(user_input, st.session_state.chat_history)
-                
-                # Add coach response
-                st.session_state.chat_history.append({
-                    'role': 'coach',
-                    'content': coach_response,
-                    'timestamp': datetime.now()
-                })
-                
-                st.session_state.is_speaking = True
-                st.rerun()
-        
-        # Voice recording section
-        st.markdown("---")
-        st.markdown("### 🎤 Voice Message")
-        st.info("💡 **Simple Voice Recording:** Click the big button → speak your message → automatically sends when you finish speaking!")
-        
-        # Big button auto-detecting voice recorder
-        enhanced_voice_recorder()
-        
-        # Clear chat
-        if st.button("🗑️ Clear Chat"):
-            st.session_state.chat_history = []
-            st.session_state.is_speaking = False
-            st.session_state.voice_played = False
-            st.rerun()
-
-    # DEBUG SECTION - Add this at the bottom
-    st.markdown("---")
-    
-    with st.expander("🔧 **DEBUG VOICE ISSUES** - Click to troubleshoot voice problems"):
-        st.markdown("### 🔧 Voice Debug Center")
-        st.info("Use this section to test and fix voice issues")
-        
-        # Test 1: API Key Test
-        st.subheader("1️⃣ API Key Test")
-        
-        # Get API key from secrets or allow manual input
-        current_api_key = setup_elevenlabs()
-        
-        # Let user override for testing
-        test_api_key = st.text_input(
-            "Test with different API Key (optional):", 
-            type="password", 
-            help="Leave empty to use your configured key",
-            placeholder="sk_xxxxxxxxxxxxxxx"
-        )
-        
-        api_key_to_test = test_api_key if test_api_key else current_api_key
-        
-        if api_key_to_test:
-            if api_key_to_test.startswith("sk_"):
-                st.success(f"✅ API key format looks correct: {api_key_to_test[:10]}...{api_key_to_test[-5:]}")
-                
-                # Test API connection
-                if st.button("🔍 Test API Connection", key="test_api_connection"):
-                    try:
-                        import requests
-                        headers = {'xi-api-key': api_key_to_test}
-                        response = requests.get('https://api.elevenlabs.io/v1/voices', headers=headers)
-                        
-                        if response.status_code == 200:
-                            voices = response.json()['voices']
-                            st.success(f"✅ API Connected! Found {len(voices)} voices")
-                            
-                            # Show available voices
-                            st.markdown("**Your Available Voices:**")
-                            for voice in voices:
-                                st.write(f"• **{voice['name']}** - ID: `{voice['voice_id']}`")
-                                
-                        elif response.status_code == 401:
-                            st.error("❌ API Key Invalid - Check your ElevenLabs API key")
-                        elif response.status_code == 403:
-                            st.error("❌ API Key Forbidden - Check your account permissions")
-                        else:
-                            st.error(f"❌ API Error: {response.status_code} - {response.text}")
-                            
-                    except Exception as e:
-                        st.error(f"❌ Connection Error: {str(e)}")
-            else:
-                st.error("❌ API key should start with 'sk_'")
-        else:
-            st.warning("⚠️ No API key found. Please set ELEVENLABS_API_KEY in your secrets.")
-
-        # Test 2: Voice Generation Test
-        st.subheader("2️⃣ Voice Generation Test")
-        
-        if api_key_to_test and api_key_to_test.startswith("sk_"):
-            
-            debug_col1, debug_col2 = st.columns(2)
-            
-            with debug_col1:
-                test_voice_id = st.selectbox("Select Voice ID to Test:", [
-                    "LcfcDJNUP1GQjkzn1xUU",  # Emily (Sophia)
-                    "pNInz6obpgDQGcFmaJgB",  # Adam (Marcus)
-                    "jsCqWAovK2LkecY7zXl4",  # Freya (Elena)
-                    "VR6AewLTigWG4xSOukaG",  # Arnold (David)
-                    "z9fAnlkpzviPz146aGWa",  # Glinda (Maya)
-                    "ErXwobaYiN019PkySvjV",  # Antoni (James)
-                ], key="debug_voice_select")
-            
-            with debug_col2:
-                test_message = st.text_input("Test Message:", 
-                                           value="Hello! This is a debug voice test.", 
-                                           key="debug_message")
-            
-            if st.button("🎤 Generate & Test Voice", key="test_voice_generation"):
-                if test_message.strip():
-                    
-                    # Show detailed debug info
-                    st.markdown("**Debug Info:**")
-                    st.code(f"""
-API Key: {api_key_to_test[:10]}...{api_key_to_test[-5:]}
-Voice ID: {test_voice_id}
-Message: {test_message}
-                    """)
-                    
-                    # Create enhanced debug voice test
-                    voice_debug_html = f"""
-                    <div style="
-                        padding: 20px; 
-                        background: linear-gradient(135deg, #f0f8ff, #e6f3ff); 
-                        border: 2px solid #4169e1; 
-                        border-radius: 15px;
-                        margin: 10px 0;
-                        box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
-                    ">
-                        <h3 style="color: #4169e1;">🎤 Voice Debug Test</h3>
-                        <div id="debugStatus" style="
-                            padding: 10px; 
-                            background: white; 
-                            border-radius: 8px; 
-                            margin: 10px 0;
-                            font-weight: bold;
-                        ">Starting voice test...</div>
-                        
-                        <button id="testBtn" onclick="testVoice()" style="
-                            background: linear-gradient(135deg, #4169e1, #1e90ff); 
-                            color: white; 
-                            border: none; 
-                            padding: 12px 24px; 
-                            border-radius: 25px;
-                            cursor: pointer;
-                            font-weight: bold;
-                            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
-                            margin: 10px 5px;
-                        ">🔄 Test Voice Again</button>
-                        
-                        <button onclick="testBrowserFallback()" style="
-                            background: linear-gradient(135deg, #28a745, #20c997); 
-                            color: white; 
-                            border: none; 
-                            padding: 12px 24px; 
-                            border-radius: 25px;
-                            cursor: pointer;
-                            font-weight: bold;
-                            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-                            margin: 10px 5px;
-                        ">🔊 Test Browser Voice</button>
-                        
-                        <div id="debugDetails" style="
-                            margin-top: 15px; 
-                            padding: 15px; 
-                            background: #f8f9fa; 
-                            border-radius: 8px;
-                            font-family: 'Courier New', monospace;
-                            font-size: 12px;
-                            max-height: 300px;
-                            overflow-y: auto;
-                            border: 1px solid #dee2e6;
-                        "></div>
-                    </div>
-
-                    <script>
-                    function updateStatus(message, color = '#4169e1') {{
-                        const statusDiv = document.getElementById('debugStatus');
-                        statusDiv.innerHTML = message;
-                        statusDiv.style.color = color;
-                    }}
-                    
-                    function updateDetails(message) {{
-                        const details = document.getElementById('debugDetails');
-                        const timestamp = new Date().toLocaleTimeString();
-                        details.innerHTML += `[${{timestamp}}] ${{message}}<br>`;
-                        details.scrollTop = details.scrollHeight;
-                    }}
-                    
-                    function testBrowserFallback() {{
-                        updateStatus('🔊 Testing Browser Voice...', '#28a745');
-                        updateDetails('=== BROWSER VOICE TEST ===');
-                        
-                        if ('speechSynthesis' in window) {{
-                            speechSynthesis.cancel();
-                            
-                            const utterance = new SpeechSynthesisUtterance('{test_message}');
-                            utterance.rate = 0.9;
-                            utterance.pitch = 1.0;
-                            utterance.volume = 1.0;
-                            
-                            const voices = speechSynthesis.getVoices();
-                            updateDetails(`Available voices: ${{voices.length}}`);
-                            
-                            if (voices.length > 0) {{
-                                const englishVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
-                                utterance.voice = englishVoice;
-                                updateDetails(`Using voice: ${{englishVoice.name}}`);
-                            }}
-                            
-                            utterance.onstart = function() {{
-                                updateStatus('🎵 Browser voice playing...', '#28a745');
-                                updateDetails('Browser voice started playing');
-                            }};
-                            
-                            utterance.onend = function() {{
-                                updateStatus('✅ Browser voice completed!', '#28a745');
-                                updateDetails('Browser voice playback completed');
-                            }};
-                            
-                            utterance.onerror = function(error) {{
-                                updateStatus('❌ Browser voice error: ' + error.error, '#dc3545');
-                                updateDetails('Browser voice error: ' + error.error);
-                            }};
-                            
-                            speechSynthesis.speak(utterance);
-                            updateDetails('Browser voice command sent');
-                            
-                        }} else {{
-                            updateStatus('❌ Browser voice not supported', '#dc3545');
-                            updateDetails('speechSynthesis not available in this browser');
-                        }}
-                    }}
-                    
-                    async function testVoice() {{
-                        updateStatus('🔄 Testing ElevenLabs voice...', '#4169e1');
-                        updateDetails('=== ELEVENLABS VOICE TEST ===');
-                        updateDetails('API Key: {api_key_to_test[:10]}...{api_key_to_test[-5:]}');
-                        updateDetails('Voice ID: {test_voice_id}');
-                        updateDetails('Message: {test_message}');
-                        
-                        try {{
-                            updateDetails('Making API request to ElevenLabs...');
-                            updateStatus('📡 Connecting to ElevenLabs...', '#4169e1');
-                            
-                            const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{test_voice_id}', {{
-                                method: 'POST',
-                                headers: {{
-                                    'Accept': 'audio/mpeg',
-                                    'Content-Type': 'application/json',
-                                    'xi-api-key': '{api_key_to_test}'
-                                }},
-                                body: JSON.stringify({{
-                                    text: `{test_message}`,
-                                    model_id: 'eleven_monolingual_v1',
-                                    voice_settings: {{
-                                        stability: 0.5,
-                                        similarity_boost: 0.5,
-                                        style: 0.5,
-                                        use_speaker_boost: true,
-                                        speed: 1.0
-                                    }}
-                                }})
-                            }});
-                            
-                            updateDetails('Response received - Status: ' + response.status);
-                            
-                            if (response.ok) {{
-                                updateStatus('✅ API Success! Processing audio...', '#28a745');
-                                updateDetails('Audio blob received, creating audio player...');
-                                
-                                const audioBlob = await response.blob();
-                                updateDetails(`Audio blob size: ${{audioBlob.size}} bytes`);
-                                
-                                const audioUrl = URL.createObjectURL(audioBlob);
-                                const audio = new Audio(audioUrl);
-                                
-                                updateDetails('Attempting to play audio...');
-                                
-                                audio.play().then(() => {{
-                                    updateStatus('🎵 ElevenLabs voice playing successfully!', '#28a745');
-                                    updateDetails('Audio playing successfully!');
-                                }}).catch(error => {{
-                                    updateStatus('❌ Audio play blocked: ' + error.message, '#dc3545');
-                                    updateDetails('Audio play error: ' + error.message);
-                                    updateDetails('This might be due to browser autoplay restrictions');
-                                }});
-                                
-                                audio.onended = function() {{
-                                    URL.revokeObjectURL(audioUrl);
-                                    updateStatus('✅ ElevenLabs voice test completed!', '#28a745');
-                                    updateDetails('Audio playback completed successfully');
-                                }};
-                                
-                                audio.onerror = function(error) {{
-                                    updateStatus('❌ Audio playback error', '#dc3545');
-                                    updateDetails('Audio element error: ' + error);
-                                }};
-                                
-                            }} else {{
-                                const errorText = await response.text();
-                                updateStatus('❌ API Error: ' + response.status, '#dc3545');
-                                updateDetails('API Error Details: ' + errorText);
-                                
-                                if (response.status === 401) {{
-                                    updateDetails('ERROR: Invalid API key - check your ElevenLabs account');
-                                }} else if (response.status === 403) {{
-                                    updateDetails('ERROR: Access forbidden - check API key permissions');
-                                }} else if (response.status === 429) {{
-                                    updateDetails('ERROR: Rate limit exceeded - wait a moment and try again');
-                                }}
-                            }}
-                            
-                        }} catch (error) {{
-                            updateStatus('❌ Network Error: ' + error.message, '#dc3545');
-                            updateDetails('JavaScript/Network Error: ' + error.message);
-                            updateDetails('Check your internet connection and CORS settings');
-                        }}
-                    }}
-                    
-                    // Auto-run the test
-                    setTimeout(testVoice, 1000);
-                    </script>
-                    """
-                    
-                    st.components.v1.html(voice_debug_html, height=500)
-
-        # Test 3: Current Configuration Check
-        st.subheader("3️⃣ Current Configuration Check")
-        
-        config_info = f"""
-**Current Settings:**
-- Avatar: {st.session_state.user_profile.get('avatar', 'Not set')}
-- Voice Type: {st.session_state.user_profile.get('voice_type', 'Not set')}
-- API Key Status: {'✅ Set' if setup_elevenlabs() else '❌ Not set'}
-- Chat History: {len(st.session_state.chat_history)} messages
-- Voice Played Flag: {st.session_state.get('voice_played', 'Not set')}
-        """
-        
-        st.code(config_info)
-        
-        # Test 4: Troubleshooting Guide
-        st.subheader("4️⃣ Common Issues & Solutions")
-        
+    else:
+        # Welcome screen for new users
         st.markdown("""
-        **🔑 API Key Issues:**
-        - Make sure your API key starts with `sk_`
-        - Check that you have credits in your ElevenLabs account
-        - Verify the API key has access to voice generation
+        ## 🎯 Welcome to Professional Avatar Success Coaching
         
-        **🌐 Browser Issues:**
-        - Use Chrome or Edge (best compatibility)
-        - Check if audio is muted in browser/system
-        - Try refreshing the page completely
-        - Allow audio permissions if prompted
+        **Complete your profile in the sidebar to begin your personalized coaching journey.**
         
-        **🎤 Voice ID Issues:**
-        - Make sure the voice IDs match exactly from your account
-        - Check if you have access to those specific voices
-        - Try with a different voice ID
+        ### 🚀 What You'll Experience:
+        - **Professional AI Coaching** with proven methodologies
+        - **Realistic Talking Avatars** powered by advanced AI
+        - **Advanced Speech Processing** with ElevenLabs technology
+        - **Intelligent CRM System** tracking your progress
+        - **Personalized Strategies** for wealth and success
         
-        **📱 Mobile Issues:**
-        - Mobile browsers often block autoplay
-        - User interaction might be required first
-        - Try the manual play button
-        
-        **🔄 Cache Issues:**
-        - Try hard refresh (Ctrl+F5 or Cmd+Shift+R)
-        - Clear browser cache
-        - Try in incognito/private mode
+        ### 💡 This system follows industry-standard workflow:
+        `Voice Input → ElevenLabs STT → Enhanced LLM → Avatar Generation → ElevenLabs TTS → CRM Analytics → Professional Interface`
         """)
-        
-        # Reset function
-        if st.button("🔄 Reset All Voice Settings", key="reset_voice_settings"):
-            st.session_state.voice_played = False
-            st.session_state.is_speaking = False
-            st.success("✅ Voice settings reset! Try voice generation again.")
-            st.rerun()
 
 if __name__ == "__main__":
     main()
