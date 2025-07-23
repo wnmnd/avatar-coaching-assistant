@@ -186,7 +186,7 @@ def init_session_state():
 def setup_gemini():
     api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
     if not api_key or api_key == "your_gemini_api_key_here":
-        st.error("Please set your Gemini API key in .streamlit/secrets.toml")
+        st.error("❌ Please set your Gemini API key in .streamlit/secrets.toml")
         st.stop()
    
     try:
@@ -202,11 +202,11 @@ def setup_gemini():
             except:
                 continue
        
-        st.error("Could not connect to Gemini")
+        st.error("❌ Could not connect to Gemini")
         st.stop()
                
     except Exception as e:
-        st.error(f"Gemini API Error: {str(e)}")
+        st.error(f"❌ Gemini API Error: {str(e)}")
         st.stop()
 
 def setup_elevenlabs():
@@ -250,14 +250,14 @@ def avatar_component(is_speaking=False):
    
     st.markdown(avatar_html, unsafe_allow_html=True)
 
-# Simple Voice Recording Component
-def simple_voice_recording():
-    """Simple and reliable voice recording system"""
+# Enhanced Voice Recording with Auto-Send
+def enhanced_voice_recording():
+    """Enhanced voice recording system with automatic sending"""
     
-    st.markdown("### Voice Message")
+    st.markdown("### 🎤 Voice Message (Auto-Send)")
     
     # Instructions
-    st.info("**How to use voice recording:**\n1. Click 'Start Recording'\n2. Speak your message clearly\n3. Click 'Stop & Send' to send automatically to your coach")
+    st.info("**How to use voice recording:**\n1. Click 'Start Recording'\n2. Speak your message clearly\n3. Click 'Stop & Auto-Send' to send directly to your coach")
     
     # Voice recording interface
     col1, col2 = st.columns([3, 1])
@@ -265,11 +265,11 @@ def simple_voice_recording():
     with col1:
         # Status display
         if st.session_state.recording_state == 'ready':
-            st.markdown('<div class="voice-ready-container">Ready to record your voice message</div>', unsafe_allow_html=True)
+            st.markdown('<div class="voice-ready-container">🎤 Ready to record your voice message</div>', unsafe_allow_html=True)
         elif st.session_state.recording_state == 'recording':
             st.markdown('<div class="voice-recording-container">🔴 <strong>Recording...</strong> Speak now!</div>', unsafe_allow_html=True)
         elif st.session_state.recording_state == 'processing':
-            st.markdown('<div class="voice-recording-container">⏳ Processing your message...</div>', unsafe_allow_html=True)
+            st.markdown('<div class="voice-recording-container">⏳ Processing and auto-sending your message...</div>', unsafe_allow_html=True)
     
     with col2:
         # Control buttons
@@ -278,7 +278,7 @@ def simple_voice_recording():
                 st.session_state.recording_state = 'recording'
                 st.rerun()
         elif st.session_state.recording_state == 'recording':
-            if st.button("⏹️ Stop & Send", type="secondary", key="stop_recording"):
+            if st.button("⏹️ Stop & Auto-Send", type="secondary", key="stop_recording"):
                 st.session_state.recording_state = 'processing'
                 st.rerun()
     
@@ -386,16 +386,16 @@ def simple_voice_recording():
         """
         st.components.v1.html(voice_html, height=150)
     
-    # Process voice when user clicks stop
+    # Process voice when user clicks stop and auto-send
     if st.session_state.recording_state == 'processing':
-        # Check for transcript via JavaScript
-        check_html = """
+        # Check for transcript via JavaScript and auto-send
+        auto_send_html = """
         <script>
         const transcript = sessionStorage.getItem('voice_transcript');
         if (transcript && transcript.trim()) {
-            // Send to Streamlit via URL
+            // Auto-send to Streamlit via URL parameters
             const url = new URL(window.location.href);
-            url.searchParams.set('voice_message', encodeURIComponent(transcript.trim()));
+            url.searchParams.set('voice_auto_send', encodeURIComponent(transcript.trim()));
             url.searchParams.set('voice_timestamp', Date.now().toString());
             sessionStorage.removeItem('voice_transcript');
             window.location.href = url.toString();
@@ -409,7 +409,7 @@ def simple_voice_recording():
         }
         </script>
         """
-        st.components.v1.html(check_html, height=0)
+        st.components.v1.html(auto_send_html, height=0)
 
 # Enhanced natural voice component (simplified)
 def natural_voice_component(text, voice_type="professional"):
@@ -650,7 +650,7 @@ def main():
     st.markdown("""
     <div class="main-header">
         <h1>Avatar Success Coach</h1>
-        <p>Your AI-powered success mentor with instant talking avatars</p>
+        <p>Your AI-powered success mentor with voice auto-send</p>
     </div>
     """, unsafe_allow_html=True)
    
@@ -671,19 +671,19 @@ def main():
         })
         st.session_state.is_speaking = True
    
-    # Handle voice message from URL parameters
-    if 'voice_message' in st.query_params and 'voice_timestamp' in st.query_params:
-        voice_message = st.query_params.get('voice_message', '').strip()
+    # Handle auto-send voice message from URL parameters
+    if 'voice_auto_send' in st.query_params and 'voice_timestamp' in st.query_params:
+        voice_message = st.query_params.get('voice_auto_send', '').strip()
         
         # Clear parameters
-        del st.query_params['voice_message']
+        del st.query_params['voice_auto_send']
         del st.query_params['voice_timestamp']
         
         if voice_message:
             # Reset recording state
             st.session_state.recording_state = 'ready'
             
-            # Add to chat
+            # Add to chat automatically
             st.session_state.voice_played = False
             st.session_state.chat_history.append({
                 'role': 'user',
@@ -691,8 +691,8 @@ def main():
                 'timestamp': datetime.now()
             })
             
-            # Get coach response
-            with st.spinner("Your coach is responding..."):
+            # Get coach response automatically
+            with st.spinner("Your coach is responding to your voice message..."):
                 coach_response = get_coach_response(voice_message, st.session_state.chat_history)
             
             st.session_state.chat_history.append({
@@ -702,14 +702,14 @@ def main():
             })
             
             st.session_state.is_speaking = True
-            st.success(f"Voice message received: \"{voice_message}\"")
+            st.success(f"🎤 Voice message auto-sent: \"{voice_message}\"")
             st.rerun()
     
     # Handle voice error
     if 'voice_error' in st.query_params:
         st.session_state.recording_state = 'ready'
         del st.query_params['voice_error']
-        st.error("No speech detected. Please try recording again.")
+        st.error("❌ No speech detected. Please try recording again.")
         st.rerun()
    
     # Main layout
@@ -738,7 +738,7 @@ def main():
         chat_interface()
        
         # Text input form
-        st.markdown("### Send Message")
+        st.markdown("### ✍️ Send Message")
        
         with st.form("message_form", clear_on_submit=True):
             user_input = st.text_area(
@@ -775,8 +775,8 @@ def main():
                 st.session_state.is_speaking = True
                 st.rerun()
        
-        # Simple voice recording
-        simple_voice_recording()
+        # Enhanced voice recording with auto-send
+        enhanced_voice_recording()
        
         # Clear chat button
         if st.button("Clear Chat"):
