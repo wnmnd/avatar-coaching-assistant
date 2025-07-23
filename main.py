@@ -332,9 +332,15 @@ def init_session_state():
 
 # Configure APIs
 def setup_gemini():
-    api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
-    if not api_key or api_key == "your_gemini_api_key_here":
-        st.error("❌ Please set your Gemini API key in .streamlit/secrets.toml")
+    # Use your Gemini API key directly
+    api_key = "AIzaSyA9VPlM-MSjDYytvd4J2wQ_f1nc5Tmd7dk"
+    
+    # Also check secrets/environment as fallback
+    if not api_key:
+        api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    
+    if not api_key:
+        st.error("❌ Gemini API key not found")
         st.stop()
     
     try:
@@ -346,11 +352,12 @@ def setup_gemini():
                 model = genai.GenerativeModel(model_name)
                 test_response = model.generate_content("Say 'Connected'")
                 if test_response and test_response.text:
+                    # Show success message
                     return model, model_name
-            except:
+            except Exception as e:
                 continue
         
-        st.error("❌ Could not connect to Gemini")
+        st.error("❌ Could not connect to any Gemini model")
         st.stop()
                 
     except Exception as e:
