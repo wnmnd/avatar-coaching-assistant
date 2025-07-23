@@ -954,20 +954,70 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
     # Clean text for speech
     clean_text = enhance_text_for_speech(text, voice_type)
     
-    # Instant voice generation and playback with your voice IDs
+    # VISIBLE STATUS VERSION - Shows exactly what's happening
     voice_html = f"""
     <div style="
-        padding: 15px;
+        padding: 20px;
         background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
         border-radius: 15px;
-        border: 1px solid rgba(138, 43, 226, 0.2);
+        border: 2px solid rgba(138, 43, 226, 0.3);
         margin: 10px 0;
         text-align: center;
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
     ">
-        <div style="margin-bottom: 10px; color: #8A2BE2; font-weight: bold;">
-            🎤 Playing with {voice_name}
+        <div style="margin-bottom: 15px; color: #8A2BE2; font-weight: bold; font-size: 18px;">
+            🎤 Voice System Status
         </div>
-        <div id="voiceStatus" style="color: #666; font-size: 14px;">Generating voice...</div>
+        
+        <div id="voiceSystemStatus" style="
+            padding: 15px; 
+            background: white; 
+            border-radius: 10px; 
+            margin: 10px 0;
+            color: #333;
+            font-weight: bold;
+            border: 2px solid #ddd;
+        ">
+            🔄 Initializing voice system...
+        </div>
+        
+        <div id="voiceDetails" style="
+            padding: 10px; 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            margin: 10px 0;
+            color: #666;
+            font-size: 14px;
+            font-family: monospace;
+        ">
+            Target: {voice_name}<br>
+            Voice ID: {voice_id}<br>
+            Personality: {voice_type}
+        </div>
+        
+        <button onclick="retryVoice()" style="
+            background: linear-gradient(135deg, #8A2BE2, #9370DB);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+            margin: 5px;
+        ">🔄 Retry Voice</button>
+        
+        <button onclick="forceBrowserVoice()" style="
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            margin: 5px;
+        ">🔊 Force Browser Voice</button>
     </div>
     
     <script>
@@ -976,10 +1026,31 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
         window.speechSynthesis.cancel();
     }}
     
+    function updateVoiceStatus(message, color = '#333', bgColor = 'white') {{
+        const statusDiv = document.getElementById('voiceSystemStatus');
+        statusDiv.innerHTML = message;
+        statusDiv.style.color = color;
+        statusDiv.style.backgroundColor = bgColor;
+        statusDiv.style.borderColor = color;
+    }}
+    
+    function retryVoice() {{
+        playInstantVoice();
+    }}
+    
+    function forceBrowserVoice() {{
+        updateVoiceStatus('🔊 FORCING BROWSER VOICE (for comparison)', '#28a745', '#f8fff8');
+        fallbackToBrowserTTS();
+    }}
+    
     async function playInstantVoice() {{
-        const statusDiv = document.getElementById('voiceStatus');
+        updateVoiceStatus('🔄 ATTEMPTING ELEVENLABS...', '#4169e1', '#f0f8ff');
+        
         try {{
-            statusDiv.innerHTML = '🎧 Connecting to ElevenLabs...';
+            console.log('Starting ElevenLabs voice generation...');
+            console.log('API Key:', '{api_key[:10]}...{api_key[-5:]}');
+            console.log('Voice ID:', '{voice_id}');
+            console.log('Voice Type:', '{voice_type}');
             
             const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
                 method: 'POST',
@@ -992,52 +1063,65 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                     text: `{clean_text}`,
                     model_id: 'eleven_monolingual_v1',
                     voice_settings: {{
-                        stability: {0.9 if voice_type == 'wise' else 0.7 if voice_type == 'professional' else 0.5},
+                        stability: {0.9 if voice_type == 'wise' else 0.7 if voice_type == 'professional' else 0.4},
                         similarity_boost: {0.9 if voice_type == 'professional' else 0.8 if voice_type == 'wise' else 0.6},
-                        style: {0.2 if voice_type == 'caring' else 0.8 if voice_type == 'energetic' else 0.5},
+                        style: {0.2 if voice_type == 'caring' else 0.9 if voice_type == 'energetic' else 0.5},
                         use_speaker_boost: {str(voice_type in ['confident', 'executive', 'energetic']).lower()},
-                        speed: {0.8 if voice_type == 'wise' else 1.2 if voice_type == 'energetic' else 1.0}
+                        speed: {0.7 if voice_type == 'wise' else 1.3 if voice_type == 'energetic' else 1.0}
                     }}
                 }})
             }});
             
+            console.log('ElevenLabs response status:', response.status);
+            
             if (response.ok) {{
-                statusDiv.innerHTML = '🎵 Playing your coach voice...';
+                updateVoiceStatus('✅ ELEVENLABS SUCCESS! Playing premium voice...', '#28a745', '#f8fff8');
+                
                 const audioBlob = await response.blob();
+                console.log('Audio blob size:', audioBlob.size, 'bytes');
+                
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 
-                // Play immediately
                 audio.play().then(() => {{
-                    console.log('ElevenLabs voice playing successfully with {voice_name}');
-                    statusDiv.innerHTML = '🎤 Speaking with {voice_name}';
-                }}).catch(e => {{
-                    console.log('Autoplay blocked, using browser TTS fallback');
-                    statusDiv.innerHTML = '🔄 Switching to browser voice...';
+                    updateVoiceStatus('🎵 ELEVENLABS PLAYING: {voice_name}', '#28a745', '#f8fff8');
+                    console.log('ElevenLabs audio playing successfully!');
+                }}).catch(error => {{
+                    console.log('Audio play blocked:', error);
+                    updateVoiceStatus('⚠️ ELEVENLABS BLOCKED - Using browser fallback', '#ff8c00', '#fff8dc');
                     fallbackToBrowserTTS();
                 }});
                 
-                // Clean up when done
                 audio.onended = function() {{
                     URL.revokeObjectURL(audioUrl);
-                    statusDiv.innerHTML = '✅ Voice message complete';
+                    updateVoiceStatus('✅ ELEVENLABS COMPLETED: {voice_name}', '#28a745', '#f8fff8');
+                }};
+                
+                audio.onerror = function(error) {{
+                    console.error('Audio error:', error);
+                    updateVoiceStatus('❌ ELEVENLABS AUDIO ERROR - Using browser fallback', '#dc3545', '#fff5f5');
+                    fallbackToBrowserTTS();
                 }};
                 
             }} else {{
-                console.log('ElevenLabs API failed with status:', response.status);
-                statusDiv.innerHTML = '🔄 ElevenLabs busy, using browser voice...';
-                fallbackToBrowserTTS();
+                const errorText = await response.text();
+                console.error('ElevenLabs API error:', response.status, errorText);
+                updateVoiceStatus('❌ ELEVENLABS FAILED (' + response.status + ') - Using browser fallback', '#dc3545', '#fff5f5');
+                setTimeout(fallbackToBrowserTTS, 1000);
             }}
+            
         }} catch (error) {{
-            console.log('Voice error:', error.message);
-            statusDiv.innerHTML = '🔄 Using browser voice...';
-            fallbackToBrowserTTS();
+            console.error('ElevenLabs network error:', error);
+            updateVoiceStatus('❌ ELEVENLABS NETWORK ERROR - Using browser fallback', '#dc3545', '#fff5f5');
+            setTimeout(fallbackToBrowserTTS, 1000);
         }}
     }}
     
     function fallbackToBrowserTTS() {{
+        updateVoiceStatus('🤖 USING BROWSER VOICE (robotic fallback)', '#ff8c00', '#fff8dc');
+        
         if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel(); // Stop any existing speech
+            window.speechSynthesis.cancel();
             
             const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
             
@@ -1046,13 +1130,13 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                 utterance.rate = 0.6;
                 utterance.pitch = {0.5 if gender == 'male' else 0.8};
             }} else if ('{voice_type}' === 'energetic') {{
-                utterance.rate = 1.3;
-                utterance.pitch = {0.7 if gender == 'male' else 1.5};
+                utterance.rate = 1.4;
+                utterance.pitch = {0.8 if gender == 'male' else 1.6};
             }} else if ('{voice_type}' === 'caring') {{
                 utterance.rate = 0.75;
                 utterance.pitch = {0.6 if gender == 'male' else 1.3};
             }} else if ('{voice_type}' === 'confident') {{
-                utterance.rate = 1.0;
+                utterance.rate = 1.1;
                 utterance.pitch = {0.4 if gender == 'male' else 0.9};
             }} else if ('{voice_type}' === 'professional') {{
                 utterance.rate = 0.85;
@@ -1090,26 +1174,36 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                 bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
             }}
             
-            if (bestVoice) utterance.voice = bestVoice;
-            
-            speechSynthesis.speak(utterance);
+            if (bestVoice) {{
+                utterance.voice = bestVoice;
+                console.log('Using browser voice:', bestVoice.name);
+            }}
             
             utterance.onstart = function() {{
-                document.getElementById('voiceStatus').innerHTML = '🎤 Browser voice playing...';
+                updateVoiceStatus('🤖 BROWSER VOICE PLAYING: ' + (bestVoice ? bestVoice.name : 'Default'), '#ff8c00', '#fff8dc');
             }};
             
             utterance.onend = function() {{
-                document.getElementById('voiceStatus').innerHTML = '✅ Voice message complete';
+                updateVoiceStatus('✅ BROWSER VOICE COMPLETED (robotic)', '#ff8c00', '#fff8dc');
             }};
+            
+            utterance.onerror = function(error) {{
+                updateVoiceStatus('❌ BROWSER VOICE ERROR: ' + error.error, '#dc3545', '#fff5f5');
+            }};
+            
+            speechSynthesis.speak(utterance);
+            
+        }} else {{
+            updateVoiceStatus('❌ NO VOICE SUPPORT AVAILABLE', '#dc3545', '#fff5f5');
         }}
     }}
     
     // Start playing immediately
-    playInstantVoice();
+    setTimeout(playInstantVoice, 500);
     </script>
     """
     
-    st.components.v1.html(voice_html, height=90)
+    st.components.v1.html(voice_html, height=200)
 
 def enhance_text_for_speech(text, voice_type):
     """Make text MUCH more distinct for each personality type (enhanced from reference)"""
