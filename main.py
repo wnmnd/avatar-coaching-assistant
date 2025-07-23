@@ -995,6 +995,20 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
             Personality: {voice_type}
         </div>
         
+        <div id="errorDetails" style="
+            padding: 10px; 
+            background: #fff5f5; 
+            border-radius: 8px; 
+            margin: 10px 0;
+            color: #dc3545;
+            font-size: 12px;
+            font-family: monospace;
+            border: 1px solid #dc3545;
+            display: none;
+        ">
+            Error details will appear here...
+        </div>
+        
         <button onclick="retryVoice()" style="
             background: linear-gradient(135deg, #8A2BE2, #9370DB);
             color: white;
@@ -1034,6 +1048,17 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
         statusDiv.style.borderColor = color;
     }}
     
+    function showErrorDetails(error) {{
+        const errorDiv = document.getElementById('errorDetails');
+        errorDiv.innerHTML = error;
+        errorDiv.style.display = 'block';
+    }}
+    
+    function hideErrorDetails() {{
+        const errorDiv = document.getElementById('errorDetails');
+        errorDiv.style.display = 'none';
+    }}
+    
     function retryVoice() {{
         playInstantVoice();
     }}
@@ -1045,12 +1070,30 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
     
     async function playInstantVoice() {{
         updateVoiceStatus('🔄 ATTEMPTING ELEVENLABS...', '#4169e1', '#f0f8ff');
+        hideErrorDetails();
         
         try {{
-            console.log('Starting ElevenLabs voice generation...');
+            console.log('=== ELEVENLABS DEBUG INFO ===');
             console.log('API Key:', '{api_key[:10]}...{api_key[-5:]}');
             console.log('Voice ID:', '{voice_id}');
             console.log('Voice Type:', '{voice_type}');
+            console.log('Text to speak:', `{clean_text}`);
+            
+            const requestBody = {{
+                text: `{clean_text}`,
+                model_id: 'eleven_monolingual_v1',
+                voice_settings: {{
+                    stability: {0.9 if voice_type == 'wise' else 0.7 if voice_type == 'professional' else 0.4},
+                    similarity_boost: {0.9 if voice_type == 'professional' else 0.8 if voice_type == 'wise' else 0.6},
+                    style: {0.2 if voice_type == 'caring' else 0.9 if voice_type == 'energetic' else 0.5},
+                    use_speaker_boost: {str(voice_type in ['confident', 'executive', 'energetic']).lower()},
+                    speed: {0.7 if voice_type == 'wise' else 1.3 if voice_type == 'energetic' else 1.0}
+                }}
+            }};
+            
+            console.log('Request body:', JSON.stringify(requestBody, null, 2));
+            
+            updateVoiceStatus('📡 Sending request to ElevenLabs...', '#4169e1', '#f0f8ff');
             
             const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
                 method: 'POST',
@@ -1059,26 +1102,22 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                     'Content-Type': 'application/json',
                     'xi-api-key': '{api_key}'
                 }},
-                body: JSON.stringify({{
-                    text: `{clean_text}`,
-                    model_id: 'eleven_monolingual_v1',
-                    voice_settings: {{
-                        stability: {0.9 if voice_type == 'wise' else 0.7 if voice_type == 'professional' else 0.4},
-                        similarity_boost: {0.9 if voice_type == 'professional' else 0.8 if voice_type == 'wise' else 0.6},
-                        style: {0.2 if voice_type == 'caring' else 0.9 if voice_type == 'energetic' else 0.5},
-                        use_speaker_boost: {str(voice_type in ['confident', 'executive', 'energetic']).lower()},
-                        speed: {0.7 if voice_type == 'wise' else 1.3 if voice_type == 'energetic' else 1.0}
-                    }}
-                }})
+                body: JSON.stringify(requestBody)
             }});
             
             console.log('ElevenLabs response status:', response.status);
+            console.log('ElevenLabs response headers:', Object.fromEntries(response.headers.entries()));
             
             if (response.ok) {{
-                updateVoiceStatus('✅ ELEVENLABS SUCCESS! Playing premium voice...', '#28a745', '#f8fff8');
+                updateVoiceStatus('✅ ELEVENLABS SUCCESS! Processing audio...', '#28a745', '#f8fff8');
                 
                 const audioBlob = await response.blob();
                 console.log('Audio blob size:', audioBlob.size, 'bytes');
+                console.log('Audio blob type:', audioBlob.type);
+                
+                if (audioBlob.size === 0) {{
+                    throw new Error('Received empty audio blob from ElevenLabs');
+                }}
                 
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
@@ -1087,9 +1126,10 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                     updateVoiceStatus('🎵 ELEVENLABS PLAYING: {voice_name}', '#28a745', '#f8fff8');
                     console.log('ElevenLabs audio playing successfully!');
                 }}).catch(error => {{
-                    console.log('Audio play blocked:', error);
-                    updateVoiceStatus('⚠️ ELEVENLABS BLOCKED - Using browser fallback', '#ff8c00', '#fff8dc');
-                    fallbackToBrowserTTS();
+                    console.log('Audio play blocked/failed:', error);
+                    showErrorDetails('Audio play blocked: ' + error.message + '<br>This is usually due to browser autoplay restrictions.');
+                    updateVoiceStatus('⚠️ ELEVENLABS AUDIO BLOCKED - Using browser fallback', '#ff8c00', '#fff8dc');
+                    setTimeout(fallbackToBrowserTTS, 500);
                 }});
                 
                 audio.onended = function() {{
@@ -1098,22 +1138,65 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
                 }};
                 
                 audio.onerror = function(error) {{
-                    console.error('Audio error:', error);
+                    console.error('Audio playback error:', error);
+                    showErrorDetails('Audio playback error: ' + JSON.stringify(error));
                     updateVoiceStatus('❌ ELEVENLABS AUDIO ERROR - Using browser fallback', '#dc3545', '#fff5f5');
-                    fallbackToBrowserTTS();
+                    setTimeout(fallbackToBrowserTTS, 500);
                 }};
                 
             }} else {{
-                const errorText = await response.text();
+                // Get detailed error information
+                let errorText = '';
+                try {{
+                    errorText = await response.text();
+                }} catch (e) {{
+                    errorText = 'Could not read error response';
+                }}
+                
                 console.error('ElevenLabs API error:', response.status, errorText);
-                updateVoiceStatus('❌ ELEVENLABS FAILED (' + response.status + ') - Using browser fallback', '#dc3545', '#fff5f5');
-                setTimeout(fallbackToBrowserTTS, 1000);
+                
+                let errorMessage = '';
+                let errorDetails = '';
+                
+                if (response.status === 401) {{
+                    errorMessage = '❌ ELEVENLABS: INVALID API KEY';
+                    errorDetails = 'API Key is invalid or expired.<br>Status: 401<br>Response: ' + errorText;
+                }} else if (response.status === 403) {{
+                    errorMessage = '❌ ELEVENLABS: ACCESS FORBIDDEN';
+                    errorDetails = 'API Key lacks permissions or voice access.<br>Status: 403<br>Response: ' + errorText;
+                }} else if (response.status === 429) {{
+                    errorMessage = '❌ ELEVENLABS: RATE LIMIT EXCEEDED';
+                    errorDetails = 'Too many requests or out of credits.<br>Status: 429<br>Response: ' + errorText;
+                }} else if (response.status === 422) {{
+                    errorMessage = '❌ ELEVENLABS: INVALID REQUEST';
+                    errorDetails = 'Request format or voice ID invalid.<br>Status: 422<br>Response: ' + errorText;
+                }} else {{
+                    errorMessage = '❌ ELEVENLABS: API ERROR (' + response.status + ')';
+                    errorDetails = 'Unknown API error.<br>Status: ' + response.status + '<br>Response: ' + errorText;
+                }}
+                
+                updateVoiceStatus(errorMessage, '#dc3545', '#fff5f5');
+                showErrorDetails(errorDetails);
+                setTimeout(fallbackToBrowserTTS, 2000);
             }}
             
         }} catch (error) {{
-            console.error('ElevenLabs network error:', error);
-            updateVoiceStatus('❌ ELEVENLABS NETWORK ERROR - Using browser fallback', '#dc3545', '#fff5f5');
-            setTimeout(fallbackToBrowserTTS, 1000);
+            console.error('ElevenLabs network/fetch error:', error);
+            
+            let errorMessage = '❌ ELEVENLABS: NETWORK ERROR';
+            let errorDetails = 'Network request failed.<br>Error: ' + error.message + '<br>';
+            
+            if (error.message.includes('CORS')) {{
+                errorDetails += 'This is likely a CORS (Cross-Origin) policy issue.<br>Try running in a different browser or environment.';
+            }} else if (error.message.includes('Failed to fetch')) {{
+                errorDetails += 'Network connection failed.<br>Check your internet connection and firewall settings.';
+            }} else {{
+                errorDetails += 'Unexpected network error occurred.';
+            }}
+            
+            updateVoiceStatus(errorMessage, '#dc3545', '#fff5f5');
+            showErrorDetails(errorDetails);
+            setTimeout(fallbackToBrowserTTS, 2000);
         }}
     }}
     
