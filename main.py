@@ -19,6 +19,214 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ==================== FIXED API SETUP FUNCTIONS ====================
+
+def setup_gemini():
+    """Setup Gemini with proper secrets handling"""
+    api_key = None
+    
+    try:
+        # Method 1: Try Streamlit secrets (most common for Streamlit Cloud)
+        if hasattr(st, 'secrets') and 'GEMINI_API_KEY' in st.secrets:
+            api_key = st.secrets['GEMINI_API_KEY']
+            st.success(f"✅ Gemini API key loaded from secrets: {api_key[:10]}...")
+        
+        # Method 2: Try environment variable (for local development)
+        elif 'GEMINI_API_KEY' in os.environ:
+            api_key = os.environ['GEMINI_API_KEY']
+            st.success(f"✅ Gemini API key loaded from environment: {api_key[:10]}...")
+        
+        else:
+            st.error("❌ GEMINI_API_KEY not found in secrets or environment variables")
+            show_secrets_help()
+            st.stop()
+            
+    except Exception as e:
+        st.error(f"❌ Error accessing Gemini API key: {str(e)}")
+        show_secrets_help()
+        st.stop()
+    
+    # Validate API key format
+    if not api_key or not api_key.startswith("AIza"):
+        st.error(f"❌ Invalid Gemini API key format. Key should start with 'AIza'")
+        show_secrets_help()
+        st.stop()
+    
+    # Test the connection
+    try:
+        genai.configure(api_key=api_key)
+        
+        # Try different models in order of preference
+        model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp']
+        
+        for model_name in model_names:
+            try:
+                model = genai.GenerativeModel(model_name)
+                # Test with a simple prompt
+                test_response = model.generate_content(
+                    "Say 'Connected'", 
+                    generation_config={'max_output_tokens': 10}
+                )
+                
+                if test_response and test_response.text:
+                    st.success(f"✅ Gemini {model_name} connected successfully!")
+                    return model, model_name
+                    
+            except Exception as model_error:
+                st.warning(f"⚠️ {model_name} failed: {str(model_error)}")
+                continue
+        
+        st.error("❌ Could not connect to any Gemini model")
+        st.stop()
+                
+    except Exception as e:
+        st.error(f"❌ Gemini API connection failed: {str(e)}")
+        st.error("**Possible solutions:**")
+        st.error("- Verify your API key is correct and active")
+        st.error("- Check if Gemini API is enabled in Google AI Studio")
+        st.error("- Try generating a new API key")
+        st.stop()
+
+def setup_elevenlabs():
+    """Setup ElevenLabs API with proper secrets handling"""
+    api_key = None
+    
+    try:
+        # Method 1: Try Streamlit secrets
+        if hasattr(st, 'secrets') and 'ELEVENLABS_API_KEY' in st.secrets:
+            api_key = st.secrets['ELEVENLABS_API_KEY']
+        
+        # Method 2: Try environment variable
+        elif 'ELEVENLABS_API_KEY' in os.environ:
+            api_key = os.environ['ELEVENLABS_API_KEY']
+        
+        else:
+            st.warning("⚠️ ELEVENLABS_API_KEY not found - voice features will use browser fallback")
+            return None
+            
+    except Exception as e:
+        st.warning(f"⚠️ Error accessing ElevenLabs API key: {str(e)} - using fallback")
+        return None
+    
+    # Validate ElevenLabs API key format
+    if api_key and api_key.startswith("sk_"):
+        st.success(f"✅ ElevenLabs API key loaded: {api_key[:10]}...")
+        return api_key
+    else:
+        st.warning("⚠️ Invalid ElevenLabs API key format - using browser voice fallback")
+        return None
+
+def setup_heygen():
+    """Setup HeyGen API with proper secrets handling"""
+    api_key = None
+    
+    try:
+        # Method 1: Try Streamlit secrets
+        if hasattr(st, 'secrets') and 'HEYGEN_API_KEY' in st.secrets:
+            api_key = st.secrets['HEYGEN_API_KEY']
+        
+        # Method 2: Try environment variable
+        elif 'HEYGEN_API_KEY' in os.environ:
+            api_key = os.environ['HEYGEN_API_KEY']
+        
+        else:
+            st.info("ℹ️ HEYGEN_API_KEY not found - avatars will use emoji display")
+            return None
+            
+    except Exception as e:
+        st.info(f"ℹ️ Error accessing HeyGen API key: {str(e)} - using emoji avatars")
+        return None
+    
+    if api_key:
+        st.success(f"✅ HeyGen API key loaded: {api_key[:10]}...")
+        return api_key
+    else:
+        return None
+
+def show_secrets_help():
+    """Show help for setting up secrets properly"""
+    st.markdown("### 🔧 How to Fix API Key Issues")
+    
+    st.markdown("#### For Streamlit Cloud (GitHub deployment):")
+    st.markdown("""
+    1. Go to your Streamlit Cloud app dashboard
+    2. Click on your app → Settings → Secrets
+    3. Add your secrets in TOML format:
+    ```toml
+    GEMINI_API_KEY = "AIzaSyALgzLQTX6avknNUzknLxSgmTggTJfTUg"
+    ELEVENLABS_API_KEY = "sk_0048770c4dd23670baac2de2cd6f616e2856935e8297be5f"
+    HEYGEN_API_KEY = "ZWIzM2VhOTQzYjZiNDg5OWE2MmQ2NWNhZjJmNDJjMTYtMTc1MzEwMzUyMQ=="
+    ```
+    """)
+    
+    st.markdown("#### For Local Development:")
+    st.markdown("""
+    Create a file at `.streamlit/secrets.toml` in your project root:
+    ```toml
+    GEMINI_API_KEY = "your_gemini_key_here"
+    ELEVENLABS_API_KEY = "your_elevenlabs_key_here"
+    HEYGEN_API_KEY = "your_heygen_key_here"
+    ```
+    """)
+    
+    st.markdown("#### How to get API keys:")
+    st.markdown("""
+    - **Gemini API**: Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+    - **ElevenLabs API**: Visit [ElevenLabs](https://elevenlabs.io/speech-synthesis) → Profile → API Key
+    - **HeyGen API**: Visit [HeyGen](https://www.heygen.com/) → Developer → API Keys
+    """)
+
+def show_api_status():
+    """Show current API key status"""
+    with st.expander("🔍 API Configuration Status", expanded=False):
+        st.write("**Current API Key Status:**")
+        
+        # Check Gemini
+        try:
+            if hasattr(st, 'secrets') and 'GEMINI_API_KEY' in st.secrets:
+                gemini_key = st.secrets['GEMINI_API_KEY']
+                if gemini_key.startswith('AIza'):
+                    st.success(f"✅ Gemini API: {gemini_key[:10]}...{gemini_key[-5:]}")
+                else:
+                    st.error("❌ Gemini API: Invalid format")
+            else:
+                st.error("❌ Gemini API: Not found")
+        except Exception as e:
+            st.error(f"❌ Gemini API: Error - {e}")
+        
+        # Check ElevenLabs
+        try:
+            if hasattr(st, 'secrets') and 'ELEVENLABS_API_KEY' in st.secrets:
+                el_key = st.secrets['ELEVENLABS_API_KEY']
+                if el_key.startswith('sk_'):
+                    st.success(f"✅ ElevenLabs API: {el_key[:10]}...{el_key[-5:]}")
+                else:
+                    st.warning("⚠️ ElevenLabs API: Invalid format")
+            else:
+                st.warning("⚠️ ElevenLabs API: Not found (will use browser voice)")
+        except Exception as e:
+            st.warning(f"⚠️ ElevenLabs API: Error - {e}")
+        
+        # Check HeyGen
+        try:
+            if hasattr(st, 'secrets') and 'HEYGEN_API_KEY' in st.secrets:
+                hg_key = st.secrets['HEYGEN_API_KEY']
+                st.success(f"✅ HeyGen API: {hg_key[:10]}...{hg_key[-10:]}")
+            else:
+                st.info("ℹ️ HeyGen API: Not found (will use emoji avatars)")
+        except Exception as e:
+            st.info(f"ℹ️ HeyGen API: Error - {e}")
+        
+        # Show available secrets
+        try:
+            if hasattr(st, 'secrets'):
+                available_secrets = list(st.secrets.keys())
+                st.write(f"**Available secrets:** {available_secrets}")
+            else:
+                st.error("❌ st.secrets not available")
+        except Exception as e:
+            st.error(f"❌ Cannot read secrets: {e}")
+
 # ==================== CRM DATABASE SYSTEM ====================
 
 class CoachingCRM:
@@ -242,156 +450,6 @@ class CoachingCRM:
                 'last_active': stats[4]
             }
         return None
-
-# ==================== API INTEGRATIONS ====================
-
-def setup_elevenlabs():
-    """Setup ElevenLabs for TTS and STT"""
-    # Try to get API key from secrets first, then environment, then fallback
-    api_key = None
-    
-    try:
-        api_key = st.secrets["ELEVENLABS_API_KEY"]
-    except:
-        try:
-            api_key = st.secrets.get("ELEVENLABS_API_KEY")
-        except:
-            try:
-                api_key = os.getenv("ELEVENLABS_API_KEY")
-            except:
-                # Fallback to hardcoded key (remove in production)
-                api_key = "sk_da2743844b74d8828b3d7d24c65984b95a55a71886ad12b3"
-    
-    if api_key and api_key.startswith("sk_"):
-        return api_key
-    else:
-        return None
-
-def setup_heygen():
-    """Setup HeyGen for avatar generation"""
-    try:
-        api_key = st.secrets["HEYGEN_API_KEY"]
-    except:
-        try:
-            api_key = st.secrets.get("HEYGEN_API_KEY")
-        except:
-            api_key = os.getenv("HEYGEN_API_KEY")
-    
-    return api_key
-
-def setup_gemini():
-    """Setup Gemini with comprehensive debugging and fallback"""
-    
-    # Direct fallback approach
-    DIRECT_API_KEY = "AIzaSyDZCG1cuKAa0IOqUdGCbFWIemWjErUiSeU"
-    
-    api_key = None
-    debug_info = []
-    
-    # Method 1: Try secrets
-    try:
-        if hasattr(st, 'secrets'):
-            debug_info.append("✅ st.secrets exists")
-            try:
-                api_key = st.secrets["GEMINI_API_KEY"]
-                debug_info.append(f"✅ Found via st.secrets['GEMINI_API_KEY']: {api_key[:10]}...")
-            except KeyError:
-                debug_info.append("❌ GEMINI_API_KEY not found in st.secrets")
-            except Exception as e:
-                debug_info.append(f"❌ Error accessing st.secrets['GEMINI_API_KEY']: {e}")
-        else:
-            debug_info.append("❌ st.secrets not available")
-    except Exception as e:
-        debug_info.append(f"❌ Error with st.secrets: {e}")
-    
-    # Method 2: Try secrets.get()
-    if not api_key:
-        try:
-            api_key = st.secrets.get("GEMINI_API_KEY")
-            if api_key:
-                debug_info.append(f"✅ Found via st.secrets.get(): {api_key[:10]}...")
-            else:
-                debug_info.append("❌ st.secrets.get() returned None")
-        except Exception as e:
-            debug_info.append(f"❌ Error with st.secrets.get(): {e}")
-    
-    # Method 3: Try environment variable
-    if not api_key:
-        try:
-            api_key = os.getenv("GEMINI_API_KEY")
-            if api_key:
-                debug_info.append(f"✅ Found via os.getenv(): {api_key[:10]}...")
-            else:
-                debug_info.append("❌ os.getenv() returned None")
-        except Exception as e:
-            debug_info.append(f"❌ Error with os.getenv(): {e}")
-    
-    # Method 4: Use direct fallback
-    if not api_key:
-        api_key = DIRECT_API_KEY
-        debug_info.append(f"⚠️ Using direct fallback key: {api_key[:10]}...")
-    
-    # Show debug info
-    with st.expander("🔍 Gemini API Key Debug Info", expanded=not api_key):
-        for info in debug_info:
-            if "✅" in info:
-                st.success(info)
-            elif "❌" in info:
-                st.error(info)
-            else:
-                st.warning(info)
-        
-        # Show secrets status
-        try:
-            st.write("**All available secrets:**")
-            secrets_dict = dict(st.secrets)
-            for key in secrets_dict.keys():
-                st.write(f"- {key}")
-        except Exception as e:
-            st.error(f"Cannot read secrets: {e}")
-        
-        # Instructions
-        st.write("**If secrets aren't working, try:**")
-        st.write("1. Restart Streamlit completely (Ctrl+C and restart)")
-        st.write("2. Check file location: `.streamlit/secrets.toml` in project root")
-        st.write("3. Verify file content has proper format (no extra spaces)")
-        st.write("4. Clear browser cache")
-    
-    if not api_key:
-        st.error("❌ No Gemini API key found anywhere")
-        st.stop()
-    
-    if not api_key.startswith("AIza"):
-        st.error(f"❌ Invalid Gemini API key format. Should start with 'AIza', got: {api_key[:10]}...")
-        st.stop()
-    
-    # Test the connection
-    try:
-        genai.configure(api_key=api_key)
-        model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp']
-        
-        for model_name in model_names:
-            try:
-                model = genai.GenerativeModel(model_name)
-                test_response = model.generate_content("Say 'Connected'", 
-                    generation_config={'max_output_tokens': 10})
-                if test_response and test_response.text:
-                    st.success(f"✅ Gemini {model_name} connected successfully!")
-                    return model, model_name
-            except Exception as e:
-                st.warning(f"⚠️ {model_name} failed: {str(e)}")
-                continue
-        
-        st.error("❌ Could not connect to any Gemini model")
-        st.stop()
-                
-    except Exception as e:
-        st.error(f"❌ Gemini API Error: {str(e)}")
-        st.error("**Possible solutions:**")
-        st.error("- Check if your API key is valid and active")
-        st.error("- Ensure Gemini API is enabled in Google AI Studio")
-        st.error("- Try generating a new API key")
-        st.stop()
 
 # ==================== ENHANCED COACHING KNOWLEDGE ====================
 
@@ -1302,7 +1360,7 @@ def create_enhanced_elevenlabs_voice(text, api_key, voice_type, avatar_info):
                     headers: {{
                         'Accept': 'audio/mpeg',
                         'Content-Type': 'application/json',
-                        'xi-api-key': '{api_key}'
+                        'xi-api-key': '{api_key or "fallback"}'
                     }},
                     body: JSON.stringify({{
                         text: `{clean_text}`,
@@ -1843,51 +1901,8 @@ def main():
     load_custom_css()
     init_session_state()
     
-    # Debug section (remove after fixing)
-    with st.expander("🔧 **DEBUG: API Keys Status** (Click to check your setup)", expanded=False):
-        st.write("**Checking API Key Configuration:**")
-        
-        # Check Gemini API
-        try:
-            gemini_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
-            if gemini_key:
-                st.success(f"✅ Gemini API Key found: {gemini_key[:10]}...{gemini_key[-5:]}")
-            else:
-                st.error("❌ Gemini API Key not found")
-        except Exception as e:
-            st.error(f"❌ Error reading Gemini key: {e}")
-        
-        # Check ElevenLabs API  
-        try:
-            elevenlabs_key = st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
-            if elevenlabs_key:
-                st.success(f"✅ ElevenLabs API Key found: {elevenlabs_key[:10]}...{elevenlabs_key[-5:]}")
-            else:
-                st.warning("⚠️ ElevenLabs API Key not found (will use fallback)")
-        except Exception as e:
-            st.warning(f"⚠️ Error reading ElevenLabs key: {e}")
-        
-        # Check HeyGen API
-        try:
-            heygen_key = st.secrets.get("HEYGEN_API_KEY") or os.getenv("HEYGEN_API_KEY")
-            if heygen_key:
-                st.success(f"✅ HeyGen API Key found: {heygen_key[:10]}...{heygen_key[-10:]}")
-            else:
-                st.info("ℹ️ HeyGen API Key not found (avatars will use emoji fallback)")
-        except Exception as e:
-            st.info(f"ℹ️ Error reading HeyGen key: {e}")
-        
-        # Show all available secrets (for debugging)
-        try:
-            available_secrets = list(st.secrets.keys())
-            st.write(f"**Available secrets:** {available_secrets}")
-        except:
-            st.error("❌ Cannot read secrets.toml file")
-        
-        st.write("**Expected secrets.toml format:**")
-        st.code('''GEMINI_API_KEY = "AIzaSyALgzLQTX6avknNUzknLxSgmTggTJfTUg"
-ELEVENLABS_API_KEY = "sk_0048770c4dd23670baac2de2cd6f616e2856935e8297be5f"
-HEYGEN_API_KEY = "ZWIzM2VhOTQzYjZiNDg5OWE2MmQ2NWNhZjJmNDJjMTYtMTc1MzEwMzUyMQ=="''')
+    # Show API status at the top
+    show_api_status()
     
     # Process voice input first
     process_voice_input()
@@ -1935,8 +1950,7 @@ HEYGEN_API_KEY = "ZWIzM2VhOTQzYjZiNDg5OWE2MmQ2NWNhZjJmNDJjMTYtMTc1MzEwMzUyMQ=="'
                 avatar_info = avatar_configs.get(avatar_choice, avatar_configs['sophia'])
                 elevenlabs_key = setup_elevenlabs()
                 
-                if elevenlabs_key:
-                    create_enhanced_elevenlabs_voice(latest_response, elevenlabs_key, voice_type, avatar_info)
+                create_enhanced_elevenlabs_voice(latest_response, elevenlabs_key, voice_type, avatar_info)
             
             # Reset speaking state
             if st.session_state.is_speaking:
