@@ -282,7 +282,7 @@ def setup_heygen():
 
 def setup_elevenlabs():
     """Setup ElevenLabs for natural voice"""
-    # Use the new API key provided by user
+    # Use the API key provided by user
     api_key = st.secrets.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY") or "sk_3f36a2a57b246f01c2aab04a788b216a1c573a17cfd93af2"
     
     # Debug information
@@ -697,9 +697,9 @@ def check_voice_message():
         """
         st.components.v1.html(voice_check_script, height=0)
 
-# Natural Voice with MOBILE SUPPORT
+# Natural Voice with MOBILE SUPPORT - FIXED WITH YOUR VOICE IDS
 def natural_voice_component(text, voice_type="professional"):
-    """Enhanced voice playback with improved personality matching (from reference code)"""
+    """Enhanced voice playback with improved personality matching using your ElevenLabs voices"""
     if not text or st.session_state.get('voice_played', False):
         return
     
@@ -722,7 +722,7 @@ def natural_voice_component(text, voice_type="professional"):
     elevenlabs_key = setup_elevenlabs()
     
     if elevenlabs_key and elevenlabs_key.startswith("sk_"):
-        # Premium ElevenLabs voice with enhanced gender matching
+        # Premium ElevenLabs voice with YOUR actual voice IDs
         create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type, avatar_gender)
     else:
         # Enhanced browser TTS with improved personality settings
@@ -925,36 +925,51 @@ def create_mobile_friendly_voice(text, voice_type, gender):
     st.components.v1.html(voice_html, height=120)
 
 def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
-    """Instant ElevenLabs voice with gender-matched voices"""
+    """Instant ElevenLabs voice with YOUR ACTUAL voice IDs mapped to personalities"""
     
-    # Voice selection based on gender and personality
+    # YOUR ACTUAL VOICE IDS MAPPED TO PERSONALITIES AND GENDERS
     if gender == 'male':
         voice_configs = {
-            'professional': {'voice_id': 'TxGEqnHWrfWFTfGW9XjX', 'name': 'Professional Male'},
-            'confident': {'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'Confident Male'},
-            'caring': {'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Caring Male'},
-            'wise': {'voice_id': 'onwK4e9ZLuTAKqWW03F9', 'name': 'Wise Male'},
-            'energetic': {'voice_id': 'pNInz6obpgDQGcFmaJgB', 'name': 'Energetic Male'},
-            'executive': {'voice_id': 'Yko7PKHZNXotIFUBG7I9', 'name': 'Executive Male'}
+            'professional': {'voice_id': 'nPczCjzI2devNBz1zQrb', 'name': 'Brian (Professional Male)'},
+            'confident': {'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Charlie (Confident Male)'},
+            'caring': {'voice_id': 'pqHfZKP75CvOlQylNhV4', 'name': 'Bill (Caring Male)'},
+            'wise': {'voice_id': 'nPczCjzI2devNBz1zQrb', 'name': 'Brian (Wise Male)'},
+            'energetic': {'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Charlie (Energetic Male)'},
+            'executive': {'voice_id': 'nPczCjzI2devNBz1zQrb', 'name': 'Brian (Executive Male)'}
         }
     else:  # female
         voice_configs = {
-            'professional': {'voice_id': 'EXAVITQu4vr4xnSDxMaL', 'name': 'Professional Female'},
-            'confident': {'voice_id': 'ThT5KcBeYPX3keUQqHPh', 'name': 'Confident Female'},
-            'caring': {'voice_id': '21m00Tcm4TlvDq8ikWAM', 'name': 'Caring Female'},
-            'wise': {'voice_id': 'XrExE9yKIg1WjnnlVkGX', 'name': 'Wise Female'},
-            'energetic': {'voice_id': 'AZnzlk1XvdvUeBnXmlld', 'name': 'Energetic Female'},
-            'executive': {'voice_id': 'SOYHLrjzK2X1ezoPC6cr', 'name': 'Executive Female'}
+            'professional': {'voice_id': 'Xb7hH8MSUJpSbSDYk0k2', 'name': 'Alice (Professional Female)'},
+            'confident': {'voice_id': 'jsCqWAovK2LkecY7zXl4', 'name': 'Freya (Confident Female)'},
+            'caring': {'voice_id': 'LcfcDJNUP1GQjkzn1xUU', 'name': 'Emily (Caring Female)'},
+            'wise': {'voice_id': '9BWtsMINqrJLrRacOk9x', 'name': 'Aria (Wise Female)'},
+            'energetic': {'voice_id': 'LcfcDJNUP1GQjkzn1xUU', 'name': 'Emily (Energetic Female)'},
+            'executive': {'voice_id': '9BWtsMINqrJLrRacOk9x', 'name': 'Aria (Executive Female)'}
         }
     
     voice_config = voice_configs.get(voice_type, voice_configs['professional'])
     voice_id = voice_config['voice_id']
+    voice_name = voice_config['name']
     
     # Clean text for speech
     clean_text = enhance_text_for_speech(text, voice_type)
     
-    # Instant voice generation and playback (enhanced settings from reference)
+    # Instant voice generation and playback with your voice IDs
     voice_html = f"""
+    <div style="
+        padding: 15px;
+        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
+        border-radius: 15px;
+        border: 1px solid rgba(138, 43, 226, 0.2);
+        margin: 10px 0;
+        text-align: center;
+    ">
+        <div style="margin-bottom: 10px; color: #8A2BE2; font-weight: bold;">
+            🎤 Playing with {voice_name}
+        </div>
+        <div id="voiceStatus" style="color: #666; font-size: 14px;">Generating voice...</div>
+    </div>
+    
     <script>
     // Prevent multiple simultaneous voices
     if (window.speechSynthesis) {{
@@ -962,7 +977,10 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
     }}
     
     async function playInstantVoice() {{
+        const statusDiv = document.getElementById('voiceStatus');
         try {{
+            statusDiv.innerHTML = '🎧 Connecting to ElevenLabs...';
+            
             const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
                 method: 'POST',
                 headers: {{
@@ -984,22 +1002,35 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
             }});
             
             if (response.ok) {{
+                statusDiv.innerHTML = '🎵 Playing your coach voice...';
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 
                 // Play immediately
-                audio.play().catch(e => {{
+                audio.play().then(() => {{
+                    console.log('ElevenLabs voice playing successfully with {voice_name}');
+                    statusDiv.innerHTML = '🎤 Speaking with {voice_name}';
+                }}).catch(e => {{
                     console.log('Autoplay blocked, using browser TTS fallback');
+                    statusDiv.innerHTML = '🔄 Switching to browser voice...';
                     fallbackToBrowserTTS();
                 }});
                 
+                // Clean up when done
+                audio.onended = function() {{
+                    URL.revokeObjectURL(audioUrl);
+                    statusDiv.innerHTML = '✅ Voice message complete';
+                }};
+                
             }} else {{
-                console.log('ElevenLabs failed, using browser TTS');
+                console.log('ElevenLabs API failed with status:', response.status);
+                statusDiv.innerHTML = '🔄 ElevenLabs busy, using browser voice...';
                 fallbackToBrowserTTS();
             }}
         }} catch (error) {{
-            console.log('Voice error, using browser TTS');
+            console.log('Voice error:', error.message);
+            statusDiv.innerHTML = '🔄 Using browser voice...';
             fallbackToBrowserTTS();
         }}
     }}
@@ -1062,6 +1093,14 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
             if (bestVoice) utterance.voice = bestVoice;
             
             speechSynthesis.speak(utterance);
+            
+            utterance.onstart = function() {{
+                document.getElementById('voiceStatus').innerHTML = '🎤 Browser voice playing...';
+            }};
+            
+            utterance.onend = function() {{
+                document.getElementById('voiceStatus').innerHTML = '✅ Voice message complete';
+            }};
         }}
     }}
     
@@ -1070,7 +1109,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, gender):
     </script>
     """
     
-    st.components.v1.html(voice_html, height=0)
+    st.components.v1.html(voice_html, height=90)
 
 def enhance_text_for_speech(text, voice_type):
     """Make text MUCH more distinct for each personality type (enhanced from reference)"""
@@ -1270,6 +1309,18 @@ def user_profile_sidebar():
                 'executive': '👔 Executive & Authoritative'
             }[x]
         )
+        
+        # Show which voices will be used
+        st.info("🎤 **Voice Mapping:**\n\n"
+                "**Male Voices:**\n"
+                "• Brian - Professional/Executive/Wise\n"
+                "• Charlie - Confident/Energetic\n"
+                "• Bill - Caring\n\n"
+                "**Female Voices:**\n"
+                "• Alice - Professional\n"
+                "• Freya - Confident\n"
+                "• Emily - Caring/Energetic\n"
+                "• Aria - Wise/Executive")
         
         # Save profile
         if st.button("💾 Save Settings", type="primary"):
