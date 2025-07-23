@@ -186,7 +186,7 @@ def init_session_state():
 def setup_gemini():
     api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
     if not api_key or api_key == "your_gemini_api_key_here":
-        st.error("❌ Please set your Gemini API key in .streamlit/secrets.toml")
+        st.error("Please set your Gemini API key in .streamlit/secrets.toml")
         st.stop()
    
     try:
@@ -202,11 +202,11 @@ def setup_gemini():
             except:
                 continue
        
-        st.error("❌ Could not connect to Gemini")
+        st.error("Could not connect to Gemini")
         st.stop()
                
     except Exception as e:
-        st.error(f"❌ Gemini API Error: {str(e)}")
+        st.error(f"Gemini API Error: {str(e)}")
         st.stop()
 
 def setup_elevenlabs():
@@ -254,7 +254,7 @@ def avatar_component(is_speaking=False):
 def simple_voice_recording():
     """Simple and reliable voice recording system"""
     
-    st.markdown("### 🎤 Voice Message")
+    st.markdown("### Voice Message")
     
     # Instructions
     st.info("**How to use voice recording:**\n1. Click 'Start Recording'\n2. Speak your message clearly\n3. Click 'Stop & Send' to send automatically to your coach")
@@ -265,7 +265,7 @@ def simple_voice_recording():
     with col1:
         # Status display
         if st.session_state.recording_state == 'ready':
-            st.markdown('<div class="voice-ready-container">🎤 Ready to record your voice message</div>', unsafe_allow_html=True)
+            st.markdown('<div class="voice-ready-container">Ready to record your voice message</div>', unsafe_allow_html=True)
         elif st.session_state.recording_state == 'recording':
             st.markdown('<div class="voice-recording-container">🔴 <strong>Recording...</strong> Speak now!</div>', unsafe_allow_html=True)
         elif st.session_state.recording_state == 'processing':
@@ -702,14 +702,14 @@ def main():
             })
             
             st.session_state.is_speaking = True
-            st.success(f"🎤 Voice message received: \"{voice_message}\"")
+            st.success(f"Voice message received: \"{voice_message}\"")
             st.rerun()
     
     # Handle voice error
     if 'voice_error' in st.query_params:
         st.session_state.recording_state = 'ready'
         del st.query_params['voice_error']
-        st.error("❌ No speech detected. Please try recording again.")
+        st.error("No speech detected. Please try recording again.")
         st.rerun()
    
     # Main layout
@@ -738,7 +738,7 @@ def main():
         chat_interface()
        
         # Text input form
-        st.markdown("### ✍️ Send Message")
+        st.markdown("### Send Message")
        
         with st.form("message_form", clear_on_submit=True):
             user_input = st.text_area(
