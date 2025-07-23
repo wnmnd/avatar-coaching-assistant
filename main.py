@@ -673,23 +673,24 @@ def generate_coaching_insights(user_input, coach_response, model):
 # ==================== ENHANCED VOICE SYSTEM ====================
 
 def create_professional_voice_recorder():
-    """Professional voice recorder with ElevenLabs STT integration"""
+    """Professional voice recorder with real microphone functionality"""
     
     voice_recorder_html = f"""
-    <div style="
-        padding: 30px;
-        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
-        border-radius: 20px;
-        border: 2px solid rgba(138, 43, 226, 0.3);
-        margin: 15px 0;
-        text-align: center;
-        box-shadow: 0 8px 25px rgba(138, 43, 226, 0.15);
-    ">
-        <div style="margin-bottom: 20px; color: #8A2BE2; font-weight: bold; font-size: 20px;">
-            🎤 Professional Voice Recording
-        </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+        .voice-recorder {{
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
+            border-radius: 20px;
+            border: 2px solid rgba(138, 43, 226, 0.3);
+            margin: 15px 0;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.15);
+        }}
         
-        <div id="voiceStatus" style="
+        .status-display {{
             padding: 20px;
             background: white;
             border-radius: 15px;
@@ -699,11 +700,9 @@ def create_professional_voice_recorder():
             font-size: 18px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             border: 2px solid #e6e6fa;
-        ">
-            🎯 Ready for professional coaching conversation
-        </div>
+        }}
         
-        <div id="transcriptionBox" style="
+        .transcription-box {{
             padding: 20px;
             background: #f8f9fa;
             border-radius: 15px;
@@ -714,12 +713,9 @@ def create_professional_voice_recorder():
             font-size: 16px;
             display: none;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
-        ">
-            <div style="color: #666; font-size: 14px; margin-bottom: 10px;">📝 Live Transcription:</div>
-            <div id="liveText">Your speech will appear here...</div>
-        </div>
+        }}
         
-        <button id="voiceBtn" onclick="handleVoiceClick()" style="
+        .record-button {{
             background: linear-gradient(135deg, #8A2BE2, #9370DB);
             border: none;
             border-radius: 50%;
@@ -732,145 +728,32 @@ def create_professional_voice_recorder():
             transition: all 0.3s ease;
             margin: 20px;
             position: relative;
-        ">🎤</button>
+        }}
         
-        <div style="margin-top: 25px; color: #666; font-size: 16px; font-weight: 600; line-height: 1.5;">
-            🚀 <strong>Advanced Features:</strong><br>
-            • ElevenLabs Speech Recognition<br>
-            • Real-time transcription<br>
-            • Auto-send when finished
-        </div>
-    </div>
-
-    <script>
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let isRecording = false;
-    let silenceTimer = null;
-    
-    async function handleVoiceClick() {{
-        if (!isRecording) {{
-            await startRecording();
-        }} else {{
-            stopRecording();
+        .record-button:hover {{
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(138, 43, 226, 0.5);
         }}
-    }}
-    
-    async function startRecording() {{
-        try {{
-            const stream = await navigator.mediaDevices.getUserMedia({{ audio: true }});
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            isRecording = true;
-            
-            updateStatus('🔴 Recording... Speak clearly for best results');
-            updateButton('recording');
-            showTranscription();
-            
-            mediaRecorder.ondataavailable = event => {{
-                audioChunks.push(event.data);
-            }};
-            
-            mediaRecorder.onstop = async () => {{
-                const audioBlob = new Blob(audioChunks, {{ type: 'audio/wav' }});
-                await processAudioWithElevenLabs(audioBlob);
-            }};
-            
-            mediaRecorder.start();
-            
-            // Auto-stop after 30 seconds max
-            setTimeout(() => {{
-                if (isRecording) {{
-                    stopRecording();
-                }}
-            }}, 30000);
-            
-        }} catch (error) {{
-            updateStatus('❌ Microphone access denied. Please allow microphone access.');
-            console.error('Recording error:', error);
-        }}
-    }}
-    
-    function stopRecording() {{
-        if (mediaRecorder && isRecording) {{
-            isRecording = false;
-            mediaRecorder.stop();
-            mediaRecorder.stream.getTracks().forEach(track => track.stop());
-            
-            updateStatus('🔄 Processing with ElevenLabs STT...');
-            updateButton('processing');
-        }}
-    }}
-    
-    async function processAudioWithElevenLabs(audioBlob) {{
-        try {{
-            // Note: This would normally send to ElevenLabs STT API
-            // For demo purposes, we'll simulate the transcription
-            updateStatus('✅ Audio processed! Preparing to send...');
-            
-            // Simulate transcription result
-            const simulatedText = "Hello, I'd like to discuss my career goals and how to increase my income this year.";
-            
-            document.getElementById('liveText').innerHTML = '"' + simulatedText + '"';
-            
-            updateStatus('📤 Sending your message to coach...');
-            updateButton('sending');
-            
-            // Auto-send the message
-            setTimeout(() => {{
-                const url = new URL(window.location.href);
-                url.searchParams.set('voice_input', encodeURIComponent(simulatedText));
-                url.searchParams.set('timestamp', Date.now().toString());
-                url.searchParams.set('stt_method', 'elevenlabs');
-                window.location.href = url.toString();
-            }}, 2000);
-            
-        }} catch (error) {{
-            updateStatus('❌ Processing failed. Please try again.');
-            resetButton();
-            console.error('Processing error:', error);
-        }}
-    }}
-    
-    function updateStatus(message) {{
-        document.getElementById('voiceStatus').innerHTML = message;
-    }}
-    
-    function updateButton(state) {{
-        const btn = document.getElementById('voiceBtn');
         
-        if (state === 'recording') {{
-            btn.style.background = 'linear-gradient(135deg, #ff4757, #ff3742)';
-            btn.innerHTML = '🔴';
-            btn.style.animation = 'pulse-record 1.5s infinite';
-        }} else if (state === 'processing') {{
-            btn.style.background = 'linear-gradient(135deg, #3742fa, #2f3542)';
-            btn.innerHTML = '⚡';
-            btn.style.animation = 'pulse-process 1s infinite';
-        }} else if (state === 'sending') {{
-            btn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
-            btn.innerHTML = '📤';
-            btn.style.animation = 'pulse-send 0.8s infinite';
+        .record-button:active {{
+            transform: translateY(-2px);
         }}
-    }}
-    
-    function showTranscription() {{
-        document.getElementById('transcriptionBox').style.display = 'block';
-    }}
-    
-    function resetButton() {{
-        isRecording = false;
-        const btn = document.getElementById('voiceBtn');
-        btn.style.background = 'linear-gradient(135deg, #8A2BE2, #9370DB)';
-        btn.innerHTML = '🎤';
-        btn.style.animation = 'none';
-        updateStatus('🎯 Ready for professional coaching conversation');
-        document.getElementById('transcriptionBox').style.display = 'none';
-    }}
-    
-    // Enhanced CSS animations
-    const style = document.createElement('style');
-    style.textContent = `
+        
+        .recording {{
+            background: linear-gradient(135deg, #ff4757, #ff3742) !important;
+            animation: pulse-record 1.5s infinite !important;
+        }}
+        
+        .processing {{
+            background: linear-gradient(135deg, #3742fa, #2f3542) !important;
+            animation: pulse-process 1s infinite !important;
+        }}
+        
+        .ready-to-send {{
+            background: linear-gradient(135deg, #28a745, #20c997) !important;
+            animation: pulse-send 0.8s infinite !important;
+        }}
+        
         @keyframes pulse-record {{
             0% {{ transform: scale(1); box-shadow: 0 12px 35px rgba(255, 71, 87, 0.4); }}
             50% {{ transform: scale(1.08); box-shadow: 0 16px 45px rgba(255, 71, 87, 0.8); }}
@@ -888,12 +771,265 @@ def create_professional_voice_recorder():
             50% {{ transform: scale(1.05); box-shadow: 0 16px 45px rgba(40, 167, 69, 0.8); }}
             100% {{ transform: scale(1); box-shadow: 0 12px 35px rgba(40, 167, 69, 0.4); }}
         }}
-    `;
-    document.head.appendChild(style);
-    </script>
+        
+        .send-button {{
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            margin: 10px;
+            display: none;
+        }}
+        </style>
+    </head>
+    <body>
+        <div class="voice-recorder">
+            <div style="margin-bottom: 20px; color: #8A2BE2; font-weight: bold; font-size: 20px;">
+                🎤 Professional Voice Recording
+            </div>
+            
+            <div id="voiceStatus" class="status-display">
+                🎯 Ready for professional coaching conversation
+            </div>
+            
+            <div id="transcriptionBox" class="transcription-box">
+                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">📝 Live Transcription:</div>
+                <div id="liveText">Your speech will appear here...</div>
+            </div>
+            
+            <button id="recordBtn" class="record-button" onclick="toggleRecording()">
+                🎤
+            </button>
+            
+            <button id="sendBtn" class="send-button" onclick="sendMessage()">
+                📤 Send Message
+            </button>
+            
+            <div style="margin-top: 25px; color: #666; font-size: 16px; font-weight: 600; line-height: 1.5;">
+                🚀 <strong>Features:</strong><br>
+                • Real microphone recording<br>
+                • Live speech transcription<br>
+                • Professional audio processing
+            </div>
+        </div>
+        
+        <script>
+        let recognition = null;
+        let isRecording = false;
+        let finalTranscript = '';
+        let interimTranscript = '';
+        
+        // Initialize speech recognition
+        function initSpeechRecognition() {{
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {{
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+                
+                recognition.onstart = function() {{
+                    console.log('Speech recognition started');
+                    updateStatus('🔴 Listening... Speak clearly for best results');
+                    showTranscription();
+                }};
+                
+                recognition.onresult = function(event) {{
+                    interimTranscript = '';
+                    finalTranscript = '';
+                    
+                    for (let i = 0; i < event.results.length; i++) {{
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {{
+                            finalTranscript += transcript + ' ';
+                        }} else {{
+                            interimTranscript += transcript;
+                        }}
+                    }}
+                    
+                    const combinedText = finalTranscript + interimTranscript;
+                    document.getElementById('liveText').innerHTML = 
+                        '<strong>Final:</strong> ' + finalTranscript + 
+                        '<br><em>Interim:</em> ' + interimTranscript;
+                    
+                    console.log('Speech recognized:', combinedText);
+                }};
+                
+                recognition.onend = function() {{
+                    console.log('Speech recognition ended');
+                    if (isRecording) {{
+                        // Recognition stopped unexpectedly, restart it
+                        try {{
+                            recognition.start();
+                        }} catch (e) {{
+                            console.log('Could not restart recognition:', e);
+                            stopRecording();
+                        }}
+                    }}
+                }};
+                
+                recognition.onerror = function(event) {{
+                    console.error('Speech recognition error:', event.error);
+                    updateStatus('❌ Speech error: ' + event.error + '. Click to try again.');
+                    
+                    if (event.error === 'not-allowed') {{
+                        updateStatus('❌ Microphone access denied. Please allow microphone access and try again.');
+                    }}
+                    
+                    stopRecording();
+                }};
+                
+                return true;
+            }} else {{
+                updateStatus('❌ Speech recognition not supported. Please use Chrome or Edge browser.');
+                return false;
+            }}
+        }}
+        
+        function updateStatus(message) {{
+            document.getElementById('voiceStatus').innerHTML = message;
+        }}
+        
+        function showTranscription() {{
+            document.getElementById('transcriptionBox').style.display = 'block';
+        }}
+        
+        function hideTranscription() {{
+            document.getElementById('transcriptionBox').style.display = 'none';
+        }}
+        
+        function updateButton(state) {{
+            const btn = document.getElementById('recordBtn');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            btn.className = 'record-button';
+            
+            if (state === 'recording') {{
+                btn.classList.add('recording');
+                btn.innerHTML = '🔴';
+                sendBtn.style.display = 'none';
+            }} else if (state === 'processing') {{
+                btn.classList.add('processing');
+                btn.innerHTML = '⏳';
+                sendBtn.style.display = 'none';
+            }} else if (state === 'ready') {{
+                btn.classList.add('ready-to-send');
+                btn.innerHTML = '✅';
+                sendBtn.style.display = 'inline-block';
+            }} else {{
+                btn.innerHTML = '🎤';
+                sendBtn.style.display = 'none';
+            }}
+        }}
+        
+        async function toggleRecording() {{
+            if (!recognition && !initSpeechRecognition()) {{
+                return;
+            }}
+            
+            if (!isRecording) {{
+                startRecording();
+            }} else {{
+                stopRecording();
+            }}
+        }}
+        
+        async function startRecording() {{
+            // Request microphone permission first
+            try {{
+                const stream = await navigator.mediaDevices.getUserMedia({{ audio: true }});
+                stream.getTracks().forEach(track => track.stop()); // Stop the test stream
+                
+                updateStatus('🎤 Microphone access granted. Starting recording...');
+                
+            }} catch (error) {{
+                console.error('Microphone access error:', error);
+                updateStatus('❌ Cannot access microphone. Please allow microphone access.');
+                return;
+            }}
+            
+            isRecording = true;
+            finalTranscript = '';
+            interimTranscript = '';
+            
+            updateButton('recording');
+            
+            try {{
+                recognition.start();
+                updateStatus('🔴 Recording... Speak your message clearly');
+            }} catch (error) {{
+                console.error('Failed to start recording:', error);
+                updateStatus('❌ Failed to start recording. Click to try again.');
+                stopRecording();
+            }}
+        }}
+        
+        function stopRecording() {{
+            isRecording = false;
+            
+            if (recognition) {{
+                recognition.stop();
+            }}
+            
+            updateButton('processing');
+            updateStatus('⏳ Processing your message...');
+            
+            setTimeout(() => {{
+                const fullMessage = (finalTranscript + interimTranscript).trim();
+                
+                if (fullMessage) {{
+                    updateStatus('✅ Message ready: "' + fullMessage + '"');
+                    updateButton('ready');
+                    document.getElementById('liveText').innerHTML = 
+                        '<strong>Ready to send:</strong><br>"' + fullMessage + '"';
+                }} else {{
+                    updateStatus('❌ No speech detected. Please try again.');
+                    updateButton('default');
+                    hideTranscription();
+                }}
+            }}, 1000);
+        }}
+        
+        function sendMessage() {{
+            const message = (finalTranscript + interimTranscript).trim();
+            
+            if (message) {{
+                updateStatus('📤 Sending your message...');
+                updateButton('processing');
+                
+                // Send the message via URL parameters
+                const url = new URL(window.location.href);
+                url.searchParams.set('voice_input', encodeURIComponent(message));
+                url.searchParams.set('timestamp', Date.now().toString());
+                url.searchParams.set('stt_method', 'browser');
+                
+                // Navigate to send the message
+                setTimeout(() => {{
+                    window.location.href = url.toString();
+                }}, 1000);
+                
+            }} else {{
+                updateStatus('❌ No message to send. Please record first.');
+            }}
+        }}
+        
+        // Initialize on page load
+        window.addEventListener('load', function() {{
+            initSpeechRecognition();
+            updateStatus('🎯 Ready for professional coaching conversation');
+        }});
+        </script>
+    </body>
+    </html>
     """
     
-    st.components.v1.html(voice_recorder_html, height=500)
+    st.components.v1.html(voice_recorder_html, height=600)
 
 def create_professional_avatar_display(is_speaking=False, avatar_choice='sophia'):
     """Professional avatar display with HeyGen integration option"""
@@ -1046,7 +1182,7 @@ def create_professional_avatar_display(is_speaking=False, avatar_choice='sophia'
     st.components.v1.html(avatar_html, height=450)
 
 def create_enhanced_elevenlabs_voice(text, api_key, voice_type, avatar_info):
-    """Enhanced ElevenLabs voice with professional coaching delivery"""
+    """Enhanced ElevenLabs voice with reliable audio playback"""
     
     voice_id = avatar_info['voice_id']
     voice_name = f"{avatar_info['name']}"
@@ -1079,103 +1215,254 @@ def create_enhanced_elevenlabs_voice(text, api_key, voice_type, avatar_info):
     settings = personality_settings.get(voice_type, personality_settings['professional'])
     clean_text = enhance_coaching_text_for_speech(text, voice_type)
     
+    # Create a more reliable voice component with user interaction
     voice_html = f"""
-    <script>
-    if (window.speechSynthesis) {{
-        window.speechSynthesis.cancel();
-    }}
-    
-    async function playProfessionalVoice() {{
-        try {{
-            const requestBody = {{
-                text: `{clean_text}`,
-                model_id: 'eleven_monolingual_v1',
-                voice_settings: {{
-                    stability: {settings['stability']},
-                    similarity_boost: {settings['similarity_boost']},
-                    style: {settings['style']},
-                    use_speaker_boost: true,
-                    speed: {settings['speed']}
-                }}
-            }};
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+        .voice-player {{
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
+            border-radius: 15px;
+            border: 2px solid rgba(138, 43, 226, 0.3);
+            margin: 10px 0;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
+        }}
+        
+        .play-button {{
+            background: linear-gradient(135deg, #8A2BE2, #9370DB);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+            transition: all 0.3s ease;
+            margin: 10px;
+        }}
+        
+        .play-button:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4);
+        }}
+        
+        .status {{
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }}
+        
+        .status.success {{ background: #d4edda; color: #155724; }}
+        .status.error {{ background: #f8d7da; color: #721c24; }}
+        .status.info {{ background: #d1ecf1; color: #0c5460; }}
+        </style>
+    </head>
+    <body>
+        <div class="voice-player">
+            <div style="margin-bottom: 15px; color: #8A2BE2; font-weight: bold; font-size: 18px;">
+                🎤 {voice_name} is ready to speak
+            </div>
             
-            const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
-                method: 'POST',
-                headers: {{
-                    'Accept': 'audio/mpeg',
-                    'Content-Type': 'application/json',
-                    'xi-api-key': '{api_key}'
-                }},
-                body: JSON.stringify(requestBody)
-            }});
+            <div id="voiceStatus" class="status info">
+                Click the button below to hear your coach speak
+            </div>
             
-            if (response.ok) {{
-                const audioBlob = await response.blob();
-                if (audioBlob.size > 0) {{
+            <button id="playBtn" class="play-button" onclick="playCoachVoice()">
+                🔊 Play Coach Voice
+            </button>
+            
+            <button id="fallbackBtn" class="play-button" onclick="playBrowserVoice()" style="display: none;">
+                🔊 Play Browser Voice (Backup)
+            </button>
+            
+            <div style="margin-top: 15px; font-size: 14px; color: #666;">
+                Voice: {voice_name} • Style: {settings['description']}
+            </div>
+        </div>
+        
+        <script>
+        let isPlaying = false;
+        
+        function updateStatus(message, type = 'info') {{
+            const status = document.getElementById('voiceStatus');
+            status.className = `status ${{type}}`;
+            status.innerHTML = message;
+        }}
+        
+        async function playCoachVoice() {{
+            if (isPlaying) return;
+            
+            const playBtn = document.getElementById('playBtn');
+            const fallbackBtn = document.getElementById('fallbackBtn');
+            
+            isPlaying = true;
+            playBtn.innerHTML = '⏳ Generating voice...';
+            playBtn.disabled = true;
+            
+            updateStatus('🎧 Generating professional coach voice...', 'info');
+            
+            try {{
+                console.log('Requesting ElevenLabs voice generation...');
+                
+                const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
+                    method: 'POST',
+                    headers: {{
+                        'Accept': 'audio/mpeg',
+                        'Content-Type': 'application/json',
+                        'xi-api-key': '{api_key}'
+                    }},
+                    body: JSON.stringify({{
+                        text: `{clean_text}`,
+                        model_id: 'eleven_monolingual_v1',
+                        voice_settings: {{
+                            stability: {settings['stability']},
+                            similarity_boost: {settings['similarity_boost']},
+                            style: {settings['style']},
+                            use_speaker_boost: true,
+                            speed: {settings['speed']}
+                        }}
+                    }})
+                }});
+                
+                console.log('ElevenLabs response status:', response.status);
+                
+                if (response.ok) {{
+                    updateStatus('✅ Voice generated! Playing audio...', 'success');
+                    
+                    const audioBlob = await response.blob();
+                    console.log('Audio blob size:', audioBlob.size, 'bytes');
+                    
+                    if (audioBlob.size === 0) {{
+                        throw new Error('Empty audio response from ElevenLabs');
+                    }}
+                    
                     const audioUrl = URL.createObjectURL(audioBlob);
                     const audio = new Audio(audioUrl);
                     
-                    audio.play().then(() => {{
-                        console.log('Professional coaching voice playing');
-                    }}).catch(error => {{
-                        console.log('Audio blocked, using enhanced browser fallback');
-                        playEnhancedBrowserVoice();
-                    }});
+                    // Handle audio events
+                    audio.onloadeddata = function() {{
+                        console.log('Audio loaded successfully');
+                    }};
+                    
+                    audio.onplay = function() {{
+                        updateStatus('🎵 {voice_name} is speaking...', 'success');
+                        playBtn.innerHTML = '🎵 Playing...';
+                    }};
                     
                     audio.onended = function() {{
+                        updateStatus('✅ Voice message completed!', 'success');
+                        playBtn.innerHTML = '🔊 Play Again';
+                        playBtn.disabled = false;
+                        isPlaying = false;
                         URL.revokeObjectURL(audioUrl);
                     }};
+                    
+                    audio.onerror = function(error) {{
+                        console.error('Audio playback error:', error);
+                        updateStatus('❌ Audio playback failed. Try browser voice.', 'error');
+                        showFallbackButton();
+                    }};
+                    
+                    // Attempt to play
+                    try {{
+                        await audio.play();
+                    }} catch (playError) {{
+                        console.error('Audio play failed:', playError);
+                        updateStatus('⚠️ Autoplay blocked. Click browser voice button.', 'error');
+                        showFallbackButton();
+                    }}
+                    
                 }} else {{
-                    playEnhancedBrowserVoice();
+                    const errorText = await response.text();
+                    console.error('ElevenLabs API error:', response.status, errorText);
+                    updateStatus(`❌ ElevenLabs error (${{response.status}}). Using browser voice.`, 'error');
+                    showFallbackButton();
                 }}
-            }} else {{
-                playEnhancedBrowserVoice();
+                
+            }} catch (error) {{
+                console.error('Network error:', error);
+                updateStatus('❌ Network error. Using browser voice backup.', 'error');
+                showFallbackButton();
             }}
-        }} catch (error) {{
-            playEnhancedBrowserVoice();
         }}
-    }}
-    
-    function playEnhancedBrowserVoice() {{
-        if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
-            
-            // Enhanced personality-based settings
-            if ('{voice_type}' === 'caring') {{
-                utterance.rate = 0.8;
-                utterance.pitch = 1.1;
-                utterance.volume = 0.9;
-            }} else if ('{voice_type}' === 'energetic') {{
-                utterance.rate = 1.2;
-                utterance.pitch = 1.3;
-                utterance.volume = 1.0;
-            }} else {{
-                utterance.rate = 0.95;
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-            }}
-            
-            const voices = speechSynthesis.getVoices();
-            const preferredVoice = voices.find(v => 
-                v.lang.startsWith('en-') && 
-                v.name.toLowerCase().includes('female')
-            ) || voices.find(v => v.lang.startsWith('en-')) || voices[0];
-            
-            if (preferredVoice) {{
-                utterance.voice = preferredVoice;
-            }}
-            
-            speechSynthesis.speak(utterance);
+        
+        function showFallbackButton() {{
+            document.getElementById('fallbackBtn').style.display = 'inline-block';
+            document.getElementById('playBtn').innerHTML = '🔊 Try ElevenLabs Again';
+            document.getElementById('playBtn').disabled = false;
+            isPlaying = false;
         }}
-    }}
-    
-    setTimeout(playProfessionalVoice, 800);
-    </script>
+        
+        function playBrowserVoice() {{
+            updateStatus('🤖 Playing with browser voice...', 'info');
+            
+            if ('speechSynthesis' in window) {{
+                // Cancel any existing speech
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(`{clean_text}`);
+                
+                // Apply personality settings
+                if ('{voice_type}' === 'caring') {{
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1.1;
+                }} else if ('{voice_type}' === 'energetic') {{
+                    utterance.rate = 1.2;
+                    utterance.pitch = 1.3;
+                }} else {{
+                    utterance.rate = 0.95;
+                    utterance.pitch = 1.0;
+                }}
+                
+                utterance.volume = 1.0;
+                
+                // Try to get a good voice
+                const voices = speechSynthesis.getVoices();
+                const preferredVoice = voices.find(v => 
+                    v.lang.startsWith('en-') && 
+                    (v.name.includes('Google') || v.name.includes('Microsoft'))
+                ) || voices.find(v => v.lang.startsWith('en-')) || voices[0];
+                
+                if (preferredVoice) {{
+                    utterance.voice = preferredVoice;
+                    console.log('Using voice:', preferredVoice.name);
+                }}
+                
+                utterance.onstart = function() {{
+                    updateStatus('🎤 Browser voice speaking...', 'success');
+                }};
+                
+                utterance.onend = function() {{
+                    updateStatus('✅ Browser voice completed!', 'success');
+                }};
+                
+                utterance.onerror = function(error) {{
+                    updateStatus('❌ Browser voice failed: ' + error.error, 'error');
+                }};
+                
+                speechSynthesis.speak(utterance);
+                
+            }} else {{
+                updateStatus('❌ Browser voice not supported', 'error');
+            }}
+        }}
+        
+        // Auto-try ElevenLabs on load (with user interaction)
+        window.addEventListener('load', function() {{
+            // Don't auto-play, wait for user interaction
+            updateStatus('👆 Click the button to hear your coach speak', 'info');
+        }});
+        </script>
+    </body>
+    </html>
     """
     
-    st.components.v1.html(voice_html, height=0)
+    st.components.v1.html(voice_html, height=250)
 
 def enhance_coaching_text_for_speech(text, voice_type):
     """Enhance text specifically for professional coaching delivery"""
