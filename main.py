@@ -2148,17 +2148,20 @@ def main():
     else:
         # Welcome screen for new users
         st.markdown("""
-        ## Welcome to Professional Avatar Success Coaching
+        ## 🎯 Welcome to Professional Avatar Success Coaching
         
         **Complete your profile in the sidebar to begin your personalized coaching journey.**
         
-        ### What You'll Experience:
+        ### 🚀 What You'll Experience:
         - **Professional AI Coaching** with proven methodologies
         - **Realistic Talking Avatars** powered by advanced AI
         - **Advanced Speech Processing** with ElevenLabs technology
         - **Intelligent CRM System** tracking your progress
         - **Personalized Strategies** for wealth and success
+        
+        ### 💡 This system follows industry-standard workflow:
+        `Voice Input → ElevenLabs STT → Enhanced LLM → Avatar Generation → ElevenLabs TTS → CRM Analytics → Professional Interface`
+        """)
 
-       """)
 if __name__ == "__main__":
     main()
