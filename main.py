@@ -398,7 +398,7 @@ def enhanced_voice_recorder():
         ">🎤</button>
         
         <div style="margin-top: 20px; color: #666; font-size: 16px; font-weight: bold;">
-            Click to record • Automatically detects when you finish speaking
+            Click to record • Automatically detects when you finish speaking • Auto-sends message
         </div>
         
         <!-- Hidden textarea that Streamlit can read -->
@@ -534,20 +534,26 @@ def enhanced_voice_recorder():
             return;
         }}
         
-        updateStatus('✅ Recorded: "' + finalMessage + '" - Message ready to send!');
+        updateStatus('✅ Sending voice message: "' + finalMessage + '"');
         
-        // Put the text in the hidden textarea
-        const hiddenTextArea = document.getElementById('hiddenVoiceText');
-        hiddenTextArea.value = finalMessage;
-        
-        // Change button to indicate ready to send
+        // Change button to indicate sending
         const btn = document.getElementById('voiceBtn');
         btn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
-        btn.innerHTML = '✅';
+        btn.innerHTML = '📤';
         btn.style.animation = 'none';
         
-        // Show message is ready
-        document.getElementById('transcriptionBox').innerHTML = '✅ Ready: "' + finalMessage + '"<br><small>Message captured! Use the send button below.</small>';
+        // Show message is being sent
+        document.getElementById('transcriptionBox').innerHTML = '📤 Sending: "' + finalMessage + '"';
+        
+        // Auto-send the message by redirecting to URL with voice input
+        const url = new URL(window.location.href);
+        url.searchParams.set('voice_input', encodeURIComponent(finalMessage));
+        url.searchParams.set('timestamp', Date.now().toString());
+        
+        // Navigate to send the message
+        setTimeout(() => {{
+            window.location.href = url.toString();
+        }}, 1000);
     }}
     
     function updateStatus(message) {{
@@ -592,61 +598,6 @@ def enhanced_voice_recorder():
     """
     
     st.components.v1.html(voice_recorder_html, height=450)
-    
-    # Check if there's voice text captured and provide send button
-    voice_message_script = """
-    <script>
-    const hiddenTextArea = document.getElementById('hiddenVoiceText');
-    if (hiddenTextArea && hiddenTextArea.value.trim()) {
-        // Voice message is ready
-        console.log('Voice message ready:', hiddenTextArea.value);
-    }
-    </script>
-    """
-    st.components.v1.html(voice_message_script, height=0)
-    
-    # Simple send button that appears when voice is captured
-    send_col1, send_col2, send_col3 = st.columns([1, 2, 1])
-    with send_col2:
-        if st.button("📤 Send Voice Message", key="send_voice_btn", type="primary", 
-                    help="Send the voice message you just recorded"):
-            
-            # Get voice message from JavaScript using a simple approach
-            get_voice_script = """
-            <script>
-            const hiddenTextArea = document.getElementById('hiddenVoiceText');
-            if (hiddenTextArea && hiddenTextArea.value.trim()) {
-                // Signal that we have a message ready
-                sessionStorage.setItem('voice_ready_to_send', hiddenTextArea.value);
-                console.log('Voice message ready for sending:', hiddenTextArea.value);
-            } else {
-                alert('No voice message recorded yet. Please record a message first.');
-            }
-            </script>
-            """
-            st.components.v1.html(get_voice_script, height=0)
-            
-            # Check session storage for the message
-            check_voice_script = """
-            <script>
-            const voiceMessage = sessionStorage.getItem('voice_ready_to_send');
-            if (voiceMessage) {
-                // Clear it from storage
-                sessionStorage.removeItem('voice_ready_to_send');
-                
-                // Use URL parameter to send the message
-                const url = new URL(window.location.href);
-                url.searchParams.set('voice_input', encodeURIComponent(voiceMessage));
-                url.searchParams.set('timestamp', Date.now().toString());
-                
-                console.log('Sending voice message:', voiceMessage);
-                window.location.href = url.toString();
-            } else {
-                console.log('No voice message found in storage');
-            }
-            </script>
-            """
-            st.components.v1.html(check_voice_script, height=0)
 
 # Voice Message Checker
 def check_voice_message():
@@ -726,13 +677,9 @@ def natural_voice_component(text, voice_type="professional"):
     elevenlabs_key = setup_elevenlabs()
     
     if elevenlabs_key and elevenlabs_key.startswith("sk_"):
-        # Show API key confirmation
-        st.info(f"🔑 Using ElevenLabs API Key: {elevenlabs_key[:10]}...{elevenlabs_key[-5:]}")
         # Premium ElevenLabs voice with YOUR actual voice IDs
         create_instant_elevenlabs_voice(text, elevenlabs_key, voice_type, avatar_info)
     else:
-        # Show warning about missing API key
-        st.warning("⚠️ ElevenLabs API key not found. Using browser voice fallback.")
         # Enhanced browser TTS with improved personality settings
         create_mobile_friendly_voice(text, voice_type, avatar_info['gender'])
 
@@ -970,135 +917,16 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
     # Clean text for speech
     clean_text = enhance_text_for_speech(text, voice_type)
     
-    # VISIBLE STATUS VERSION - Shows exactly what's happening
+    # Clean voice generation without status display
     voice_html = f"""
-    <div style="
-        padding: 20px;
-        background: linear-gradient(135deg, #f8f4ff, #e6e6fa);
-        border-radius: 15px;
-        border: 2px solid rgba(138, 43, 226, 0.3);
-        margin: 10px 0;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
-    ">
-        <div style="margin-bottom: 15px; color: #8A2BE2; font-weight: bold; font-size: 18px;">
-            🎤 Voice System Status
-        </div>
-        
-        <div id="voiceSystemStatus" style="
-            padding: 15px; 
-            background: white; 
-            border-radius: 10px; 
-            margin: 10px 0;
-            color: #333;
-            font-weight: bold;
-            border: 2px solid #ddd;
-        ">
-            🔄 Initializing voice system...
-        </div>
-        
-        <div id="voiceDetails" style="
-            padding: 10px; 
-            background: #f8f9fa; 
-            border-radius: 8px; 
-            margin: 10px 0;
-            color: #666;
-            font-size: 14px;
-            font-family: monospace;
-        ">
-            Voice: {voice_name}<br>
-            Voice ID: {voice_id}<br>
-            Personality: {voice_type} ({settings['description']})<br>
-            Speed: {settings['speed']}x | Energy: {settings['style']} | Stability: {settings['stability']}<br>
-            API Key: {api_key[:10]}...{api_key[-5:]}
-        </div>
-        
-        <div id="errorDetails" style="
-            padding: 10px; 
-            background: #fff5f5; 
-            border-radius: 8px; 
-            margin: 10px 0;
-            color: #dc3545;
-            font-size: 12px;
-            font-family: monospace;
-            border: 1px solid #dc3545;
-            display: none;
-        ">
-            Error details will appear here...
-        </div>
-        
-        <button onclick="retryVoice()" style="
-            background: linear-gradient(135deg, #8A2BE2, #9370DB);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
-            margin: 5px;
-        ">🔄 Retry Voice</button>
-        
-        <button onclick="forceBrowserVoice()" style="
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            margin: 5px;
-        ">🔊 Force Browser Voice</button>
-    </div>
-    
     <script>
     // Prevent multiple simultaneous voices
     if (window.speechSynthesis) {{
         window.speechSynthesis.cancel();
     }}
     
-    function updateVoiceStatus(message, color = '#333', bgColor = 'white') {{
-        const statusDiv = document.getElementById('voiceSystemStatus');
-        statusDiv.innerHTML = message;
-        statusDiv.style.color = color;
-        statusDiv.style.backgroundColor = bgColor;
-        statusDiv.style.borderColor = color;
-    }}
-    
-    function showErrorDetails(error) {{
-        const errorDiv = document.getElementById('errorDetails');
-        errorDiv.innerHTML = error;
-        errorDiv.style.display = 'block';
-    }}
-    
-    function hideErrorDetails() {{
-        const errorDiv = document.getElementById('errorDetails');
-        errorDiv.style.display = 'none';
-    }}
-    
-    function retryVoice() {{
-        playInstantVoice();
-    }}
-    
-    function forceBrowserVoice() {{
-        updateVoiceStatus('🔊 FORCING BROWSER VOICE (for comparison)', '#28a745', '#f8fff8');
-        fallbackToBrowserTTS();
-    }}
-    
     async function playInstantVoice() {{
-        updateVoiceStatus('🔄 ATTEMPTING ELEVENLABS...', '#4169e1', '#f0f8ff');
-        hideErrorDetails();
-        
         try {{
-            console.log('=== ELEVENLABS DEBUG INFO ===');
-            console.log('API Key:', '{api_key[:10]}...{api_key[-5:]}');
-            console.log('Voice ID:', '{voice_id}');
-            console.log('Voice Name:', '{voice_name}');
-            console.log('Personality:', '{voice_type}');
-            console.log('Settings:', {settings});
-            console.log('Text to speak:', `{clean_text}`);
-            
             const requestBody = {{
                 text: `{clean_text}`,
                 model_id: 'eleven_monolingual_v1',
@@ -1111,10 +939,6 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
                 }}
             }};
             
-            console.log('Request body:', JSON.stringify(requestBody, null, 2));
-            
-            updateVoiceStatus('📡 Sending request to ElevenLabs...', '#4169e1', '#f0f8ff');
-            
             const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{voice_id}', {{
                 method: 'POST',
                 headers: {{
@@ -1125,15 +949,8 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
                 body: JSON.stringify(requestBody)
             }});
             
-            console.log('ElevenLabs response status:', response.status);
-            console.log('ElevenLabs response headers:', Object.fromEntries(response.headers.entries()));
-            
             if (response.ok) {{
-                updateVoiceStatus('✅ ELEVENLABS SUCCESS! Processing audio...', '#28a745', '#f8fff8');
-                
                 const audioBlob = await response.blob();
-                console.log('Audio blob size:', audioBlob.size, 'bytes');
-                console.log('Audio blob type:', audioBlob.type);
                 
                 if (audioBlob.size === 0) {{
                     throw new Error('Received empty audio blob from ElevenLabs');
@@ -1143,86 +960,33 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
                 const audio = new Audio(audioUrl);
                 
                 audio.play().then(() => {{
-                    updateVoiceStatus('🎵 ELEVENLABS PLAYING: {voice_name} ({settings["description"]})', '#28a745', '#f8fff8');
                     console.log('ElevenLabs audio playing successfully!');
                 }}).catch(error => {{
-                    console.log('Audio play blocked/failed:', error);
-                    showErrorDetails('Audio play blocked: ' + error.message + '<br>This is usually due to browser autoplay restrictions.');
-                    updateVoiceStatus('⚠️ ELEVENLABS AUDIO BLOCKED - Using browser fallback', '#ff8c00', '#fff8dc');
+                    console.log('Audio play blocked/failed, using browser fallback');
                     setTimeout(fallbackToBrowserTTS, 500);
                 }});
                 
                 audio.onended = function() {{
                     URL.revokeObjectURL(audioUrl);
-                    updateVoiceStatus('✅ ELEVENLABS COMPLETED: {voice_name} ({settings["description"]})', '#28a745', '#f8fff8');
                 }};
                 
                 audio.onerror = function(error) {{
-                    console.error('Audio playback error:', error);
-                    showErrorDetails('Audio playback error: ' + JSON.stringify(error));
-                    updateVoiceStatus('❌ ELEVENLABS AUDIO ERROR - Using browser fallback', '#dc3545', '#fff5f5');
+                    console.error('Audio playback error, using browser fallback');
                     setTimeout(fallbackToBrowserTTS, 500);
                 }};
                 
             }} else {{
-                // Get detailed error information
-                let errorText = '';
-                try {{
-                    errorText = await response.text();
-                }} catch (e) {{
-                    errorText = 'Could not read error response';
-                }}
-                
-                console.error('ElevenLabs API error:', response.status, errorText);
-                
-                let errorMessage = '';
-                let errorDetails = '';
-                
-                if (response.status === 401) {{
-                    errorMessage = '❌ ELEVENLABS: INVALID API KEY';
-                    errorDetails = 'API Key is invalid or expired.<br>Status: 401<br>Response: ' + errorText;
-                }} else if (response.status === 403) {{
-                    errorMessage = '❌ ELEVENLABS: ACCESS FORBIDDEN';
-                    errorDetails = 'API Key lacks permissions or voice access.<br>Status: 403<br>Response: ' + errorText;
-                }} else if (response.status === 429) {{
-                    errorMessage = '❌ ELEVENLABS: RATE LIMIT EXCEEDED';
-                    errorDetails = 'Too many requests or out of credits.<br>Status: 429<br>Response: ' + errorText;
-                }} else if (response.status === 422) {{
-                    errorMessage = '❌ ELEVENLABS: INVALID REQUEST';
-                    errorDetails = 'Request format or voice ID invalid.<br>Status: 422<br>Response: ' + errorText;
-                }} else {{
-                    errorMessage = '❌ ELEVENLABS: API ERROR (' + response.status + ')';
-                    errorDetails = 'Unknown API error.<br>Status: ' + response.status + '<br>Response: ' + errorText;
-                }}
-                
-                updateVoiceStatus(errorMessage, '#dc3545', '#fff5f5');
-                showErrorDetails(errorDetails);
-                setTimeout(fallbackToBrowserTTS, 2000);
+                console.log('ElevenLabs API failed, using browser fallback');
+                setTimeout(fallbackToBrowserTTS, 1000);
             }}
             
         }} catch (error) {{
-            console.error('ElevenLabs network/fetch error:', error);
-            
-            let errorMessage = '❌ ELEVENLABS: NETWORK ERROR';
-            let errorDetails = 'Network request failed.<br>Error: ' + error.message + '<br>';
-            
-            if (error.message.includes('CORS')) {{
-                errorDetails += 'This is likely a CORS (Cross-Origin) policy issue.<br>Try running in a different browser or environment.';
-            }} else if (error.message.includes('Failed to fetch')) {{
-                errorDetails += 'Network connection failed.<br>Check your internet connection and firewall settings.';
-            }} else {{
-                errorDetails += 'Unexpected network error occurred.';
-            }}
-            
-            updateVoiceStatus(errorMessage, '#dc3545', '#fff5f5');
-            showErrorDetails(errorDetails);
-            setTimeout(fallbackToBrowserTTS, 2000);
+            console.log('ElevenLabs network error, using browser fallback');
+            setTimeout(fallbackToBrowserTTS, 1000);
         }}
     }}
     
     function fallbackToBrowserTTS() {{
-        updateVoiceStatus('🤖 USING BROWSER VOICE (robotic fallback)', '#ff8c00', '#fff8dc');
-        
         if ('speechSynthesis' in window) {{
             window.speechSynthesis.cancel();
             
@@ -1267,25 +1031,9 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
             
             if (bestVoice) {{
                 utterance.voice = bestVoice;
-                console.log('Using browser voice:', bestVoice.name);
             }}
             
-            utterance.onstart = function() {{
-                updateVoiceStatus('🤖 BROWSER VOICE PLAYING: ' + (bestVoice ? bestVoice.name : 'Default'), '#ff8c00', '#fff8dc');
-            }};
-            
-            utterance.onend = function() {{
-                updateVoiceStatus('✅ BROWSER VOICE COMPLETED (robotic)', '#ff8c00', '#fff8dc');
-            }};
-            
-            utterance.onerror = function(error) {{
-                updateVoiceStatus('❌ BROWSER VOICE ERROR: ' + error.error, '#dc3545', '#fff5f5');
-            }};
-            
             speechSynthesis.speak(utterance);
-            
-        }} else {{
-            updateVoiceStatus('❌ NO VOICE SUPPORT AVAILABLE', '#dc3545', '#fff5f5');
         }}
     }}
     
@@ -1294,7 +1042,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
     </script>
     """
     
-    st.components.v1.html(voice_html, height=300)
+    st.components.v1.html(voice_html, height=0)
 
 def enhance_text_for_speech(text, voice_type):
     """Make text more expressive for the 3 personality types"""
@@ -1466,20 +1214,6 @@ def user_profile_sidebar():
                 'energetic': '⚡ Energetic & Motivating (High Energy, Happy Vibes)'
             }[x]
         )
-        
-        # Show which voices will be used
-        st.info("🎤 **Your Voice Mapping:**\n\n"
-                "**Each avatar has their own unique voice:**\n"
-                "• Sophia → Emily (Female)\n"
-                "• Marcus → Adam (Male)\n"
-                "• Elena → Freya (Female)\n"
-                "• David → Arnold (Male)\n"
-                "• Maya → Glinda (Female)\n"
-                "• James → Antoni (Male)\n\n"
-                "**Personality affects tone/speed/energy only!**\n"
-                "• Caring: Calm & slow (0.8x speed)\n"
-                "• Professional: Clear & normal (1.0x speed)\n"
-                "• Energetic: Fast & exciting (1.2x speed)")
         
         # Save profile
         if st.button("💾 Save Settings", type="primary"):
@@ -1670,7 +1404,7 @@ def main():
         # Voice recording section
         st.markdown("---")
         st.markdown("### 🎤 Voice Message")
-        st.info("💡 **BIG BUTTON:** Click to record → speak your message → automatically stops when you finish → click send!")
+        st.info("💡 **Simple Voice Recording:** Click the big button → speak your message → automatically sends when you finish speaking!")
         
         # Big button auto-detecting voice recorder
         enhanced_voice_recorder()
