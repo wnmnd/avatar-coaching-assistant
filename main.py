@@ -362,30 +362,70 @@ def create_enhanced_mobile_voice(text, voice_type, gender):
    
     clean_text = enhance_text_for_speech(text, voice_type)
    
-    # FIXED Voice personality settings with better speed control
+    # ENHANCED Voice personality settings with MUCH better male voice control
     voice_settings = {
-        'professional': {'rate': 0.9, 'pitch': 1.0, 'emphasis': 'neutral'},
-        'confident': {'rate': 1.0, 'pitch': 0.8, 'emphasis': 'strong'},
-        'caring': {'rate': 0.8, 'pitch': 1.2, 'emphasis': 'gentle'},
-        'wise': {'rate': 0.7, 'pitch': 0.8, 'emphasis': 'thoughtful'},
-        'energetic': {'rate': 1.1, 'pitch': 1.3, 'emphasis': 'excited'},  # FIXED: Slower but still energetic
-        'executive': {'rate': 0.95, 'pitch': 0.9, 'emphasis': 'authoritative'}
+        'professional': {'rate': 0.9, 'pitch': 1.0, 'volume': 1.0},
+        'confident': {'rate': 1.0, 'pitch': 0.8, 'volume': 1.0},
+        'caring': {'rate': 0.8, 'pitch': 1.2, 'volume': 0.9},
+        'wise': {'rate': 0.7, 'pitch': 0.8, 'volume': 0.9},
+        'energetic': {'rate': 1.15, 'pitch': 1.3, 'volume': 1.0},
+        'executive': {'rate': 0.95, 'pitch': 0.9, 'volume': 1.0}
     }
    
     settings = voice_settings.get(voice_type, voice_settings['professional'])
    
-    # ENHANCED gender adjustments for MORE distinct voices
+    # DRAMATICALLY IMPROVED gender and personality adjustments
     if gender == 'male':
-        settings['pitch'] = max(0.3, settings['pitch'] - 0.5)  # Much deeper for males
-        settings['rate'] = settings['rate'] * 0.95  # Slightly slower for authority
-        
-        # SPECIAL FIX for energetic males - make them more energetic
         if voice_type == 'energetic':
-            settings['rate'] = 1.25  # Much faster for energetic males
-            settings['pitch'] = 0.7   # Still deep but not too deep
-    else:
-        settings['pitch'] = min(1.8, settings['pitch'] + 0.3)  # Higher for females
-        settings['rate'] = settings['rate'] * 1.05  # Slightly faster for femininity
+            # SUPER ENERGETIC MALES - completely different approach
+            settings['rate'] = 1.4   # MUCH faster
+            settings['pitch'] = 0.8  # Not too deep, more youthful energy
+            settings['volume'] = 1.0 # Full volume for excitement
+        elif voice_type == 'confident':
+            settings['rate'] = 1.1   # Assertive pace
+            settings['pitch'] = 0.4  # Deep and commanding
+            settings['volume'] = 1.0
+        elif voice_type == 'wise':
+            settings['rate'] = 0.65  # Very slow and thoughtful
+            settings['pitch'] = 0.3  # Very deep and wise
+            settings['volume'] = 0.9
+        elif voice_type == 'executive':
+            settings['rate'] = 0.9   # Measured and authoritative
+            settings['pitch'] = 0.35 # Deep executive voice
+            settings['volume'] = 1.0
+        elif voice_type == 'caring':
+            settings['rate'] = 0.8   # Gentle pace
+            settings['pitch'] = 0.6  # Warmer, not too deep
+            settings['volume'] = 0.9
+        else:  # professional
+            settings['rate'] = 0.85  # Professional pace
+            settings['pitch'] = 0.5  # Professional depth
+            settings['volume'] = 1.0
+    else:  # female
+        if voice_type == 'energetic':
+            settings['rate'] = 1.2   # Fast but controlled
+            settings['pitch'] = 1.5  # High and excited
+            settings['volume'] = 1.0
+        elif voice_type == 'confident':
+            settings['rate'] = 1.0   # Strong pace
+            settings['pitch'] = 1.1  # Confident but not too high
+            settings['volume'] = 1.0
+        elif voice_type == 'wise':
+            settings['rate'] = 0.75  # Thoughtful pace
+            settings['pitch'] = 1.0  # Balanced wisdom
+            settings['volume'] = 0.9
+        elif voice_type == 'executive':
+            settings['rate'] = 0.9   # Executive pace
+            settings['pitch'] = 1.0  # Professional female voice
+            settings['volume'] = 1.0
+        elif voice_type == 'caring':
+            settings['rate'] = 0.8   # Gentle pace
+            settings['pitch'] = 1.3  # Warm and caring
+            settings['volume'] = 0.9
+        else:  # professional
+            settings['rate'] = 0.9   # Professional pace
+            settings['pitch'] = 1.1  # Clear and professional
+            settings['volume'] = 1.0
    
     # Create unique ID for this voice instance
     voice_id = f"voice_{int(time.time() * 1000)}"
@@ -480,93 +520,176 @@ def create_enhanced_mobile_voice(text, voice_type, gender):
             document.getElementById('voiceStatus_{voice_id}').style.display = 'block';
             document.getElementById('voiceStatus_{voice_id}').innerHTML = '🔊 Playing {voice_type} {gender} voice...';
            
-            // ENHANCED gender and personality-based voice selection
+            // COMPLETELY REDESIGNED voice selection for MAXIMUM variation and quality
             const voices = speechSynthesis.getVoices();
             let bestVoice = null;
            
-            console.log('Available voices:', voices.map(v => v.name + ' (' + v.lang + ')'));
+            console.log('🎭 Available voices:', voices.map(v => `${{v.name}} (${{v.lang}}) [${{v.voiceURI}}]`));
+            console.log('🎯 Looking for: {gender} {voice_type} voice');
            
             if ('{gender}' === 'male') {{
-                // ENHANCED Male voice selection with much more distinct options
-                const maleVoiceNames = [
-                    'Google UK English Male', 'Microsoft David Desktop', 'Alex', 'Daniel', 'David',
-                    'Fred', 'Jorge', 'Juan', 'Diego', 'Carlos', 'Microsoft Mark', 'Google US English',
-                    'Chrome OS UK English Male', 'Chrome OS US English Male'
-                ];
-               
+                // REVOLUTIONARY Male voice selection - each personality gets VERY different voices
+                let voiceSelectionTiers = [];
+                
                 if ('{voice_type}' === 'wise') {{
-                    // Deeper, slower voices for wisdom
-                    const wiseVoices = ['Daniel', 'David', 'Alex', 'Google UK English Male', 'Microsoft David Desktop'];
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && wiseVoices.some(name => v.name.includes(name))
-                    );
-                }} else if ('{voice_type}' === 'confident' || '{voice_type}' === 'executive') {{
-                    // Strong, commanding voices
-                    const strongVoices = ['Microsoft Mark', 'David', 'Google US English', 'Alex'];
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && strongVoices.some(name => v.name.includes(name))
-                    );
+                    // Tier 1: Premium deep, wise voices
+                    voiceSelectionTiers = [
+                        ['Microsoft David Desktop', 'Alex', 'Daniel'],
+                        ['Google UK English Male', 'Chrome OS UK English Male'],
+                        ['com.apple.speech.synthesis.voice.Alex', 'com.apple.speech.synthesis.voice.Daniel'],
+                        ['David', 'Fred']  // Fallback
+                    ];
+                }} else if ('{voice_type}' === 'confident') {{
+                    // Tier 1: Strong, commanding business voices
+                    voiceSelectionTiers = [
+                        ['Microsoft Mark', 'Microsoft Ravi', 'Google US English'],
+                        ['Chrome OS US English Male', 'Microsoft James'],
+                        ['Mark', 'Ravi', 'James'],
+                        ['Alex', 'David']  // Fallback
+                    ];
+                }} else if ('{voice_type}' === 'executive') {{
+                    // Tier 1: Authoritative executive voices
+                    voiceSelectionTiers = [
+                        ['Microsoft Mark', 'Microsoft James', 'Microsoft Ravi'],
+                        ['Google UK English Male', 'Chrome OS UK English Male'],
+                        ['Mark', 'James', 'Ravi'],
+                        ['David', 'Alex']  // Fallback
+                    ];
                 }} else if ('{voice_type}' === 'energetic') {{
-                    // Younger, more dynamic male voices
-                    const energeticVoices = ['Google US English', 'Fred', 'Jorge', 'Microsoft Mark'];
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && energeticVoices.some(name => v.name.includes(name))
-                    );
+                    // Tier 1: YOUNG, DYNAMIC, HIGH-ENERGY male voices
+                    voiceSelectionTiers = [
+                        ['Microsoft Mark', 'Google US English', 'Chrome OS US English Male'],
+                        ['Microsoft James', 'Fred', 'Jorge'],
+                        ['Mark', 'James', 'Jorge', 'Fred'],
+                        ['Google US English', 'Alex']  // Fallback
+                    ];
+                }} else if ('{voice_type}' === 'caring') {{
+                    // Tier 1: Warm, gentle male voices
+                    voiceSelectionTiers = [
+                        ['Microsoft David Desktop', 'Alex', 'Google UK English Male'],
+                        ['Daniel', 'David', 'Chrome OS UK English Male'],
+                        ['Alex', 'David', 'Daniel'],
+                        ['Google US English']  // Fallback
+                    ];
+                }} else {{ // professional
+                    // Tier 1: Clear, professional male voices
+                    voiceSelectionTiers = [
+                        ['Microsoft Ravi', 'Microsoft James', 'Google US English'],
+                        ['Microsoft Mark', 'Chrome OS US English Male'],
+                        ['Ravi', 'James', 'Mark'],
+                        ['Alex', 'David']  // Fallback
+                    ];
                 }}
-               
-                // Fallback for males
-                if (!bestVoice) {{
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && 
-                        (v.name.toLowerCase().includes('male') || 
-                         v.name.toLowerCase().includes('david') ||
-                         v.name.toLowerCase().includes('alex') ||
-                         v.name.toLowerCase().includes('daniel'))
-                    );
+                
+                // Try each tier until we find a voice
+                for (let tier of voiceSelectionTiers) {{
+                    for (let voiceName of tier) {{
+                        bestVoice = voices.find(v => 
+                            v.lang.startsWith('en-') && 
+                            (v.name.includes(voiceName) || v.voiceURI.includes(voiceName))
+                        );
+                        if (bestVoice) {{
+                            console.log(`🎯 MALE {voice_type}: Found ${{bestVoice.name}} from tier ${{voiceSelectionTiers.indexOf(tier) + 1}}`);
+                            break;
+                        }}
+                    }}
+                    if (bestVoice) break;
                 }}
+                
             }} else {{
-                // ENHANCED Female voice selection with much more distinct options
-                const femaleVoiceNames = [
-                    'Google UK English Female', 'Microsoft Zira Desktop', 'Samantha', 'Victoria', 'Karen',
-                    'Susan', 'Fiona', 'Moira', 'Tessa', 'Microsoft Hazel', 'Google US English',
-                    'Chrome OS UK English Female', 'Chrome OS US English Female'
-                ];
-               
+                // REVOLUTIONARY Female voice selection - each personality gets DISTINCT voices
+                let voiceSelectionTiers = [];
+                
                 if ('{voice_type}' === 'caring') {{
-                    // Soft, warm female voices
-                    const caringVoices = ['Samantha', 'Susan', 'Microsoft Zira Desktop', 'Google UK English Female'];
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && caringVoices.some(name => v.name.includes(name))
-                    );
+                    // Tier 1: Soft, warm, nurturing female voices
+                    voiceSelectionTiers = [
+                        ['Microsoft Zira Desktop', 'Samantha', 'Susan'],
+                        ['Microsoft Hazel', 'Google UK English Female'],
+                        ['com.apple.speech.synthesis.voice.Samantha', 'Zira', 'Hazel'],
+                        ['Susan', 'Fiona']  // Fallback
+                    ];
                 }} else if ('{voice_type}' === 'energetic') {{
-                    // Bright, enthusiastic female voices
-                    const energeticVoices = ['Victoria', 'Karen', 'Tessa', 'Google US English'];
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && energeticVoices.some(name => v.name.includes(name))
-                    );
-                }} else if ('{voice_type}' === 'professional') {{
-                    // Clear, business-like female voices
-                    const professionalVoices = ['Microsoft Hazel', 'Fiona', 'Google UK English Female'];
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && professionalVoices.some(name => v.name.includes(name))
-                    );
+                    // Tier 1: Bright, enthusiastic, high-energy female voices
+                    voiceSelectionTiers = [
+                        ['Victoria', 'Karen', 'Microsoft Aria', 'Tessa'],
+                        ['Google US English Female', 'Chrome OS US English Female'],
+                        ['Microsoft Zira Desktop', 'Aria', 'Tessa'],
+                        ['Victoria', 'Karen']  // Fallback
+                    ];
+                }} else if ('{voice_type}' === 'confident') {{
+                    // Tier 1: Strong, assertive female voices
+                    voiceSelectionTiers = [
+                        ['Microsoft Aria', 'Victoria', 'Microsoft Hazel'],
+                        ['Google US English Female', 'Chrome OS US English Female'],
+                        ['Aria', 'Victoria', 'Hazel'],
+                        ['Karen', 'Samantha']  // Fallback
+                    ];
+                }} else if ('{voice_type}' === 'wise') {{
+                    // Tier 1: Mature, thoughtful female voices
+                    voiceSelectionTiers = [
+                        ['Microsoft Hazel', 'Fiona', 'Moira'],
+                        ['Google UK English Female', 'Chrome OS UK English Female'],
+                        ['Hazel', 'Fiona', 'Moira'],
+                        ['Susan', 'Samantha']  // Fallback
+                    ];
+                }} else if ('{voice_type}' === 'executive') {{
+                    // Tier 1: Professional, authoritative female voices
+                    voiceSelectionTiers = [
+                        ['Microsoft Aria', 'Microsoft Hazel', 'Google US English Female'],
+                        ['Chrome OS US English Female', 'Victoria'],
+                        ['Aria', 'Hazel', 'Victoria'],
+                        ['Karen', 'Fiona']  // Fallback
+                    ];
+                }} else {{ // professional
+                    // Tier 1: Clear, business-like female voices
+                    voiceSelectionTiers = [
+                        ['Microsoft Aria', 'Google US English Female', 'Microsoft Hazel'],
+                        ['Chrome OS US English Female', 'Victoria'],
+                        ['Aria', 'Hazel', 'Victoria'],
+                        ['Samantha', 'Karen']  // Fallback
+                    ];
                 }}
-               
-                // Fallback for females
-                if (!bestVoice) {{
-                    bestVoice = voices.find(v => 
-                        v.lang.startsWith('en-') && 
-                        (v.name.toLowerCase().includes('female') || 
-                         v.name.toLowerCase().includes('samantha') ||
-                         v.name.toLowerCase().includes('victoria') ||
-                         v.name.toLowerCase().includes('susan'))
-                    );
+                
+                // Try each tier until we find a voice
+                for (let tier of voiceSelectionTiers) {{
+                    for (let voiceName of tier) {{
+                        bestVoice = voices.find(v => 
+                            v.lang.startsWith('en-') && 
+                            (v.name.includes(voiceName) || v.voiceURI.includes(voiceName))
+                        );
+                        if (bestVoice) {{
+                            console.log(`🎯 FEMALE {voice_type}: Found ${{bestVoice.name}} from tier ${{voiceSelectionTiers.indexOf(tier) + 1}}`);
+                            break;
+                        }}
+                    }}
+                    if (bestVoice) break;
                 }}
             }}
            
-            // Final fallback to any English voice
+            // ENHANCED fallback strategy
+            if (!bestVoice) {{
+                console.log('❌ No personality-specific voice found, using enhanced fallback');
+                if ('{gender}' === 'male') {{
+                    // Male fallback priority list
+                    const maleFallbacks = ['Alex', 'David', 'Daniel', 'Mark', 'James', 'Ravi'];
+                    for (let name of maleFallbacks) {{
+                        bestVoice = voices.find(v => v.lang.startsWith('en-') && v.name.includes(name));
+                        if (bestVoice) break;
+                    }}
+                }} else {{
+                    // Female fallback priority list  
+                    const femaleFallbacks = ['Samantha', 'Victoria', 'Aria', 'Hazel', 'Zira', 'Karen'];
+                    for (let name of femaleFallbacks) {{
+                        bestVoice = voices.find(v => v.lang.startsWith('en-') && v.name.includes(name));
+                        if (bestVoice) break;
+                    }}
+                }}
+            }}
+            
+            // Final emergency fallback
             if (!bestVoice) {{
                 bestVoice = voices.find(v => v.lang.startsWith('en-')) || voices[0];
+                console.log('⚠️ Using emergency fallback voice:', bestVoice?.name);
             }}
            
             if (bestVoice) {{
@@ -574,24 +697,72 @@ def create_enhanced_mobile_voice(text, voice_type, gender):
                 console.log('Selected voice:', bestVoice.name, 'for', '{voice_type}', '{gender}');
             }}
            
-            // PERSONALITY-SPECIFIC adjustments
+            // REVOLUTIONARY personality-specific voice adjustments
             if ('{voice_type}' === 'wise') {{
-                voiceUtterance_{voice_id}.rate = voiceUtterance_{voice_id}.rate * 0.85;  // Slower for wisdom
+                if ('{gender}' === 'male') {{
+                    voiceUtterance_{voice_id}.rate = 0.65;  // Very slow and thoughtful
+                    voiceUtterance_{voice_id}.pitch = 0.3;  // VERY deep for wisdom
+                }} else {{
+                    voiceUtterance_{voice_id}.rate = 0.75;  // Thoughtful pace
+                    voiceUtterance_{voice_id}.pitch = 1.0;  // Balanced wisdom
+                }}
             }} else if ('{voice_type}' === 'energetic') {{
                 if ('{gender}' === 'male') {{
-                    // FIXED: Energetic males need more energy
-                    voiceUtterance_{voice_id}.rate = voiceUtterance_{voice_id}.rate * 1.3;  // Much faster for energetic males
-                    voiceUtterance_{voice_id}.pitch = Math.max(0.6, voiceUtterance_{voice_id}.pitch);  // Not too deep
+                    // SUPER ENERGETIC MALES - complete transformation
+                    voiceUtterance_{voice_id}.rate = 1.5;   // VERY fast - maximum energy
+                    voiceUtterance_{voice_id}.pitch = 0.8;  // Not too deep - youthful energy
+                    voiceUtterance_{voice_id}.volume = 1.0; // Full volume
+                    console.log('🚀 ENERGETIC MALE: Rate=1.5, Pitch=0.8 - Maximum energy!');
                 }} else {{
-                    voiceUtterance_{voice_id}.rate = voiceUtterance_{voice_id}.rate * 1.15;  // Fast but controlled for females
+                    voiceUtterance_{voice_id}.rate = 1.2;   // Fast but controlled
+                    voiceUtterance_{voice_id}.pitch = 1.5;  // High and excited
+                    voiceUtterance_{voice_id}.volume = 1.0;
+                    console.log('⚡ ENERGETIC FEMALE: Rate=1.2, Pitch=1.5');
                 }}
-                voiceUtterance_{voice_id}.volume = 1.0;  // Full volume for excitement
+            }} else if ('{voice_type}' === 'confident') {{
+                if ('{gender}' === 'male') {{
+                    voiceUtterance_{voice_id}.rate = 1.1;   // Assertive pace
+                    voiceUtterance_{voice_id}.pitch = 0.4;  // Deep and commanding
+                    voiceUtterance_{voice_id}.volume = 1.0;
+                    console.log('💪 CONFIDENT MALE: Rate=1.1, Pitch=0.4 - Deep authority');
+                }} else {{
+                    voiceUtterance_{voice_id}.rate = 1.0;   // Strong pace
+                    voiceUtterance_{voice_id}.pitch = 1.1;  // Confident but not too high
+                    voiceUtterance_{voice_id}.volume = 1.0;
+                }}
+            }} else if ('{voice_type}' === 'executive') {{
+                if ('{gender}' === 'male') {{
+                    voiceUtterance_{voice_id}.rate = 0.9;   // Measured and authoritative
+                    voiceUtterance_{voice_id}.pitch = 0.35; // Deep executive voice
+                    voiceUtterance_{voice_id}.volume = 1.0;
+                    console.log('👔 EXECUTIVE MALE: Rate=0.9, Pitch=0.35 - Deep authority');
+                }} else {{
+                    voiceUtterance_{voice_id}.rate = 0.9;   // Executive pace
+                    voiceUtterance_{voice_id}.pitch = 1.0;  // Professional female voice
+                    voiceUtterance_{voice_id}.volume = 1.0;
+                }}
             }} else if ('{voice_type}' === 'caring') {{
-                voiceUtterance_{voice_id}.pitch = voiceUtterance_{voice_id}.pitch * 1.1;  // Softer, higher for caring
-                voiceUtterance_{voice_id}.rate = voiceUtterance_{voice_id}.rate * 0.9;   // Slightly slower for caring
-            }} else if ('{voice_type}' === 'confident' || '{voice_type}' === 'executive') {{
-                voiceUtterance_{voice_id}.rate = voiceUtterance_{voice_id}.rate * 0.95;  // Slightly slower for authority
-                voiceUtterance_{voice_id}.volume = 1.0;  // Full volume for confidence
+                if ('{gender}' === 'male') {{
+                    voiceUtterance_{voice_id}.rate = 0.8;   // Gentle pace
+                    voiceUtterance_{voice_id}.pitch = 0.6;  // Warmer, not too deep
+                    voiceUtterance_{voice_id}.volume = 0.9;
+                    console.log('💝 CARING MALE: Rate=0.8, Pitch=0.6 - Gentle warmth');
+                }} else {{
+                    voiceUtterance_{voice_id}.rate = 0.8;   // Gentle pace
+                    voiceUtterance_{voice_id}.pitch = 1.3;  // Warm and caring
+                    voiceUtterance_{voice_id}.volume = 0.9;
+                }}
+            }} else {{ // professional
+                if ('{gender}' === 'male') {{
+                    voiceUtterance_{voice_id}.rate = 0.85;  // Professional pace
+                    voiceUtterance_{voice_id}.pitch = 0.5;  // Professional depth
+                    voiceUtterance_{voice_id}.volume = 1.0;
+                    console.log('💼 PROFESSIONAL MALE: Rate=0.85, Pitch=0.5');
+                }} else {{
+                    voiceUtterance_{voice_id}.rate = 0.9;   // Professional pace
+                    voiceUtterance_{voice_id}.pitch = 1.1;  // Clear and professional
+                    voiceUtterance_{voice_id}.volume = 1.0;
+                }}
             }}
            
             // Voice event handlers
@@ -711,24 +882,60 @@ def create_enhanced_mobile_voice(text, voice_type, gender):
 def create_enhanced_elevenlabs_voice(text, api_key, voice_type, gender):
     """Enhanced ElevenLabs voice with better voice selection and mobile support"""
    
-    # ENHANCED Voice selection with more distinct voices
+    # REVOLUTIONARY Voice selection with DISTINCT voice IDs for maximum variation
     if gender == 'male':
         voice_configs = {
-            'professional': {'voice_id': 'TxGEqnHWrfWFTfGW9XjX', 'name': 'Professional Male', 'stability': 0.9, 'similarity': 0.9},
-            'confident': {'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'Confident Male', 'stability': 0.8, 'similarity': 0.8},
-            'caring': {'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Caring Male', 'stability': 0.9, 'similarity': 0.9},
-            'wise': {'voice_id': 'onwK4e9ZLuTAKqWW03F9', 'name': 'Wise Male', 'stability': 0.95, 'similarity': 0.9},
-            'energetic': {'voice_id': 'pNInz6obpgDQGcFmaJgB', 'name': 'Energetic Male', 'stability': 0.6, 'similarity': 0.7},
-            'executive': {'voice_id': 'Yko7PKHZNXotIFUBG7I9', 'name': 'Executive Male', 'stability': 0.85, 'similarity': 0.85}
+            'professional': {
+                'voice_id': 'TxGEqnHWrfWFTfGW9XjX', 'name': 'Professional Male - Josh', 
+                'stability': 0.9, 'similarity': 0.9, 'style': 0.4
+            },
+            'confident': {
+                'voice_id': 'VR6AewLTigWG4xSOukaG', 'name': 'Confident Male - Antoni', 
+                'stability': 0.8, 'similarity': 0.8, 'style': 0.7
+            },
+            'caring': {
+                'voice_id': 'IKne3meq5aSn9XLyUdCD', 'name': 'Caring Male - Charlie', 
+                'stability': 0.9, 'similarity': 0.9, 'style': 0.3
+            },
+            'wise': {
+                'voice_id': 'onwK4e9ZLuTAKqWW03F9', 'name': 'Wise Male - Thomas', 
+                'stability': 0.95, 'similarity': 0.9, 'style': 0.2
+            },
+            'energetic': {
+                'voice_id': 'pNInz6obpgDQGcFmaJgB', 'name': 'Energetic Male - Adam', 
+                'stability': 0.5, 'similarity': 0.7, 'style': 0.9
+            },
+            'executive': {
+                'voice_id': 'Yko7PKHZNXotIFUBG7I9', 'name': 'Executive Male - Sam', 
+                'stability': 0.85, 'similarity': 0.85, 'style': 0.6
+            }
         }
     else:  # female
         voice_configs = {
-            'professional': {'voice_id': 'EXAVITQu4vr4xnSDxMaL', 'name': 'Professional Female', 'stability': 0.9, 'similarity': 0.9},
-            'confident': {'voice_id': 'ThT5KcBeYPX3keUQqHPh', 'name': 'Confident Female', 'stability': 0.8, 'similarity': 0.8},
-            'caring': {'voice_id': '21m00Tcm4TlvDq8ikWAM', 'name': 'Caring Female', 'stability': 0.9, 'similarity': 0.9},
-            'wise': {'voice_id': 'XrExE9yKIg1WjnnlVkGX', 'name': 'Wise Female', 'stability': 0.95, 'similarity': 0.9},
-            'energetic': {'voice_id': 'AZnzlk1XvdvUeBnXmlld', 'name': 'Energetic Female', 'stability': 0.5, 'similarity': 0.7},
-            'executive': {'voice_id': 'SOYHLrjzK2X1ezoPC6cr', 'name': 'Executive Female', 'stability': 0.85, 'similarity': 0.85}
+            'professional': {
+                'voice_id': 'EXAVITQu4vr4xnSDxMaL', 'name': 'Professional Female - Bella', 
+                'stability': 0.9, 'similarity': 0.9, 'style': 0.4
+            },
+            'confident': {
+                'voice_id': 'ThT5KcBeYPX3keUQqHPh', 'name': 'Confident Female - Dorothy', 
+                'stability': 0.8, 'similarity': 0.8, 'style': 0.7
+            },
+            'caring': {
+                'voice_id': '21m00Tcm4TlvDq8ikWAM', 'name': 'Caring Female - Rachel', 
+                'stability': 0.9, 'similarity': 0.9, 'style': 0.3
+            },
+            'wise': {
+                'voice_id': 'XrExE9yKIg1WjnnlVkGX', 'name': 'Wise Female - Domi', 
+                'stability': 0.95, 'similarity': 0.9, 'style': 0.2
+            },
+            'energetic': {
+                'voice_id': 'AZnzlk1XvdvUeBnXmlld', 'name': 'Energetic Female - Elli', 
+                'stability': 0.4, 'similarity': 0.7, 'style': 0.9
+            },
+            'executive': {
+                'voice_id': 'SOYHLrjzK2X1ezoPC6cr', 'name': 'Executive Female - Emily', 
+                'stability': 0.85, 'similarity': 0.85, 'style': 0.6
+            }
         }
    
     voice_config = voice_configs.get(voice_type, voice_configs['professional'])
@@ -737,14 +944,14 @@ def create_enhanced_elevenlabs_voice(text, api_key, voice_type, gender):
     # Enhanced text for speech
     clean_text = enhance_text_for_speech(text, voice_type)
    
-    # Enhanced speed settings
+    # REVOLUTIONARY speed settings for maximum personality distinction
     speed_settings = {
-        'wise': 0.8,
-        'caring': 0.85,
-        'professional': 1.0,
-        'executive': 0.95,
-        'confident': 1.05,
-        'energetic': 1.1 if gender == 'female' else 1.25  # FIXED: Faster for energetic males
+        'wise': 0.7,          # Very slow and thoughtful
+        'caring': 0.85,       # Gentle and measured
+        'professional': 1.0,  # Standard professional pace
+        'executive': 0.9,     # Authoritative and measured
+        'confident': 1.05,    # Slightly faster with confidence
+        'energetic': 1.3 if gender == 'female' else 1.5  # SUPER fast for energetic males!
     }
    
     voice_speed = speed_settings.get(voice_type, 1.0)
@@ -923,7 +1130,7 @@ def create_enhanced_elevenlabs_voice(text, api_key, voice_type, gender):
     st.components.v1.html(voice_html, height=80)
 
 def enhance_text_for_speech(text, voice_type):
-    """ENHANCED text processing for MORE distinct personality voices"""
+    """REVOLUTIONARY text processing for DRAMATICALLY distinct personality voices"""
    
     # Remove markdown and clean
     text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
@@ -931,62 +1138,80 @@ def enhance_text_for_speech(text, voice_type):
     text = re.sub(r'#{1,6}\s', '', text)
     text = text.replace('\n', ' ').strip()
    
-    # ENHANCED personality-based speech modifications
+    # REVOLUTIONARY personality-based speech modifications
     if voice_type == 'caring':
         # Gentle, nurturing speech patterns
-        text = re.sub(r'\byou\b', 'you, my friend', text, flags=re.IGNORECASE, count=1)
-        text = re.sub(r'\.', '. Please take your time with this.', text, count=1)
+        text = re.sub(r'\byou\b', 'you, my dear friend', text, flags=re.IGNORECASE, count=1)
+        text = re.sub(r'\.', '. Please take all the time you need with this.', text, count=1)
         text = text.replace(' can ', ' absolutely can ')
         text = text.replace(' will ', ' will surely ')
         text = text.replace(' are ', ' are truly ')
+        text = text.replace(' success', ' wonderful success')
        
     elif voice_type == 'energetic':
-        # HIGH ENERGY, motivational speech
-        text = re.sub(r'\bgreat\b', 'absolutely FANTASTIC', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bgood\b', 'AMAZING', text, flags=re.IGNORECASE)
-        text = re.sub(r'\.', '! This is incredible!', text, count=1)
-        text = text.replace(' can ', ' can TOTALLY ')
-        text = text.replace(' will ', ' will DEFINITELY ')
-        text = 'WOW! ' + text + ' I am SO pumped about this!'
+        # MAXIMUM ENERGY speech - completely different for males vs females
+        text = re.sub(r'\bgreat\b', 'absolutely INCREDIBLE', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bgood\b', 'FANTASTIC and AMAZING', text, flags=re.IGNORECASE)
+        text = re.sub(r'\byes\b', 'YES! Absolutely YES!', text, flags=re.IGNORECASE)
+        text = re.sub(r'\.', '! This is SO exciting!', text, count=1)
+        text = text.replace(' can ', ' can TOTALLY and COMPLETELY ')
+        text = text.replace(' will ', ' will DEFINITELY and ABSOLUTELY ')
+        text = text.replace(' success', ' INCREDIBLE SUCCESS')
+        text = 'WOW! Listen to this! ' + text + ' I am SO PUMPED and ENERGIZED about this! This is going to be AMAZING!'
        
     elif voice_type == 'wise':
         # Deep, thoughtful, philosophical speech
-        text = re.sub(r'\bremember\b', 'always keep in mind', text, flags=re.IGNORECASE)
-        text = re.sub(r'\.', '... Think deeply about this.', text, count=1)
-        text = 'Hmm... Let me share some wisdom. ' + text
-        text = text.replace(' is ', ' truly is ')
-        text = text.replace(' can ', ' may indeed ')
+        text = re.sub(r'\bremember\b', 'always keep in your mind', text, flags=re.IGNORECASE)
+        text = re.sub(r'\.', '... Think deeply and carefully about this wisdom.', text, count=1)
+        text = re.sub(r'\bthink\b', 'reflect deeply and thoughtfully', text, flags=re.IGNORECASE)
+        text = 'Hmm... Let me share some deep wisdom with you. ' + text + ' Consider this carefully, my friend.'
+        text = text.replace(' is ', ' truly and deeply is ')
+        text = text.replace(' can ', ' may indeed and wisely ')
+        text = text.replace(' success', ' profound success')
        
     elif voice_type == 'professional':
         # Clear, direct, business-focused speech
-        text = re.sub(r'\.', '. Let me be very clear about this.', text, count=1)
-        text = re.sub(r'\bI think\b', 'Based on my professional analysis', text, flags=re.IGNORECASE)
-        text = text.replace(' should ', ' must strategically ')
-        text = 'From a professional standpoint: ' + text
+        text = re.sub(r'\.', '. Let me be absolutely clear and direct about this point.', text, count=1)
+        text = re.sub(r'\bI think\b', 'Based on my comprehensive professional analysis', text, flags=re.IGNORECASE)
+        text = text.replace(' should ', ' must strategically and professionally ')
+        text = text.replace(' can ', ' should systematically ')
+        text = text.replace(' success', ' professional success')
+        text = 'From a professional business standpoint: ' + text
        
     elif voice_type == 'confident':
-        # Strong, assertive, powerful speech
-        text = re.sub(r'\.', '. I am absolutely certain about this.', text, count=1)
-        text = re.sub(r'\bI believe\b', 'I KNOW for certain', text, flags=re.IGNORECASE)
-        text = text.replace(' might ', ' WILL ')
-        text = text.replace(' could ', ' WILL absolutely ')
-        text = 'Listen to me: ' + text + ' Trust me on this!'
+        # Strong, assertive, powerful speech - MORE aggressive for males
+        text = re.sub(r'\.', '. I am completely and totally certain about this.', text, count=1)
+        text = re.sub(r'\bI believe\b', 'I KNOW with absolute certainty', text, flags=re.IGNORECASE)
+        text = text.replace(' might ', ' WILL absolutely ')
+        text = text.replace(' could ', ' WILL definitely ')
+        text = text.replace(' maybe ', ' DEFINITELY ')
+        text = text.replace(' success', ' POWERFUL SUCCESS')
+        text = 'Listen to me very carefully: ' + text + ' Trust me completely on this! I am absolutely confident!'
        
     elif voice_type == 'executive':
         # Authoritative, commanding, leadership speech
-        text = re.sub(r'\.', '. This is exactly what top executives do.', text, count=1)
-        text = text.replace(' need to ', ' must immediately ')
-        text = 'Here is the executive strategy: ' + text + ' Execute this plan now.'
+        text = re.sub(r'\.', '. This is exactly what top-level executives and leaders do.', text, count=1)
+        text = text.replace(' need to ', ' must immediately and decisively ')
+        text = text.replace(' should ', ' will strategically execute ')
+        text = text.replace(' success', ' executive-level success')
+        text = 'Here is the strategic executive approach: ' + text + ' Execute this plan immediately and decisively.'
    
-    # Add natural speech patterns with personality-specific pauses
+    # Add personality-specific speech patterns with dramatic pauses
     if voice_type == 'wise':
-        text = re.sub(r'([.!?])', r'\1... ', text)  # Long pauses for wisdom
+        text = re.sub(r'([.!?])', r'\1... ', text)  # Very long pauses for deep wisdom
+        text = re.sub(r'([,:])', r'\1... ', text)   # Thoughtful pauses even for commas
     elif voice_type == 'energetic':
-        text = re.sub(r'([.!?])', r'\1 ', text)     # Quick pauses for energy
+        text = re.sub(r'([.!?])', r'\1 ', text)     # Quick bursts for energy
+        text = re.sub(r'([,:])', r'\1 ', text)      # Fast-paced speech
+    elif voice_type == 'confident':
+        text = re.sub(r'([.!?])', r'\1 ', text)     # Assertive pauses
+        text = re.sub(r'([,:])', r'\1 ', text)      # Strong delivery
+    elif voice_type == 'executive':
+        text = re.sub(r'([.!?])', r'\1 ', text)     # Commanding pauses
+        text = re.sub(r'([,:])', r'\1 ', text)      # Authoritative delivery
     else:
         text = re.sub(r'([.!?])', r'\1 ', text)     # Normal pauses
-   
-    text = re.sub(r'([,:])', r'\1 ', text)
+        text = re.sub(r'([,:])', r'\1 ', text)
    
     # Escape for JavaScript
     text = text.replace('"', '\\"').replace("'", "\\'")
