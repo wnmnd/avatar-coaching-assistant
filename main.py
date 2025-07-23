@@ -945,7 +945,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
             'stability': 0.8,        # Calm and steady
             'similarity_boost': 0.9, # Clear and warm
             'style': 0.2,           # Gentle style
-            'speed': 0.8,           # Slower, more thoughtful pace
+            'speed': 0.9,           # Slower, more thoughtful pace
             'description': 'Calm & Empathetic'
         },
         'professional': {
