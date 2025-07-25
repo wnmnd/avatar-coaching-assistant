@@ -5,9 +5,9 @@ A conversational AI avatar for wealth and success coaching, built with Streamlit
 ## Features
 
 - **Interactive AI Coach**: Powered by Google's Gemini API for intelligent conversations
-- **Voice Integration**: Speech-to-text input and text-to-speech responses
-- **Animated Avatar**: Visual representation of your AI coach with speaking animations
-- **Personalized Experience**: User profiles with goals, experience levels, and focus areas
+- **Voice Integration**: Text input and text-to-speech responses
+- **Animated Avatar**: Visual representation of the AI coach with speaking animations
+- **Personalized Experience**: User profiles with goals and focus areas
 - **Real-time Chat**: Seamless conversation flow with chat history
 - **Mobile Responsive**: Works on desktop and mobile browsers
 - **Free to Deploy**: Uses only free services (Gemini API, browser APIs)
@@ -30,15 +30,13 @@ The app uses Google's Gemini AI with specialized prompts focused on:
 
 ### User Experience
 1. **Profile Setup**: Users create profiles with goals and focus areas
-2. **Voice or Text**: Users can speak or type their questions
+2. **Voice or Text**: Users can type their questions
 3. **AI Response**: Gemini generates contextual coaching advice
 4. **Avatar Feedback**: Visual avatar provides engaging interaction
 5. **Conversation History**: Full chat history maintained during session
 
 
 ---
-
-Built with ❤️ for helping people achieve success and build wealth through AI-powered coaching.
 
 **Live Demo**: [See the app here](https://avatar-coaching-assistant.streamlit.app/)
 
