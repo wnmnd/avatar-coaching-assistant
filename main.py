@@ -724,7 +724,7 @@ def create_mobile_friendly_voice(text, voice_type, gender):
         text-align: center;
     ">
         <div style="margin-bottom: 10px; color: #8A2BE2; font-weight: bold;">
-            🎭 Your coach is speaking...
+            Your coach is speaking...
         </div>
         <button id="playVoiceButton" onclick="playVoiceManually()" style="
             background: linear-gradient(135deg, #8A2BE2, #9370DB);
@@ -864,7 +864,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
             color: #333;
             font-size: 14px;
         ">
-            🔄 Initializing voice...
+            Initializing voice...
         </div>
         
         <button onclick="retryVoice()" style="
@@ -876,7 +876,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
             font-size: 12px;
             cursor: pointer;
             margin: 5px;
-        ">🔄 Retry</button>
+        ">Retry</button>
     </div>
     
     <script>
@@ -895,7 +895,7 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
     }}
     
     async function playInstantVoice() {{
-        updateVoiceStatus('🔄 Connecting to ElevenLabs...', '#4169e1');
+        updateVoiceStatus('Connecting to ElevenLabs...', '#4169e1');
         
         try {{
             const requestBody = {{
@@ -921,16 +921,16 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
             }});
             
             if (response.ok) {{
-                updateVoiceStatus('✅ Playing voice...', '#28a745');
+                updateVoiceStatus('Playing voice...', '#28a745');
                 
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 
                 audio.play().then(() => {{
-                    updateVoiceStatus('🎵 {voice_name} speaking', '#28a745');
+                    updateVoiceStatus('{voice_name} speaking', '#28a745');
                 }}).catch(error => {{
-                    updateVoiceStatus('⚠️ Audio blocked - using browser fallback', '#ff8c00');
+                    updateVoiceStatus('⚠Audio blocked - using browser fallback', '#ff8c00');
                     setTimeout(fallbackToBrowserTTS, 500);
                 }});
                 
@@ -972,11 +972,11 @@ def create_instant_elevenlabs_voice(text, api_key, voice_type, avatar_info):
             }}
             
             utterance.onstart = function() {{
-                updateVoiceStatus('🤖 Browser voice playing', '#ff8c00');
+                updateVoiceStatus('Browser voice playing', '#ff8c00');
             }};
             
             utterance.onend = function() {{
-                updateVoiceStatus('✅ Browser voice completed', '#ff8c00');
+                updateVoiceStatus('Browser voice completed', '#ff8c00');
             }};
             
             speechSynthesis.speak(utterance);
@@ -1079,7 +1079,7 @@ def get_coach_response(user_input, chat_history):
         return f"I'm still here for you, {name}. Could you share that with me again?"
 
 def chat_interface():
-    st.markdown("### 💬 Conversation")
+    st.markdown("### Conversation")
     
     chat_container = st.container()
     with chat_container:
@@ -1098,7 +1098,7 @@ def crm_login_interface():
     st.markdown("""
     <div class="crm-container">
         <h3 style="color: #8A2BE2; text-align: center; margin-bottom: 20px;">
-            🔐 Welcome to Avatar Success Coach
+            Welcome to Avatar Success Coach
         </h3>
         <p style="text-align: center; margin-bottom: 20px; color: #666;">
             Enter your details to continue or create a new session
@@ -1110,12 +1110,12 @@ def crm_login_interface():
         col1, col2 = st.columns(2)
         
         with col1:
-            nickname = st.text_input("👤 Nickname", placeholder="Enter your nickname")
+            nickname = st.text_input("Nickname", placeholder="Enter your nickname")
         
         with col2:
-            email = st.text_input("📧 Email", placeholder="your.email@example.com")
+            email = st.text_input("Email", placeholder="your.email@example.com")
         
-        goals = st.text_area("🎯 Your Goals", placeholder="What do you want to achieve?", height=100)
+        goals = st.text_area("Your Goals", placeholder="What do you want to achieve?", height=100)
         
         login_submitted = st.form_submit_button("🚀 Start Coaching Session", type="primary")
         
@@ -1129,8 +1129,8 @@ def crm_login_interface():
                     st.session_state.chat_history = existing_user.get('chat_history', [])
                     st.session_state.user_profile = existing_user.get('user_profile', {})
                     st.session_state.crm_user_data = existing_user
-                    st.success(f"👋 Welcome back, {nickname}! Your previous session has been restored.")
-                    st.info(f"📊 You have {len(st.session_state.chat_history)} previous messages.")
+                    st.success(f"Welcome back, {nickname}! Your previous session has been restored.")
+                    st.info(f"You have {len(st.session_state.chat_history)} previous messages.")
                 else:
                     # Create new user
                     st.session_state.chat_history = []
@@ -1145,7 +1145,7 @@ def crm_login_interface():
                         'email': email,
                         'goals': goals
                     }
-                    st.success(f"🎉 Welcome, {nickname}! Starting your new coaching journey.")
+                    st.success(f"Welcome, {nickname}! Starting your new coaching journey.")
                 
                 st.session_state.crm_logged_in = True
                 
@@ -1160,7 +1160,7 @@ def crm_login_interface():
                 
                 st.rerun()
             else:
-                st.error("❌ Please enter both nickname and email to continue.")
+                st.error("Please enter both nickname and email to continue.")
 
 def user_profile_sidebar():
     """Enhanced sidebar with CRM integration"""
@@ -1169,13 +1169,13 @@ def user_profile_sidebar():
             # User info display
             user_data = st.session_state.crm_user_data
             st.markdown(f"""
-            ### 👋 Welcome, {user_data.get('nickname', 'User')}!
-            **📧 Email:** {user_data.get('email', 'N/A')}  
+            ### Welcome, {user_data.get('nickname', 'User')}!
+            **Email:** {user_data.get('email', 'N/A')}  
             **💬 Messages:** {len(st.session_state.chat_history)}
             """)
             
             # Logout button
-            if st.button("🔓 Logout", type="secondary"):
+            if st.button("Logout", type="secondary"):
                 # Save current session before logout
                 save_user_to_crm(
                     user_data.get('nickname', ''),
@@ -1194,14 +1194,14 @@ def user_profile_sidebar():
             
             st.markdown("---")
         
-        st.header("🎭 Coach Settings")
+        st.header("Coach Settings")
         
         # Basic info
         name = st.text_input("Your Name", value=st.session_state.user_profile.get('name', ''))
         goals = st.text_area("Your Goals", value=st.session_state.user_profile.get('goals', ''))
         
         # Avatar choices (cleaned up)
-        st.subheader("🎭 Choose Your AI Coach")
+        st.subheader("Choose Your AI Coach")
         avatar_options = {
             "sophia": "👩‍💼 Sophia - Professional Female Coach",
             "marcus": "👨‍💼 Marcus - Business Male Mentor", 
@@ -1221,7 +1221,7 @@ def user_profile_sidebar():
         )
         
         # Voice personality
-        st.subheader("🎤 Voice Personality")
+        st.subheader("Voice Personality")
         voice_type = st.selectbox(
             "Coach Personality",
             ["caring", "professional", "energetic"],
@@ -1229,14 +1229,14 @@ def user_profile_sidebar():
                 st.session_state.user_profile.get('voice_type', 'caring')
             ),
             format_func=lambda x: {
-                'caring': '💝 Caring & Supportive',
-                'professional': '💼 Professional & Direct', 
-                'energetic': '⚡ Energetic & Motivating'
+                'caring': 'Caring & Supportive',
+                'professional': 'Professional & Direct', 
+                'energetic': 'Energetic & Motivating'
             }[x]
         )
         
         # Save profile
-        if st.button("💾 Save Settings", type="primary"):
+        if st.button("Save Settings", type="primary"):
             st.session_state.user_profile = {
                 'name': name,
                 'goals': goals,
@@ -1337,7 +1337,7 @@ def main():
     # Header
     st.markdown("""
     <div class="main-header">
-        <h1>🎯 Avatar Success Coach</h1>
+        <h1>Avatar Success Coach</h1>
         <p>Your AI-powered success mentor with instant talking avatars</p>
     </div>
     """, unsafe_allow_html=True)
@@ -1384,7 +1384,7 @@ def main():
         chat_interface()
         
         # Regular text input
-        st.markdown("### ✍️ Send Message")
+        st.markdown("### Send Message")
         
         with st.form("message_form", clear_on_submit=True):
             user_input = st.text_area(
@@ -1433,8 +1433,7 @@ def main():
         
         # Voice recording section
         st.markdown("---")
-        st.markdown("### 🎤 Voice Message")
-        st.info("💡 Click to record → speak your message → automatically sends when you finish!")
+        st.markdown("### Voice Message")
         
         # Voice recorder
         enhanced_voice_recorder()
